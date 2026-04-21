@@ -1,0 +1,66 @@
+
+> frontend@0.0.0 dev C:\Code3\PDF HUB_L1-joules\frontend
+> vite "--host" "127.0.0.1" "--port" "5173"
+
+
+  [32m[1mVITE[22m v8.0.8[39m  [2mready in [0m[1m817[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m4:22:00 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m4:25:50 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m4:26:12 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarFile.tsx[22m
+[2m4:32:36 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx, /src/components/sidebar/SidebarPanel.tsx[22m
+[2m4:37:13 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/shell/AppShell.tsx[22m
+[2m4:39:45 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/shell/AppShell.tsx[22m
+[2m4:41:58 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/shell/AppShell.tsx[22m
+[2m4:50:04 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarOrganize.tsx[22m
+[2m4:50:17 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarOrganize.tsx[22m
+[2m4:52:46 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarOrganize.tsx[22m
+[2m4:58:15 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m4:59:19 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/App.tsx, /src/components/workspace/DocumentWorkspace.tsx, /src/components/sidebar/SidebarPanel.tsx, /src/components/inspector/InspectorPanel.tsx, /src/components/toolbar/ToolbarFile.tsx, /src/components/toolbar/ToolbarComment.tsx[22m
+[2m4:59:51 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarComment.tsx[22m
+[2m5:00:07 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:04:15 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:05:19 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:06:24 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:07:04 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:11:44 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/inspector/InspectorPanel.tsx[22m
+[2m5:11:52 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/sidebar/SidebarPanel.tsx[22m
+[2m5:12:21 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/shell/AppShell.tsx[22m
+[2m5:12:45 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarOrganize.tsx, /src/components/toolbar/ToolbarFile.tsx, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:13:16 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:13:36 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:13:47 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:13:59 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:14:12 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:14:25 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:14:38 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:16:01 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:17:17 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarOrganize.tsx, /src/components/toolbar/ToolbarFile.tsx, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:17:27 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:25:06 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:25:16 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:25:24 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:25:57 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:26:08 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:26:25 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:26:44 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:26:54 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:27:06 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:27:14 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:27:29 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:27:40 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:30:54 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/sidebar/SidebarPanel.tsx, /src/components/toolbar/ToolbarOrganize.tsx, /src/components/toolbar/ToolbarFile.tsx, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:31:13 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/sidebar/SidebarPanel.tsx, /src/components/toolbar/ToolbarOrganize.tsx, /src/components/toolbar/ToolbarFile.tsx, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:31:55 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/sidebar/SidebarPanel.tsx, /src/components/toolbar/ToolbarOrganize.tsx, /src/components/toolbar/ToolbarFile.tsx, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:33:07 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:34:22 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:34:54 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m5:40:04 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m6:02:08 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m6:02:09 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m6:02:23 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/shell/AppShell.tsx, /src/components/shell/LeftRail.tsx, /src/components/sidebar/SidebarPanel.tsx, /src/components/inspector/InspectorPanel.tsx, /src/components/toolbar/ToolbarView.tsx, /src/components/toolbar/ToolbarComment.tsx, /src/components/workspace/DocumentWorkspace.tsx[22m
+[2m6:02:37 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/shell/LeftRail.tsx[22m
+[2m6:02:45 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarFile.tsx[22m
+[2m6:02:53 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarOrganize.tsx[22m
+[2m6:03:09 am[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/toolbar/ToolbarView.tsx[22m

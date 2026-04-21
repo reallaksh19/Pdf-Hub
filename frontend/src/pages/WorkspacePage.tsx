@@ -1,5 +1,4 @@
 import React from 'react';
-import { PreviewModeBanner } from '@/components/preview-banner/PreviewModeBanner';
 import { AppShell } from '@/components/shell/AppShell';
 import { TopNav } from '@/components/shell/TopNav';
 import { ToolbarBand } from '@/components/shell/ToolbarBand';
@@ -11,17 +10,14 @@ import { StatusBar } from '@/components/shell/StatusBar';
 
 export const WorkspacePage: React.FC = () => {
   return (
-    <>
-      <PreviewModeBanner />
-      <AppShell
-        topnav={<TopNav />}
-        toolbar={<ToolbarBand />}
-        leftRail={<LeftRail />}
-        sidebar={<SidebarPanel />}
-        workspace={<DocumentWorkspace />}
-        inspector={<InspectorPanel />}
-        statusbar={<StatusBar />}
-      />
-    </>
+    <AppShell
+      topnav={<TopNav />}
+      toolbar={<ToolbarBand />}
+      leftRail={<LeftRail />}
+      sidebar={<SidebarPanel />}
+      workspace={<DocumentWorkspace />}
+      inspector={<InspectorPanel />}
+      statusbar={<StatusBar />}
+    />
   );
 };

@@ -1,6 +1,15 @@
 import Konva from 'konva';
-import { PdfAnnotation } from '@/core/annotations/types';
+import type { PdfAnnotation } from '@/core/annotations/types';
 import { deserializeKonvaNodeToAnnotation, serializeAnnotationToKonvaConfig } from './serializer';
+
+interface SerializedKonvaChild {
+  attrs: Record<string, unknown> & { id: string };
+  className: string;
+}
+
+interface SerializedKonvaLayer {
+  children: SerializedKonvaChild[];
+}
 
 export class KonvaAdapter {
   private stage: Konva.Stage | null = null;
@@ -22,10 +31,10 @@ export class KonvaAdapter {
     return this.stage;
   }
 
-  addObject(annotation: PdfAnnotation): Konva.Node | null {
+  addObject(annotation: PdfAnnotation): Konva.Shape | null {
     if (!this.layer) return null;
 
-    let node: Konva.Node;
+    let node: Konva.Shape;
     const config = serializeAnnotationToKonvaConfig(annotation);
 
     // Choose correct Konva Node based on the annotation type
@@ -68,8 +77,8 @@ export class KonvaAdapter {
     if (!this.layer) return [];
 
     // Konva.Layer().toJSON() provides children
-    const layerJSON = JSON.parse(this.layer.toJSON());
-    const annotations: PdfAnnotation[] = layerJSON.children.map((child: any) => {
+    const layerJSON = JSON.parse(this.layer.toJSON()) as SerializedKonvaLayer;
+    const annotations: PdfAnnotation[] = layerJSON.children.map((child) => {
       const { attrs, className } = child;
       const baseObj = deserializeKonvaNodeToAnnotation(attrs, className);
       return {

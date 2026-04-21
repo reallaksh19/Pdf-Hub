@@ -1,9 +1,17 @@
-import { PdfAnnotation, AnnotationType } from '@/core/annotations/types';
+import type { PdfAnnotation, AnnotationType } from '@/core/annotations/types';
 
 /**
  * Bidirectional serialization between Konva format and domain PdfAnnotation format.
  */
-export const deserializeKonvaNodeToAnnotation = (nodeAttrs: any, className: string): Omit<PdfAnnotation, 'id' | 'pageNumber' | 'createdAt' | 'updatedAt'> => {
+type KonvaNodeAttributes = Record<string, unknown> & {
+  name?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+};
+
+export const deserializeKonvaNodeToAnnotation = (nodeAttrs: KonvaNodeAttributes, className: string): Omit<PdfAnnotation, 'id' | 'pageNumber' | 'createdAt' | 'updatedAt'> => {
   let type: AnnotationType = 'shape';
   if (className === 'Text') type = 'textbox';
   if (className === 'Line') type = 'freehand';

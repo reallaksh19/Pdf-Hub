@@ -1,0 +1,1125 @@
+[2m4:23:12 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mNotReadableError[22m: The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.
+[39m
+[2m4:23:30 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mNotReadableError[22m: The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.
+[39m
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:41 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:45 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:46 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:33:47 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Cannot use the same canvas during multiple render() operations. Use different canvas or ensure previous operations were cancelled or completed.
+[39m > InternalRenderTask.initializeGraphics ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:16336:14
+ > ../node_modules/.pnpm/pdfjs-dist@5.6.205/node_modules/pdfjs-dist/build/pdf.mjs:15228:25
+
+[2m4:34:49 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mAbortError[22m: Failed to execute 'showOpenFilePicker' on 'Window': The user aborted a request.
+[39m
+[2m4:38:44 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:38:52 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:38:57 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:38:58 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:39:00 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:39:07 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:41:59 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:32 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:36 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:36 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:38 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:40 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:42 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:44:43 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m4:45:12 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mAbortError[22m: Failed to execute 'showSaveFilePicker' on 'Window': The user aborted a request.
+[39m
+[2m4:45:51 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mAbortError[22m: Failed to execute 'showOpenFilePicker' on 'Window': The user aborted a request.
+[39m
+[2m4:47:55 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mAbortError[22m: Failed to execute 'showOpenFilePicker' on 'Window': The user aborted a request.
+[39m
+[2m4:48:18 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mAbortError[22m: Failed to execute 'showOpenFilePicker' on 'Window': The user aborted a request.
+[39m
+[2m4:58:01 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../@vite/client:516:55
+
+[2m5:00:07 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/workspace/DocumentWorkspace.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m5:04:18 am[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: PageSurface is not defined
+[39m > src/components/workspace/DocumentWorkspace.tsx:182:13
+    180 |            const pageNumber = index + 1;
+    181 |            return (
+    182 |              <PageSurface
+        |               ^
+    183 |                key={pageNumber}
+    184 |                doc={pdfDoc}
+ > DocumentWorkspace src/components/workspace/DocumentWorkspace.tsx:179:15
+ > Object.react_stack_bottom_frame ../node_modules/.pnpm/react-dom@19.2.5_react@19.2.5/node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks ../node_modules/.pnpm/react-dom@19.2.5_react@19.2.5/node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent ../node_modules/.pnpm/react-dom@19.2.5_react@19.2.5/node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork ../node_modules/.pnpm/react-dom@19.2.5_react@19.2.5/node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV ../node_modules/.pnpm/react-dom@19.2.5_react@19.2.5/node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork ../node_modules/.pnpm/react-dom@19.2.5_react@19.2.5/node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync ../node_modules/.pnpm/react-dom@19.2.5_react@19.2.5/node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+
+[2m5:04:18 am[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <DocumentWorkspace> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+

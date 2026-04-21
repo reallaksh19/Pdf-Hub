@@ -1,45 +1,141 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '@/core/session/store';
+import { useAnnotationStore } from '@/core/annotations/store';
 
 export const useKeyboardShortcuts = () => {
   const navigate = useNavigate();
-  const { setZoom } = useSessionStore();
+  const { setZoom, setViewMode, setPage, viewState, pageCount } = useSessionStore();
+  const {
+    copySelection,
+    pasteClipboard,
+    duplicateSelection,
+    deleteSelection,
+    clearSelection,
+    undo,
+    redo,
+  } = useAnnotationStore();
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTypingTarget =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable;
+
       const zoomSteps = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 
-      // Ctrl+Shift+D or Cmd+Shift+D -> /debug
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
-        e.preventDefault();
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'd') {
+        event.preventDefault();
         navigate('/debug');
+        return;
       }
 
-      // Ctrl+ or Cmd+ -> Zoom In
-      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
-        e.preventDefault();
-        const currentZoom = useSessionStore.getState().viewState.zoom;
-        const nextZoom = zoomSteps.find(step => step > currentZoom) || 400;
-        setZoom(nextZoom);
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        undo();
+        return;
       }
 
-      // Ctrl- or Cmd- -> Zoom Out
-      if ((e.ctrlKey || e.metaKey) && e.key === '-') {
-        e.preventDefault();
-        const currentZoom = useSessionStore.getState().viewState.zoom;
-        const nextZoom = zoomSteps.slice().reverse().find(step => step < currentZoom) || 25;
-        setZoom(nextZoom);
+      if (
+        ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'z') ||
+        ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'y')
+      ) {
+        event.preventDefault();
+        redo();
+        return;
       }
-      
-      // Ctrl+0 or Cmd+0 -> Zoom Reset
-      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
-        e.preventDefault();
-        setZoom(100);
+
+      if ((event.ctrlKey || event.metaKey) && (event.key === '=' || event.key === '+')) {
+        event.preventDefault();
+        const nextZoom = zoomSteps.find((step) => step > useSessionStore.getState().viewState.zoom) || 400;
+        setZoom(nextZoom);
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key === '-') {
+        event.preventDefault();
+        const currentZoom = useSessionStore.getState().viewState.zoom;
+        const nextZoom = zoomSteps.slice().reverse().find((step) => step < currentZoom) || 25;
+        setZoom(nextZoom);
+        return;
+      }
+
+      if (!isTypingTarget && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+        event.preventDefault();
+        copySelection();
+        return;
+      }
+
+      if (!isTypingTarget && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+        event.preventDefault();
+        pasteClipboard(useSessionStore.getState().viewState.currentPage);
+        return;
+      }
+
+      if (!isTypingTarget && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
+        event.preventDefault();
+        duplicateSelection();
+        return;
+      }
+
+      if (!isTypingTarget && (event.key === 'Delete' || event.key === 'Backspace')) {
+        event.preventDefault();
+        deleteSelection();
+        return;
+      }
+
+      if (!isTypingTarget && event.key === 'Escape') {
+        clearSelection();
+        return;
+      }
+
+      if (!isTypingTarget && event.altKey && event.key === '1') {
+        event.preventDefault();
+        setViewMode('continuous');
+        return;
+      }
+
+      if (!isTypingTarget && event.altKey && event.key === '2') {
+        event.preventDefault();
+        setViewMode('single');
+        return;
+      }
+
+      if (!isTypingTarget && event.altKey && event.key === '3') {
+        event.preventDefault();
+        setViewMode('two-page');
+        return;
+      }
+
+      if (!isTypingTarget && event.key === 'ArrowRight') {
+        event.preventDefault();
+        setPage(Math.min(pageCount, viewState.currentPage + 1));
+        return;
+      }
+
+      if (!isTypingTarget && event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setPage(Math.max(1, viewState.currentPage - 1));
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate, setZoom]);
+  }, [
+    navigate,
+    setZoom,
+    setViewMode,
+    setPage,
+    viewState.currentPage,
+    pageCount,
+    copySelection,
+    pasteClipboard,
+    duplicateSelection,
+    deleteSelection,
+    clearSelection,
+    undo,
+    redo,
+  ]);
 };

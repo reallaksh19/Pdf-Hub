@@ -1,17 +1,28 @@
 import React from 'react';
-import { Layers, Bookmark, MessageSquare, Search, FileText } from 'lucide-react';
+import {
+  Bookmark,
+  Layers,
+  MessageSquare,
+  Search,
+  Sparkles,
+} from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useEditorStore } from '@/core/editor/store';
+import type { SidebarTab } from '@/core/editor/types';
 
 export const LeftRail: React.FC = () => {
   const { sidebarTab, setSidebarTab } = useEditorStore();
 
-  const tabs = [
+  const tabs: Array<{
+    id: SidebarTab;
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+  }> = [
     { id: 'thumbnails', icon: Layers, label: 'Pages' },
     { id: 'bookmarks', icon: Bookmark, label: 'Bookmarks' },
     { id: 'comments', icon: MessageSquare, label: 'Comments' },
     { id: 'search', icon: Search, label: 'Search' },
-    { id: 'ocr-jobs', icon: FileText, label: 'OCR Jobs' },
+    { id: 'macros', icon: Sparkles, label: 'Macros' },
   ];
 
   return (
@@ -19,14 +30,14 @@ export const LeftRail: React.FC = () => {
       {tabs.map((tab) => {
         const isActive = sidebarTab === tab.id;
         const Icon = tab.icon;
-        
+
         return (
           <Tooltip key={tab.id} content={tab.label} position="right">
             <button
               onClick={() => setSidebarTab(tab.id)}
               className={`relative p-2 rounded-md transition-colors ${
-                isActive 
-                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
+                isActive
+                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                   : 'text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800'
               }`}
             >
