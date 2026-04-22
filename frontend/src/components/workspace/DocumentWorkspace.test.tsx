@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DocumentWorkspace } from './DocumentWorkspace';
@@ -7,11 +6,13 @@ import { useEditorStore } from '@/core/editor/store';
 
 // Mock ResizeObserver
 class ResizeObserverMock {
+  constructor(_callback: ResizeObserverCallback) {}
   observe() {}
   unobserve() {}
   disconnect() {}
 }
-global.ResizeObserver = ResizeObserverMock as any;
+(globalThis as unknown as { ResizeObserver: typeof ResizeObserver }).ResizeObserver =
+  ResizeObserverMock as unknown as typeof ResizeObserver;
 
 // Mock dependencies
 vi.mock('@/core/annotations/persistence', () => ({

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { DocumentHistory, Transaction } from './types';
+import type { DocumentHistory, Transaction } from './types';
 
 interface HistoryActions {
   push: (transaction: Transaction) => void;

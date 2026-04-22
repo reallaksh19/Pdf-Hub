@@ -125,7 +125,7 @@ const ThumbnailSidebar: React.FC = () => {
       {loading && <div className="text-sm text-slate-500 shrink-0 mb-3">Generating thumbnails...</div>}
 
       <div className="flex-1 overflow-y-auto">
-        <VList data={thumbs} overscan={2}>
+        <VList data={thumbs}>
           {(thumb) => {
             const active = thumb.pageNumber === viewState.currentPage;
             const selected = selectedPages.includes(thumb.pageNumber);

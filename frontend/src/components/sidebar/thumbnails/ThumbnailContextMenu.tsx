@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { dispatchDocumentCommand } from '@/core/commands/dispatch';
+import { dispatchCommand } from '@/core/commands/dispatch';
 import type { DocumentCommand } from '@/core/commands/types';
+import { useSessionStore } from '@/core/session/store';
 
 interface ThumbnailContextMenuProps {
   x: number;
@@ -18,7 +19,9 @@ export const ThumbnailContextMenu: React.FC<ThumbnailContextMenuProps> = ({
   onClose,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const { workingBytes } = useSessionStore();
   const targetPages = selectedPages.includes(page) ? selectedPages : [page];
+  const pageIndices = targetPages.map((value) => value - 1);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,8 +45,10 @@ export const ThumbnailContextMenu: React.FC<ThumbnailContextMenuProps> = ({
   }, [onClose]);
 
   const handleCommand = async (command: DocumentCommand) => {
-    await dispatchDocumentCommand({
-      source: 'thumbnail-context',
+    if (!workingBytes) return;
+    await dispatchCommand({
+      source: 'thumbnail-menu',
+      workingBytes,
       command,
     });
     onClose();
@@ -65,65 +70,58 @@ export const ThumbnailContextMenu: React.FC<ThumbnailContextMenuProps> = ({
     >
       <button
         className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'rotate-pages', pages: targetPages, degrees: 90 })}
+        onClick={() => handleCommand({ type: 'ROTATE_PAGES', pageIndices, angle: 90 })}
       >
         Rotate
       </button>
       <button
         className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'extract-pages', pages: targetPages })}
+        onClick={() => handleCommand({ type: 'EXTRACT_PAGES', pageIndices })}
       >
         Extract
       </button>
       <button
         className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'split-pages', pages: targetPages })}
+        onClick={() => handleCommand({ type: 'SPLIT_PAGES', pageIndices })}
       >
         Split
       </button>
       <button
         className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'duplicate-pages', pages: targetPages })}
+        onClick={() => handleCommand({ type: 'DUPLICATE_PAGES', pageIndices })}
       >
         Duplicate
       </button>
       <button
         className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-red-600 dark:text-red-400"
-        onClick={() => handleCommand({ type: 'delete-pages', pages: targetPages })}
+        onClick={() => handleCommand({ type: 'DELETE_PAGES', pageIndices })}
       >
         Delete
       </button>
       <div className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
       <button
         className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'insert-blank-page', atIndex: targetPages[0] - 1, size: { width: 595, height: 842 } })}
+        onClick={() =>
+          handleCommand({
+            type: 'INSERT_BLANK_PAGE',
+            atIndex: targetPages[0] - 1,
+            size: { width: 595, height: 842 },
+          })
+        }
       >
         Insert blank before
       </button>
       <button
         className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'insert-blank-page', atIndex: targetPages[targetPages.length - 1] })}
+        onClick={() =>
+          handleCommand({
+            type: 'INSERT_BLANK_PAGE',
+            atIndex: targetPages[targetPages.length - 1],
+            size: { width: 595, height: 842 },
+          })
+        }
       >
         Insert blank after
-      </button>
-      <button
-        className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'replace-page', pages: targetPages })}
-      >
-        Replace page
-      </button>
-      <div className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
-      <button
-        className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'add-page-numbers', pages: targetPages })}
-      >
-        Add page numbers
-      </button>
-      <button
-        className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-        onClick={() => handleCommand({ type: 'add-header-footer', pages: targetPages })}
-      >
-        Add header/footer
       </button>
     </div>
   );

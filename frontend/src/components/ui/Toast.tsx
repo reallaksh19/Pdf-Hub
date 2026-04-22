@@ -1,5 +1,6 @@
 import React from 'react';
-import { useToastStore, Toast as ToastType } from '@/core/toast/store';
+import { useToastStore } from '@/core/toast/store';
+import type { Toast as ToastType } from '@/core/toast/store';
 import { X, CheckCircle, AlertCircle, Info, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 

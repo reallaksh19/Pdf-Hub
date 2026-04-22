@@ -1,4 +1,4 @@
-import { DocumentCommand } from '../commands/types';
+import type { DocumentCommand } from '../commands/types';
 
 export interface HistoryState {
   bytes: Uint8Array;

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { CommandPayload, CommandResult } from './types';
+import type { CommandPayload, CommandResult } from './types';
 import { useSessionStore } from '../session/store';
 import { useHistoryStore } from '../document-history/store';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';

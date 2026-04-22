@@ -2,8 +2,9 @@ import React from 'react';
 import { RotateCw, Scissors, Trash2, CopyPlus, Split } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { dispatchDocumentCommand } from '@/core/commands/dispatch';
+import { dispatchCommand } from '@/core/commands/dispatch';
 import type { DocumentCommand } from '@/core/commands/types';
+import { useSessionStore } from '@/core/session/store';
 
 interface ThumbnailActionStripProps {
   selectedPages: number[];
@@ -15,10 +16,14 @@ export const ThumbnailActionStrip: React.FC<ThumbnailActionStripProps> = ({
   currentPage,
 }) => {
   const targetPages = selectedPages.length > 0 ? selectedPages : [currentPage];
+  const { workingBytes } = useSessionStore();
+  const pageIndices = targetPages.map((page) => page - 1);
 
   const handleCommand = (command: DocumentCommand) => {
-    void dispatchDocumentCommand({
-      source: 'thumbnail-action-strip',
+    if (!workingBytes) return;
+    void dispatchCommand({
+      source: 'thumbnail-menu',
+      workingBytes,
       command,
     });
   };
@@ -33,7 +38,7 @@ export const ThumbnailActionStrip: React.FC<ThumbnailActionStripProps> = ({
           variant="ghost"
           size="icon"
           className="h-7 w-7"
-          onClick={() => handleCommand({ type: 'rotate-pages', pages: targetPages, degrees: 90 })}
+          onClick={() => handleCommand({ type: 'ROTATE_PAGES', pageIndices, angle: 90 })}
         >
           <RotateCw className="w-3.5 h-3.5" />
         </Button>
@@ -43,7 +48,7 @@ export const ThumbnailActionStrip: React.FC<ThumbnailActionStripProps> = ({
           variant="ghost"
           size="icon"
           className="h-7 w-7"
-          onClick={() => handleCommand({ type: 'extract-pages', pages: targetPages })}
+          onClick={() => handleCommand({ type: 'EXTRACT_PAGES', pageIndices })}
         >
           <Scissors className="w-3.5 h-3.5" />
         </Button>
@@ -53,7 +58,7 @@ export const ThumbnailActionStrip: React.FC<ThumbnailActionStripProps> = ({
           variant="ghost"
           size="icon"
           className="h-7 w-7"
-          onClick={() => handleCommand({ type: 'split-pages', pages: targetPages })}
+          onClick={() => handleCommand({ type: 'SPLIT_PAGES', pageIndices })}
         >
           <Split className="w-3.5 h-3.5" />
         </Button>
@@ -63,7 +68,7 @@ export const ThumbnailActionStrip: React.FC<ThumbnailActionStripProps> = ({
           variant="ghost"
           size="icon"
           className="h-7 w-7"
-          onClick={() => handleCommand({ type: 'duplicate-pages', pages: targetPages })}
+          onClick={() => handleCommand({ type: 'DUPLICATE_PAGES', pageIndices })}
         >
           <CopyPlus className="w-3.5 h-3.5" />
         </Button>
@@ -73,7 +78,7 @@ export const ThumbnailActionStrip: React.FC<ThumbnailActionStripProps> = ({
           variant="ghost"
           size="icon"
           className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-          onClick={() => handleCommand({ type: 'delete-pages', pages: targetPages })}
+          onClick={() => handleCommand({ type: 'DELETE_PAGES', pageIndices })}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </Button>
