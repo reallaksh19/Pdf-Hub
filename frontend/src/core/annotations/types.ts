@@ -2,6 +2,7 @@
   | 'textbox'
   | 'highlight'
   | 'underline'
+  | 'strikeout'
   | 'shape'
   | 'freehand'
   | 'stamp'
