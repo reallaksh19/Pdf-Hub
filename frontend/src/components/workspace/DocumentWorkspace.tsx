@@ -438,6 +438,16 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const pageRef = React.useRef<HTMLDivElement | null>(null);
 
+  const isSelectTool = activeTool === 'select';
+  const isTextMarkTool = activeTool === 'highlight' || activeTool === 'underline' || activeTool === 'strikeout';
+  const isNoteTool = activeTool === 'comment' || activeTool === 'callout';
+  const isPlacementOnlyTool =
+    activeTool === 'textbox' ||
+    activeTool === 'shape' ||
+    activeTool === 'line' ||
+    activeTool === 'arrow' ||
+    activeTool === 'stamp';
+
   const [size, setSize] = React.useState({ width: 800, height: 1000 });
   const [textItems, setTextItems] = React.useState<TextLayerItem[]>([]);
   const [draftRects, setDraftRects] = React.useState<Record<string, Rect>>({});
@@ -790,18 +800,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   };
 
   const handleTextSelectionMouseUp = () => {
-    if (
-      activeTool !== 'select' &&
-      activeTool !== 'highlight' &&
-      activeTool !== 'underline' &&
-      activeTool !== 'strikeout' &&
-      activeTool !== 'comment' &&
-      activeTool !== 'callout' &&
-      activeTool !== 'sticky-note'
-    ) {
-      return;
-    }
-    if (!pageRef.current) return;
+    if (!(isSelectTool || isTextMarkTool || isNoteTool) || !pageRef.current) return;
 
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) {
@@ -826,74 +825,38 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       return;
     }
 
-    if (
-      activeTool === 'highlight' ||
-      activeTool === 'underline' ||
-      activeTool === 'strikeout'
-    ) {
-      const items = rects.map((rect) =>
-        buildTextMarkAnnotation(pageNumber, rect, activeTool),
-      );
-      onCreateManyAnnotations(items);
-      clearTextSelectionDraft();
-      return;
-    }
-
-    if (
-      activeTool === 'comment' ||
-      activeTool === 'callout' ||
-      activeTool === 'sticky-note'
-    ) {
-      const unionRect = unionRects(rects);
-      const noteAnnotation = (() => {
-        if (activeTool === 'sticky-note') {
-          const base = buildAnnotation(
-            'sticky-note',
-            pageNumber,
-            unionRect.x,
-            unionRect.y,
-          );
-          return {
-            ...base,
-            data: {
-              ...base.data,
-              text,
-            },
-          };
-        }
-        if (activeTool === 'comment') {
-          const base = buildAnnotation(
-            'comment',
-            pageNumber,
-            unionRect.x,
-            unionRect.y,
-          );
-          return {
-            ...base,
-            data: {
-              ...base.data,
-              text,
-            },
-          };
-        }
-        return buildCalloutFromSelection(
-          pageNumber,
-          unionRect,
-          text,
-          pageWidth,
-          pageHeight,
-        );
-      })();
-      onCreateAnnotation(noteAnnotation);
-      clearTextSelectionDraft();
-      return;
-    }
-
-    setTextSelectionDraft({
+    const draft = {
       text,
       rects,
       unionRect: unionRects(rects),
-    });
+    };
+
+    if (isTextMarkTool || isNoteTool) {
+      if (activeTool === 'highlight') {
+        const items = draft.rects.map((rect) => buildHighlightAnnotation(pageNumber, rect));
+        onCreateManyAnnotations(items);
+      } else if (activeTool === 'underline') {
+        const items = draft.rects.map((rect) => buildUnderlineAnnotation(pageNumber, rect));
+        onCreateManyAnnotations(items);
+      } else if (activeTool === 'strikeout') {
+        const items = draft.rects.map((rect) => buildStrikeoutAnnotation(pageNumber, rect));
+        onCreateManyAnnotations(items);
+      } else if (activeTool === 'comment' || activeTool === 'callout') {
+        const item = buildCalloutFromSelection(
+          pageNumber,
+          draft.unionRect,
+          draft.text,
+          pageWidth,
+          pageHeight,
+        );
+        onCreateAnnotation(item);
+      }
+
+      clearTextSelectionDraft();
+      useEditorStore.getState().setActiveTool('select');
+    } else {
+      setTextSelectionDraft(draft);
+    }
   };
 
   const createHighlightsFromSelection = () => {
@@ -905,7 +868,25 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     clearTextSelectionDraft();
   };
 
-  const createNoteFromSelection = () => {
+  const createUnderlineFromSelection = () => {
+    if (!textSelectionDraft) return;
+    const items = textSelectionDraft.rects.map((rect) =>
+      buildUnderlineAnnotation(pageNumber, rect),
+    );
+    onCreateManyAnnotations(items);
+    clearTextSelectionDraft();
+  };
+
+  const createStrikeoutFromSelection = () => {
+    if (!textSelectionDraft) return;
+    const items = textSelectionDraft.rects.map((rect) =>
+      buildStrikeoutAnnotation(pageNumber, rect),
+    );
+    onCreateManyAnnotations(items);
+    clearTextSelectionDraft();
+  };
+
+  const createNoteFromSelection = (type: 'comment' | 'callout' = 'comment') => {
     if (!textSelectionDraft) return;
     const item = buildCalloutFromSelection(
       pageNumber,
@@ -914,6 +895,12 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       pageWidth,
       pageHeight,
     );
+    item.type = type;
+    if (type === 'comment') {
+      item.data.backgroundColor = '#fff7cc';
+      item.data.borderColor = '#d4b106';
+      item.data.title = 'Note';
+    }
     onCreateAnnotation(item);
     clearTextSelectionDraft();
   };
@@ -1057,32 +1044,52 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
             />
           ))}
 
-          <div
-            className="absolute z-30 flex items-center gap-2 rounded-lg bg-slate-900 text-white px-2 py-1 shadow-lg"
-            style={{
-              left: Math.max(6, textSelectionDraft.unionRect.x * scale),
-              top: Math.max(6, textSelectionDraft.unionRect.y * scale - 34),
-            }}
-          >
-            <button
-              className="text-xs hover:text-yellow-300"
-              onClick={createHighlightsFromSelection}
+          {isSelectTool && (
+            <div
+              className="absolute z-30 flex items-center gap-2 rounded-lg bg-slate-900 text-white px-2 py-1 shadow-lg"
+              style={{
+                left: Math.max(6, textSelectionDraft.unionRect.x * scale),
+                top: Math.max(6, textSelectionDraft.unionRect.y * scale - 34),
+              }}
             >
-              Highlight
-            </button>
-            <button
-              className="text-xs hover:text-blue-300"
-              onClick={createNoteFromSelection}
-            >
-              Note
-            </button>
-            <button
-              className="text-xs opacity-70 hover:opacity-100"
-              onClick={clearTextSelectionDraft}
-            >
-              ×
-            </button>
-          </div>
+              <button
+                className="text-xs hover:text-yellow-300"
+                onClick={createHighlightsFromSelection}
+              >
+                Highlight
+              </button>
+              <button
+                className="text-xs hover:text-red-300"
+                onClick={createUnderlineFromSelection}
+              >
+                Underline
+              </button>
+              <button
+                className="text-xs hover:text-red-300"
+                onClick={createStrikeoutFromSelection}
+              >
+                Strikeout
+              </button>
+              <button
+                className="text-xs hover:text-blue-300"
+                onClick={() => createNoteFromSelection('comment')}
+              >
+                Note
+              </button>
+              <button
+                className="text-xs hover:text-blue-300"
+                onClick={() => createNoteFromSelection('callout')}
+              >
+                Callout
+              </button>
+              <button
+                className="text-xs opacity-70 hover:opacity-100"
+                onClick={clearTextSelectionDraft}
+              >
+                ×
+              </button>
+            </div>
+          )}
         </>
       )}
 
@@ -1090,7 +1097,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
         className={`absolute inset-0 ${
           activeTool !== 'select' ? 'cursor-crosshair' : ''
         }`}
-        style={{ pointerEvents: activeTool === 'select' ? 'none' : 'auto' }}
+        style={{ pointerEvents: isPlacementOnlyTool ? 'auto' : 'none' }}
         onClick={handleOverlayClick}
       >
         {pageAnnotations.map((annotation) => {
@@ -1844,25 +1851,30 @@ function buildHighlightAnnotation(pageNumber: number, rect: Rect): PdfAnnotation
   };
 }
 
-function buildTextMarkAnnotation(
-  pageNumber: number,
-  rect: Rect,
-  type: 'highlight' | 'underline' | 'strikeout',
-): PdfAnnotation {
-  if (type === 'highlight') {
-    return buildHighlightAnnotation(pageNumber, rect);
-  }
-
+function buildUnderlineAnnotation(pageNumber: number, rect: Rect): PdfAnnotation {
   const now = Date.now();
   return {
     id: uuidv4(),
-    type,
+    type: 'underline',
     pageNumber,
     rect,
     data: {
-      borderColor: type === 'underline' ? '#2563eb' : '#b91c1c',
-      borderWidth: 2,
-      opacity: 0.95,
+      borderColor: '#dc2626',
+    },
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function buildStrikeoutAnnotation(pageNumber: number, rect: Rect): PdfAnnotation {
+  const now = Date.now();
+  return {
+    id: uuidv4(),
+    type: 'strikeout',
+    pageNumber,
+    rect,
+    data: {
+      borderColor: '#dc2626',
     },
     createdAt: now,
     updatedAt: now,
@@ -2029,7 +2041,7 @@ function annotationVisualStyle(
       ? 2
       : 1;
 
-  return {
+  const style: React.CSSProperties = {
     backgroundColor,
     border: `${selected ? Math.max(borderWidth, 2) : borderWidth}px solid ${
       selected ? '#2563eb' : borderColor
@@ -2044,6 +2056,18 @@ function annotationVisualStyle(
     boxShadow: selected ? '0 0 0 2px rgba(37, 99, 235, 0.18)' : undefined,
     borderRadius: annotation.type === 'comment' ? 6 : 2,
   };
+
+  if (annotation.type === 'underline') {
+    style.border = 'none';
+    style.borderBottom = `2px solid ${borderColor}`;
+    style.boxShadow = selected ? '0 2px 0 0 rgba(37, 99, 235, 0.5)' : undefined;
+  } else if (annotation.type === 'strikeout') {
+    style.border = 'none';
+    style.backgroundImage = `linear-gradient(transparent 45%, ${borderColor} 45%, ${borderColor} 55%, transparent 55%)`;
+    style.boxShadow = selected ? '0 0 0 2px rgba(37, 99, 235, 0.18)' : undefined;
+  }
+
+  return style;
 }
 
 function autoSizeRectForText(text: string, fontSize: number, rect: Rect): Rect {
