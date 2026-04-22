@@ -10,6 +10,7 @@ import { useAnnotationStore } from '@/core/annotations/store';
 import type { PdfAnnotation, Rect, AnnotationType, Point2D } from '@/core/annotations/types';
 import { useEditorStore } from '@/core/editor/store';
 import { useSessionStore } from '@/core/session/store';
+import { useSearchStore } from '@/core/search/store';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 
@@ -447,6 +448,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     activeTool === 'line' ||
     activeTool === 'arrow' ||
     activeTool === 'stamp';
+  const { hits, activeHitId } = useSearchStore();
 
   const [size, setSize] = React.useState({ width: 800, height: 1000 });
   const [textItems, setTextItems] = React.useState<TextLayerItem[]>([]);
@@ -1009,6 +1011,25 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
         onMouseDown={startMarquee}
         onMouseUp={handleTextSelectionMouseUp}
       >
+        {hits
+          .filter((hit) => hit.pageNumber === pageNumber)
+          .map((hit) => {
+            const isActive = hit.id === activeHitId;
+            return (
+              <React.Fragment key={hit.id}>
+                {hit.rects.map((rect, idx) => (
+                  <ActiveHitHighlight
+                    key={`${hit.id}-${idx}`}
+                    rect={rect}
+                    scale={scale}
+                    isActive={isActive}
+                    isFirst={idx === 0}
+                  />
+                ))}
+              </React.Fragment>
+            );
+          })}
+
         {textItems.map((item) => (
           <span
             key={item.id}
