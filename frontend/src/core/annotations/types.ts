@@ -1,4 +1,6 @@
-﻿export type AnnotationType =
+import type { ReviewMetadata } from '../review/types';
+
+export type AnnotationType =
   | 'textbox'
   | 'highlight'
   | 'underline'
@@ -41,6 +43,7 @@ export interface AnnotationData extends Record<string, unknown> {
   text?: string;
   title?: string;
   content?: string;
+  review?: ReviewMetadata;
 
   backgroundColor?: string;
   borderColor?: string;

@@ -12,10 +12,13 @@ import {
   MoveRight,
   Minus,
   MessageCircle,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import { useSessionStore } from '@/core/session/store';
+import { useReviewStore } from '@/core/review/store';
 import type { ActiveTool } from '@/core/editor/types';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -40,6 +43,7 @@ export const ToolbarComment: React.FC = () => {
   } = useAnnotationStore();
 
   const { viewState } = useSessionStore();
+  const { hideResolved, setHideResolved } = useReviewStore();
   const hasSelection = selectedAnnotationIds.length > 0;
 
   const handleToolClick = (tool: Exclude<ActiveTool, 'select' | 'hand'>) => {
@@ -171,6 +175,14 @@ export const ToolbarComment: React.FC = () => {
       <Tooltip content="Redo">
         <Button variant="ghost" size="icon" onClick={redo} disabled={future.length === 0}>
           <Redo className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      <Tooltip content={hideResolved ? "Show Resolved" : "Hide Resolved"}>
+        <Button variant={hideResolved ? "secondary" : "ghost"} size="icon" onClick={() => setHideResolved(!hideResolved)}>
+          {hideResolved ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </Button>
       </Tooltip>
     </div>
