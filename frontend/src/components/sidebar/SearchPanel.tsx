@@ -4,6 +4,8 @@ import { useSearchStore } from '@/core/search/store';
 import { useSessionStore } from '@/core/session/store';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 import { Button } from '@/components/ui/Button';
+import { error as logError } from '@/core/logger/service';
+import { useToastStore } from '@/core/toast/store';
 
 export const SearchPanel: React.FC = () => {
   const { workingBytes, setPage } = useSessionStore();
@@ -18,8 +20,11 @@ export const SearchPanel: React.FC = () => {
     nextHit,
     prevHit,
     isSearching,
-    setIsSearching
+    setIsSearching,
+    error,
+    setError,
   } = useSearchStore();
+  const addToast = useToastStore((state) => state.addToast);
 
   const [localQuery, setLocalQuery] = useState(query);
 
@@ -40,12 +45,19 @@ export const SearchPanel: React.FC = () => {
     try {
       const results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
       setHits(results);
-    } catch {
-      // Ignore error
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      logError('pdf-renderer', 'Search failed in sidebar panel', { error: message });
+      addToast({
+        type: 'error',
+        title: 'Search Failed',
+        message,
+      });
     } finally {
       setIsSearching(false);
     }
-  }, [workingBytes, clearSearch, setIsSearching, setHits]);
+  }, [workingBytes, clearSearch, setIsSearching, setHits, setError, addToast]);
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalQuery(e.target.value);
@@ -125,6 +137,9 @@ export const SearchPanel: React.FC = () => {
 
         {!isSearching && query && hits.length === 0 && (
           <div className="text-sm text-slate-500 text-center py-4">No results found.</div>
+        )}
+        {!isSearching && error && (
+          <div className="text-sm text-red-600 dark:text-red-400 text-center py-4">{error}</div>
         )}
 
         {!isSearching && Object.entries(groupedHits).map(([pageStr, pageHits]) => {

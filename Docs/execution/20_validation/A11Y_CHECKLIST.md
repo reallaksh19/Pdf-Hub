@@ -2,6 +2,8 @@
 
 This checklist defines the core accessibility standards that must be met prior to release. Agent A8 will lead verification, but all agents must implement components complying with these rules.
 
+Status: Partial. Keyboard semantics are implemented for thumbnails/context menu, but full browser + assistive-tech verification is still required.
+
 ## Keyboard Navigation
 - [ ] All interactive elements (buttons, inputs, links, thumbnails) are accessible via the `Tab` key.
 - [ ] The focus order is logical and follows the visual layout of the page.

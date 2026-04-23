@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DocumentWorkspace } from './DocumentWorkspace';
@@ -6,7 +7,9 @@ import { useEditorStore } from '@/core/editor/store';
 
 // Mock ResizeObserver
 class ResizeObserverMock {
-  constructor(_callback: ResizeObserverCallback) {}
+  constructor(callback: ResizeObserverCallback) {
+    void callback;
+  }
   observe() {}
   unobserve() {}
   disconnect() {}
@@ -45,7 +48,7 @@ vi.mock('pdfjs-dist', () => ({
 
 // Mock virtua VList since JSDOM might not trigger virtual list intersections properly
 vi.mock('virtua', () => ({
-  VList: ({ children }: any) => <div data-testid="vlist">{children}</div>,
+  VList: ({ children }: { children: ReactNode }) => <div data-testid="vlist">{children}</div>,
 }));
 
 describe('DocumentWorkspace', () => {
@@ -78,7 +81,7 @@ describe('DocumentWorkspace', () => {
       fillRect: vi.fn(),
       fillStyle: '',
       setTransform: vi.fn(),
-    }) as any;
+    }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   });
 
   it('renders continuously', async () => {

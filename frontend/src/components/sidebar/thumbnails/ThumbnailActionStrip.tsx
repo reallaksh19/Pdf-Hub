@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCw, Scissors, Trash2, CopyPlus, Split } from 'lucide-react';
+import { RotateCw, Scissors, Trash2, CopyPlus, Split, Hash, Heading } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { dispatchCommand } from '@/core/commands/dispatch';
@@ -81,6 +81,58 @@ export const ThumbnailActionStrip: React.FC<ThumbnailActionStripProps> = ({
           onClick={() => handleCommand({ type: 'DELETE_PAGES', pageIndices })}
         >
           <Trash2 className="w-3.5 h-3.5" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Page numbers">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() =>
+            handleCommand({
+              type: 'ADD_HEADER_FOOTER_TEXT',
+              pageIndices,
+              options: {
+                zone: 'footer',
+                text: 'Page {page} of {pages}',
+                align: 'center',
+                marginX: 24,
+                marginY: 20,
+                fontSize: 10,
+                color: '#475569',
+                opacity: 0.9,
+                pageNumberToken: true,
+              },
+            })
+          }
+        >
+          <Hash className="w-3.5 h-3.5" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Header file name">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() =>
+            handleCommand({
+              type: 'ADD_HEADER_FOOTER_TEXT',
+              pageIndices,
+              options: {
+                zone: 'header',
+                text: '{file}',
+                align: 'right',
+                marginX: 24,
+                marginY: 18,
+                fontSize: 10,
+                color: '#334155',
+                opacity: 0.85,
+                fileNameToken: true,
+              },
+            })
+          }
+        >
+          <Heading className="w-3.5 h-3.5" />
         </Button>
       </Tooltip>
     </div>

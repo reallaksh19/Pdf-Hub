@@ -17,4 +17,5 @@ export interface SearchState {
   isSearching: boolean;
   hits: SearchHit[];
   activeHitId: string | null;
+  error: string | null;
 }

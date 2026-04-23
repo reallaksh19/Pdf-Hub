@@ -2,6 +2,7 @@ import React from 'react';
 import { UploadCloud, Lock } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { VList } from 'virtua';
 
 import { PdfRendererAdapter, type TextLayerItem } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 import { loadAnnotations, saveAnnotations } from '@/core/annotations/persistence';
@@ -10,6 +11,7 @@ import type { PdfAnnotation, Rect, AnnotationType, Point2D } from '@/core/annota
 import { useEditorStore } from '@/core/editor/store';
 import { useSessionStore } from '@/core/session/store';
 import { useReviewStore } from '@/core/review/store';
+import { useSearchStore } from '@/core/search/store';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 
@@ -64,6 +66,7 @@ export const DocumentWorkspace: React.FC = () => {
     documentKey,
     viewState,
     setPage,
+    setZoom,
     openDocument,
   } = useSessionStore();
 
@@ -73,6 +76,9 @@ export const DocumentWorkspace: React.FC = () => {
   const [pdfDoc, setPdfDoc] = React.useState<PDFDocumentProxy | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [isPanning, setIsPanning] = React.useState(false);
+  const lastPanPos = React.useRef<{ x: number; y: number } | null>(null);
 
   const handleBrowse = async () => {
     try {
@@ -167,6 +173,47 @@ export const DocumentWorkspace: React.FC = () => {
     };
   }, [annotations, documentKey]);
 
+  React.useLayoutEffect(() => {
+    if (!pdfDoc || !containerRef.current || viewState.fitMode === 'manual') return;
+
+    let resizeTimer: number;
+
+    const handleResize = async () => {
+      if (!pdfDoc || !containerRef.current) return;
+      try {
+        const page = await pdfDoc.getPage(viewState.currentPage);
+        const viewport = page.getViewport({ scale: 1 });
+        const containerWidth = containerRef.current.clientWidth - 32;
+        const containerHeight = containerRef.current.clientHeight - 32;
+
+        if (viewState.fitMode === 'width') {
+          const newZoom = (containerWidth / viewport.width) * 100;
+          setZoom(Math.floor(newZoom));
+        } else if (viewState.fitMode === 'page') {
+          const scaleWidth = containerWidth / viewport.width;
+          const scaleHeight = containerHeight / viewport.height;
+          const newZoom = Math.min(scaleWidth, scaleHeight) * 100;
+          setZoom(Math.floor(newZoom));
+        }
+      } catch {
+        // Ignore viewport calculation failures during transitional renders.
+      }
+    };
+
+    const observer = new ResizeObserver(() => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => void handleResize(), 100);
+    });
+
+    observer.observe(containerRef.current);
+    void handleResize();
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(resizeTimer);
+    };
+  }, [pdfDoc, viewState.fitMode, viewState.currentPage, setZoom]);
+
   if (!workingBytes) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-slate-100 dark:bg-slate-950/50">
@@ -201,60 +248,147 @@ export const DocumentWorkspace: React.FC = () => {
 
   if (!pdfDoc) return null;
 
+  const renderPage = (index: number) => {
+    const pageNumber = index + 1;
+    return (
+      <div key={pageNumber} className="flex justify-center mb-8">
+        <PageSurface
+          doc={pdfDoc}
+          pageNumber={pageNumber}
+          scale={viewState.zoom / 100}
+          activeTool={activeTool}
+          pageAnnotations={annotations
+            .filter((annotation) => annotation.pageNumber === pageNumber)
+            .filter((annotation) => !hideResolved || annotation.data.review?.status !== 'resolved')
+            .slice()
+            .sort((a, b) => readZIndex(a) - readZIndex(b))}
+          selectedAnnotationIds={selectedAnnotationIds}
+          onActivate={() => setPage(pageNumber)}
+          onCreateAnnotation={(annotation) => {
+            addAnnotation(annotation);
+            setSelection([annotation.id]);
+            setActiveAnnotationId(annotation.id);
+          }}
+          onCreateManyAnnotations={(items) => {
+            items.forEach((item) => addAnnotation(item));
+            if (items.length > 0) {
+              const ids = items.map((item) => item.id);
+              setSelection(ids);
+              setActiveAnnotationId(ids[0] ?? null);
+            }
+          }}
+          onSetSingleSelection={(id) => {
+            setSelection([id]);
+            setActiveAnnotationId(id);
+          }}
+          onToggleSelection={(id) => {
+            toggleSelection(id);
+            setActiveAnnotationId(id);
+          }}
+          onSetSelection={(ids) => {
+            setSelection(ids);
+            setActiveAnnotationId(ids[0] ?? null);
+          }}
+          onClearSelection={clearSelection}
+          onCommitAnnotation={(id, patch) => {
+            updateAnnotation(id, patch);
+          }}
+          onCommitManyAnnotations={(updates) => {
+            updateManyAnnotations(updates);
+          }}
+        />
+      </div>
+    );
+  };
+
+  const renderSingle = () => (
+    <div className="flex flex-col items-center">
+      {renderPage(viewState.currentPage - 1)}
+    </div>
+  );
+
+  const renderTwoPage = () => {
+    const pages: React.ReactNode[] = [];
+    let i = 0;
+    while (i < pdfDoc.numPages) {
+      if (i === 0) {
+        pages.push(
+          <div key={`spread-${i}`} className="flex justify-center gap-8 mb-8 w-full">
+            <div className="flex-1 flex justify-end" />
+            <div className="flex-1 flex justify-start">{renderPage(i)}</div>
+          </div>,
+        );
+        i += 1;
+      } else {
+        const leftIndex = i;
+        const rightIndex = i + 1 < pdfDoc.numPages ? i + 1 : null;
+        pages.push(
+          <div key={`spread-${i}`} className="flex justify-center gap-8 mb-8 w-full max-w-[2000px]">
+            <div className="flex-1 flex justify-end">{renderPage(leftIndex)}</div>
+            <div className="flex-1 flex justify-start">
+              {rightIndex !== null ? renderPage(rightIndex) : null}
+            </div>
+          </div>,
+        );
+        i += 2;
+      }
+    }
+
+    const currentSpreadIndex =
+      viewState.currentPage === 1 ? 0 : Math.floor(viewState.currentPage / 2);
+
+    return <div className="flex flex-col items-center w-full">{pages[currentSpreadIndex]}</div>;
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (activeTool !== 'hand') return;
+    setIsPanning(true);
+    lastPanPos.current = { x: event.clientX, y: event.clientY };
+    if (containerRef.current) {
+      containerRef.current.setPointerCapture(event.pointerId);
+    }
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isPanning || activeTool !== 'hand' || !lastPanPos.current || !containerRef.current) return;
+    const dx = event.clientX - lastPanPos.current.x;
+    const dy = event.clientY - lastPanPos.current.y;
+    containerRef.current.scrollBy(-dx, -dy);
+    lastPanPos.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (activeTool !== 'hand') return;
+    setIsPanning(false);
+    lastPanPos.current = null;
+    if (containerRef.current && containerRef.current.hasPointerCapture(event.pointerId)) {
+      containerRef.current.releasePointerCapture(event.pointerId);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-slate-200 dark:bg-slate-950 overflow-auto">
+    <div
+      ref={containerRef}
+      className={`flex flex-col h-full bg-slate-200 dark:bg-slate-950 overflow-auto ${
+        activeTool === 'hand' ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''
+      }`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
       <div className="min-h-full flex flex-col items-center py-8">
-        {Array.from({ length: pdfDoc.numPages }, (_, index) => {
-          const pageNumber = index + 1;
-          return (
-            <PageSurface
-              key={pageNumber}
-              doc={pdfDoc}
-              pageNumber={pageNumber}
-              scale={viewState.zoom / 100}
-              activeTool={activeTool}
-              pageAnnotations={annotations
-                .filter((annotation) => annotation.pageNumber === pageNumber)
-                .filter((annotation) => !hideResolved || annotation.data.review?.status !== 'resolved')
-                .slice()
-                .sort((a, b) => readZIndex(a) - readZIndex(b))}
-              selectedAnnotationIds={selectedAnnotationIds}
-              onActivate={() => setPage(pageNumber)}
-              onCreateAnnotation={(annotation) => {
-                addAnnotation(annotation);
-                setSelection([annotation.id]);
-                setActiveAnnotationId(annotation.id);
-              }}
-              onCreateManyAnnotations={(items) => {
-                items.forEach((item) => addAnnotation(item));
-                if (items.length > 0) {
-                  const ids = items.map((item) => item.id);
-                  setSelection(ids);
-                  setActiveAnnotationId(ids[0] ?? null);
-                }
-              }}
-              onSetSingleSelection={(id) => {
-                setSelection([id]);
-                setActiveAnnotationId(id);
-              }}
-              onToggleSelection={(id) => {
-                toggleSelection(id);
-                setActiveAnnotationId(id);
-              }}
-              onSetSelection={(ids) => {
-                setSelection(ids);
-                setActiveAnnotationId(ids[0] ?? null);
-              }}
-              onClearSelection={clearSelection}
-              onCommitAnnotation={(id, patch) => {
-                updateAnnotation(id, patch);
-              }}
-              onCommitManyAnnotations={(updates) => {
-                updateManyAnnotations(updates);
-              }}
-            />
-          );
-        })}
+        {viewState.viewMode === 'continuous' ? (
+          <VList
+            style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
+          >
+            {Array.from({ length: pdfDoc.numPages }, (_, index) => renderPage(index))}
+          </VList>
+        ) : viewState.viewMode === 'single' ? (
+          renderSingle()
+        ) : (
+          renderTwoPage()
+        )}
       </div>
     </div>
   );
@@ -297,6 +431,17 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
 }) => {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const pageRef = React.useRef<HTMLDivElement | null>(null);
+  const { hits, activeHitId } = useSearchStore();
+  const isSelectTool = activeTool === 'select';
+  const isTextMarkTool =
+    activeTool === 'highlight' || activeTool === 'underline' || activeTool === 'strikeout';
+  const isNoteTool = activeTool === 'comment' || activeTool === 'callout';
+  const isPlacementOnlyTool =
+    activeTool === 'textbox' ||
+    activeTool === 'shape' ||
+    activeTool === 'line' ||
+    activeTool === 'arrow' ||
+    activeTool === 'stamp';
 
   const [size, setSize] = React.useState({ width: 800, height: 1000 });
   const [textItems, setTextItems] = React.useState<TextLayerItem[]>([]);
@@ -650,7 +795,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   };
 
   const handleTextSelectionMouseUp = () => {
-    if (activeTool !== 'select' || !pageRef.current) return;
+    if (!(isSelectTool || isTextMarkTool || isNoteTool) || !pageRef.current) return;
 
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) {
@@ -675,11 +820,44 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       return;
     }
 
-    setTextSelectionDraft({
+    const draft = {
       text,
       rects,
       unionRect: unionRects(rects),
-    });
+    };
+
+    if (isTextMarkTool || isNoteTool) {
+      if (activeTool === 'highlight') {
+        const items = draft.rects.map((rect) => buildHighlightAnnotation(pageNumber, rect));
+        onCreateManyAnnotations(items);
+      } else if (activeTool === 'underline') {
+        const items = draft.rects.map((rect) => buildUnderlineAnnotation(pageNumber, rect));
+        onCreateManyAnnotations(items);
+      } else if (activeTool === 'strikeout') {
+        const items = draft.rects.map((rect) => buildStrikeoutAnnotation(pageNumber, rect));
+        onCreateManyAnnotations(items);
+      } else if (activeTool === 'comment' || activeTool === 'callout') {
+        const item = buildCalloutFromSelection(
+          pageNumber,
+          draft.unionRect,
+          draft.text,
+          pageWidth,
+          pageHeight,
+        );
+        if (activeTool === 'comment') {
+          item.type = 'comment';
+          item.data.backgroundColor = '#fff7cc';
+          item.data.borderColor = '#d4b106';
+          item.data.title = 'Note';
+        }
+        onCreateAnnotation(item);
+      }
+
+      clearTextSelectionDraft();
+      useEditorStore.getState().setActiveTool('select');
+    } else {
+      setTextSelectionDraft(draft);
+    }
   };
 
   const createHighlightsFromSelection = () => {
@@ -691,7 +869,25 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     clearTextSelectionDraft();
   };
 
-  const createNoteFromSelection = () => {
+  const createUnderlineFromSelection = () => {
+    if (!textSelectionDraft) return;
+    const items = textSelectionDraft.rects.map((rect) =>
+      buildUnderlineAnnotation(pageNumber, rect),
+    );
+    onCreateManyAnnotations(items);
+    clearTextSelectionDraft();
+  };
+
+  const createStrikeoutFromSelection = () => {
+    if (!textSelectionDraft) return;
+    const items = textSelectionDraft.rects.map((rect) =>
+      buildStrikeoutAnnotation(pageNumber, rect),
+    );
+    onCreateManyAnnotations(items);
+    clearTextSelectionDraft();
+  };
+
+  const createNoteFromSelection = (type: 'comment' | 'callout' = 'comment') => {
     if (!textSelectionDraft) return;
     const item = buildCalloutFromSelection(
       pageNumber,
@@ -700,6 +896,12 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       pageWidth,
       pageHeight,
     );
+    if (type === 'comment') {
+      item.type = 'comment';
+      item.data.backgroundColor = '#fff7cc';
+      item.data.borderColor = '#d4b106';
+      item.data.title = 'Note';
+    }
     onCreateAnnotation(item);
     clearTextSelectionDraft();
   };
@@ -799,12 +1001,34 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       <div
         className="absolute inset-0"
         style={{
-          pointerEvents: activeTool === 'select' ? 'auto' : 'none',
-          userSelect: activeTool === 'select' ? 'text' : 'none',
+          pointerEvents: isSelectTool || isTextMarkTool || isNoteTool ? 'auto' : 'none',
+          userSelect: isSelectTool || isTextMarkTool || isNoteTool ? 'text' : 'none',
         }}
         onMouseDown={startMarquee}
         onMouseUp={handleTextSelectionMouseUp}
       >
+        {hits
+          .filter((hit) => hit.pageNumber === pageNumber)
+          .map((hit) =>
+            hit.rects.map((rect, index) => {
+              const isActive = hit.id === activeHitId;
+              return (
+                <div
+                  key={`hit-${hit.id}-${index}`}
+                  className={`absolute pointer-events-none ${
+                    isActive ? 'bg-orange-300/35 border border-orange-500/60' : 'bg-yellow-200/30 border border-yellow-400/35'
+                  }`}
+                  style={{
+                    left: rect.x * scale,
+                    top: rect.y * scale,
+                    width: rect.width * scale,
+                    height: rect.height * scale,
+                  }}
+                />
+              );
+            }),
+          )}
+
         {textItems.map((item) => (
           <span
             key={item.id}
@@ -840,32 +1064,52 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
             />
           ))}
 
-          <div
-            className="absolute z-30 flex items-center gap-2 rounded-lg bg-slate-900 text-white px-2 py-1 shadow-lg"
-            style={{
-              left: Math.max(6, textSelectionDraft.unionRect.x * scale),
-              top: Math.max(6, textSelectionDraft.unionRect.y * scale - 34),
-            }}
-          >
-            <button
-              className="text-xs hover:text-yellow-300"
-              onClick={createHighlightsFromSelection}
+          {isSelectTool && (
+            <div
+              className="absolute z-30 flex items-center gap-2 rounded-lg bg-slate-900 text-white px-2 py-1 shadow-lg"
+              style={{
+                left: Math.max(6, textSelectionDraft.unionRect.x * scale),
+                top: Math.max(6, textSelectionDraft.unionRect.y * scale - 34),
+              }}
             >
-              Highlight
-            </button>
-            <button
-              className="text-xs hover:text-blue-300"
-              onClick={createNoteFromSelection}
-            >
-              Note
-            </button>
-            <button
-              className="text-xs opacity-70 hover:opacity-100"
-              onClick={clearTextSelectionDraft}
-            >
-              ×
-            </button>
-          </div>
+              <button
+                className="text-xs hover:text-yellow-300"
+                onClick={createHighlightsFromSelection}
+              >
+                Highlight
+              </button>
+              <button
+                className="text-xs hover:text-red-300"
+                onClick={createUnderlineFromSelection}
+              >
+                Underline
+              </button>
+              <button
+                className="text-xs hover:text-red-300"
+                onClick={createStrikeoutFromSelection}
+              >
+                Strikeout
+              </button>
+              <button
+                className="text-xs hover:text-blue-300"
+                onClick={() => createNoteFromSelection('comment')}
+              >
+                Note
+              </button>
+              <button
+                className="text-xs hover:text-blue-300"
+                onClick={() => createNoteFromSelection('callout')}
+              >
+                Callout
+              </button>
+              <button
+                className="text-xs opacity-70 hover:opacity-100"
+                onClick={clearTextSelectionDraft}
+              >
+                x
+              </button>
+            </div>
+          )}
         </>
       )}
 
@@ -873,7 +1117,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
         className={`absolute inset-0 ${
           activeTool !== 'select' ? 'cursor-crosshair' : ''
         }`}
-        style={{ pointerEvents: activeTool === 'select' ? 'none' : 'auto' }}
+        style={{ pointerEvents: isPlacementOnlyTool ? 'auto' : 'none' }}
         onClick={handleOverlayClick}
       >
         {pageAnnotations.map((annotation) => {
@@ -1436,6 +1680,36 @@ function buildHighlightAnnotation(pageNumber: number, rect: Rect): PdfAnnotation
       backgroundColor: '#fde047',
       borderColor: '#facc15',
       opacity: 0.38,
+    },
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function buildUnderlineAnnotation(pageNumber: number, rect: Rect): PdfAnnotation {
+  const now = Date.now();
+  return {
+    id: uuidv4(),
+    type: 'underline',
+    pageNumber,
+    rect,
+    data: {
+      borderColor: '#dc2626',
+    },
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function buildStrikeoutAnnotation(pageNumber: number, rect: Rect): PdfAnnotation {
+  const now = Date.now();
+  return {
+    id: uuidv4(),
+    type: 'strikeout',
+    pageNumber,
+    rect,
+    data: {
+      borderColor: '#dc2626',
     },
     createdAt: now,
     updatedAt: now,

@@ -22,3 +22,9 @@ This matrix details the expected behavior of document mutations regarding the un
 ## Execution Constraints
 - All defined mutations must route through the A1 Command Dispatcher.
 - Direct mutation of the document state outside of a recognized command transaction is explicitly forbidden.
+
+## Automated Verification Snapshot (2026-04-22)
+- Command dispatch tests: pass
+- History store tests (`push`, `undo`, `redo`, `peekUndo`, `peekRedo`): pass
+- Keyboard undo/redo route through document history first: pass
+- Session replacement only from dispatcher/history transaction layer: pass

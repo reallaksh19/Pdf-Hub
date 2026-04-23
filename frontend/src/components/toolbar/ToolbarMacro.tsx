@@ -12,10 +12,12 @@ import { useSessionStore } from '@/core/session/store';
 import { BUILTIN_MACROS } from '@/core/macro/builtins';
 import { runMacroRecipeAgainstSession } from '@/core/macro/sessionRunner';
 import { error as logError } from '@/core/logger/service';
+import { useToastStore } from '@/core/toast/store';
 
 export const ToolbarMacro: React.FC = () => {
   const { setSidebarTab } = useEditorStore();
   const { workingBytes } = useSessionStore();
+  const addToast = useToastStore((state) => state.addToast);
   const [runningRecipeId, setRunningRecipeId] = React.useState<string | null>(null);
 
   const runRecipe = async (recipeId: keyof typeof BUILTIN_MACROS) => {
@@ -32,10 +34,21 @@ export const ToolbarMacro: React.FC = () => {
     try {
       await runMacroRecipeAgainstSession(recipe, { saveOutputs: false });
       setSidebarTab('macros');
+      addToast({
+        type: 'success',
+        title: 'Macro Complete',
+        message: `${recipe.name} executed successfully.`,
+      });
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       logError('macro', 'Quick macro run from ribbon failed', {
         recipeId: recipe.id,
-        error: String(err),
+        error: message,
+      });
+      addToast({
+        type: 'error',
+        title: 'Macro Failed',
+        message,
       });
     } finally {
       setRunningRecipeId(null);

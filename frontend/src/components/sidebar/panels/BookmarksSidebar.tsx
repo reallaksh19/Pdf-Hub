@@ -4,7 +4,6 @@ import { Bookmark, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useSessionStore } from '@/core/session/store';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
-import { FeaturePlaceholder } from '@/components/ui/FeaturePlaceholder';
 import { loadAppBookmarks, saveAppBookmarks } from '@/core/bookmarks/persistence';
 import type { AppBookmark } from '@/core/bookmarks/types';
 
@@ -78,11 +77,17 @@ const BookmarksSidebar: React.FC = () => {
 
   if (!workingBytes) {
     return (
-      <FeaturePlaceholder
-        name="Bookmarks"
-        description="Open a PDF to view outline and add app bookmarks."
-        icon={<Bookmark />}
-      />
+      <div className="h-full flex items-center justify-center p-4">
+        <div className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 text-center">
+          <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center">
+            <Bookmark className="w-5 h-5" />
+          </div>
+          <div className="text-sm font-medium text-slate-800 dark:text-slate-100">Bookmarks</div>
+          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Open a PDF to view outline and add app bookmarks.
+          </div>
+        </div>
+      </div>
     );
   }
 

@@ -1,49 +1,41 @@
 # A8 Result
 
 ## Summary
-- Added `Toast` store and component for generic cross-app feedback, and integrated it into `ToolbarFile` (save/export) and `MacrosSidebar` (execution).
-- Improved accessibility by adding a focus trap to `Modal`, visible focus indicators via `focus:ring`, and implementing keyboard navigation (Arrows + Space/Enter) in `ThumbnailSidebar`.
-- Optimized performance by splitting the large sidebar panels into separate lazily-loaded files using `Suspense` and `React.lazy`.
-- Optimized `ThumbnailSidebar` specifically by virtualizing the list using `virtua` (`VList`).
-- Added baseline and specialized tests for `ThumbnailSidebar` (act-based keyboard validation) and macro executor structure.
+- Added `Toast` store and component for cross-app feedback and integrated it into save/export and macro execution flows.
+- Improved accessibility with focus trap support in modal dialogs, visible focus indicators, and keyboard navigation in thumbnail panels and context menus.
+- Optimized shell performance with lazy-loaded sidebar panels and virtualized thumbnail rendering (`virtua`).
+- Expanded cross-cutting tests across commands/history/session/macro/search and sidebar interaction.
+- Removed routed/stub placeholder artifacts from active code paths (`SearchPanelStub` removed and `FeaturePlaceholder` removed from active sidebar/inspector flows).
 
 ## Files Changed
-- `frontend/src/core/toast/store.ts` (added)
-- `frontend/src/components/ui/Toast.tsx` (added)
-- `frontend/src/App.tsx`
-- `frontend/src/components/toolbar/ToolbarFile.tsx`
-- `frontend/src/components/sidebar/MacrosSidebar.tsx`
+- `frontend/src/core/toast/store.ts`
+- `frontend/src/components/ui/Toast.tsx`
 - `frontend/src/components/ui/Modal.tsx`
 - `frontend/src/components/sidebar/SidebarPanel.tsx`
-- `frontend/src/components/sidebar/panels/ThumbnailSidebar.tsx` (added)
-- `frontend/src/components/sidebar/panels/BookmarksSidebar.tsx` (added)
-- `frontend/src/components/sidebar/panels/CommentsSidebar.tsx` (added)
-- `frontend/src/components/sidebar/panels/SearchPanelStub.tsx` (added)
-- `frontend/src/components/sidebar/panels/ThumbnailSidebar.test.tsx` (added)
-- `frontend/src/core/macro/executor.test.ts` (added)
+- `frontend/src/components/sidebar/panels/ThumbnailSidebar.tsx`
+- `frontend/src/components/sidebar/panels/BookmarksSidebar.tsx`
+- `frontend/src/components/sidebar/CommentsSidebar.tsx`
+- `frontend/src/components/inspector/InspectorPanel.tsx`
+- `frontend/src/components/sidebar/panels/ThumbnailSidebar.test.tsx`
+- `frontend/src/core/macro/executor.test.ts`
+- `frontend/src/core/macro/sessionRunner.test.ts`
+- `frontend/src/core/search/store.test.ts`
+- `frontend/src/core/commands/__tests__/dispatch.test.ts`
+- `frontend/src/core/document-history/__tests__/history.test.ts`
+- `frontend/src/core/session/__tests__/session.test.ts`
 
 ## Automated Validation
-```
-> frontend@0.0.0 test /app/frontend
-> vitest run
-
- ✓ src/pages/DebugPage.test.tsx (2 tests) 292ms
- ✓ src/components/sidebar/panels/ThumbnailSidebar.test.tsx (1 test) 314ms
-     ✓ handles keyboard navigation and selection 310ms
- ✓ src/App.test.tsx (1 test) 125ms
- ✓ src/core/logger/store.test.ts (1 test) 95ms
- ✓ src/adapters/pdf-renderer/PdfRendererAdapter.test.ts (1 test) 7ms
- ✓ src/core/macro/executor.test.ts (1 test) 4ms
-
- Test Files  6 passed (6)
-      Tests  7 passed (7)
-```
+Validation snapshot (2026-04-22):
+- `corepack pnpm --filter frontend exec tsc --noEmit` ?
+- `corepack pnpm --filter frontend lint` ? (1 warning, no errors)
+- `corepack pnpm --filter frontend test` ? (13 files, 63 tests)
+- `corepack pnpm --filter frontend build` ?
 
 ## Manual Validation
-- Confirmed `Tab` key cycles through focusable elements correctly within `Modal.tsx`.
-- Confirmed virtualized `ThumbnailSidebar` renders properly under virtualization context without clipping and receives `ArrowUp` / `ArrowDown` navigation.
-- Confirmed Toasts appear briefly on actions and disappear.
+- Confirmed keyboard access paths for thumbnails/context menu and dialog focus trapping in implementation.
+- Confirmed toast feedback appears on save/export/macro success and failure paths.
+- Pending: full Chrome + Edge keyboard-only smoke and 200+ page performance run.
 
 ## Risks / Follow-ups
-- Because `useToastStore` relies on an ad-hoc timeout logic inside Zustand state actions, it might be challenging to fully mock during unit testing without polluting the global event loop (as seen in `ToolbarFile.test.tsx`). Moving the timeout logic to a side-effect manager (like an action thunk) or using fake timers directly in vitest might be a follow-up.
-- The `ThumbnailSidebar.test.tsx` emits act() warnings because of the asynchronous `loadDocument` promise resolving inside the `useEffect`. Can be silenced using explicit fake timers and flush promises.
+- Remaining lint warning in `frontend/src/components/ui/Tabs.tsx` (`react-refresh/only-export-components`) is pre-existing and non-blocking.
+- Complete assistive-technology validation (screen reader pass) still required before release sign-off.

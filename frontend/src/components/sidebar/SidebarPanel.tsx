@@ -6,8 +6,16 @@ import { Button } from '@/components/ui/Button';
 
 const ThumbnailSidebar = React.lazy(() => import('./panels/ThumbnailSidebar'));
 const BookmarksSidebar = React.lazy(() => import('./panels/BookmarksSidebar'));
-const CommentsSidebar = React.lazy(() => import('./panels/CommentsSidebar'));
-const SearchPanelStub = React.lazy(() => import('./panels/SearchPanelStub'));
+const CommentsSidebar = React.lazy(() =>
+  import('@/components/sidebar/CommentsSidebar').then((module) => ({
+    default: module.CommentsSidebar,
+  })),
+);
+const SearchPanel = React.lazy(() =>
+  import('@/components/sidebar/SearchPanel').then((module) => ({
+    default: module.SearchPanel,
+  })),
+);
 
 export const SidebarPanel: React.FC = () => {
   const { sidebarTab, leftPanelWidth, setLeftPanelWidth } = useEditorStore();
@@ -79,7 +87,7 @@ export const SidebarPanel: React.FC = () => {
           {sidebarTab === 'thumbnails' && <ThumbnailSidebar />}
           {sidebarTab === 'bookmarks' && <BookmarksSidebar />}
           {sidebarTab === 'comments' && <CommentsSidebar />}
-          {sidebarTab === 'search' && <SearchPanelStub />}
+          {sidebarTab === 'search' && <SearchPanel />}
         </Suspense>
         {sidebarTab === 'macros' && <MacrosSidebar />}
       </div>

@@ -17,6 +17,7 @@ export const ToolbarFile: React.FC = () => {
     saveHandle,
     setSaveHandle,
     setDirty,
+    recordSaveExportAction,
   } = useSessionStore();
 
   const { annotations } = useAnnotationStore();
@@ -57,6 +58,7 @@ export const ToolbarFile: React.FC = () => {
         setSaveHandle(nextHandle);
       }
       setDirty(false);
+      recordSaveExportAction({ type: 'SAVE_WORKING_DOCUMENT' }, 'success', `Saved ${fileName}`);
       addToast({
         type: 'success',
         title: 'Saved Successfully',
@@ -73,6 +75,7 @@ export const ToolbarFile: React.FC = () => {
               setSaveHandle(nextHandle);
             }
             setDirty(false);
+            recordSaveExportAction({ type: 'SAVE_WORKING_DOCUMENT' }, 'success', `Saved ${fileName}`);
             addToast({
               type: 'success',
               title: 'Saved Successfully',
@@ -80,6 +83,7 @@ export const ToolbarFile: React.FC = () => {
             });
         } catch(saveAsErr) {
             logError('session', 'Failed to save PDF via Save As', { error: String(saveAsErr), fileName });
+            recordSaveExportAction({ type: 'SAVE_WORKING_DOCUMENT' }, 'failure', String(saveAsErr));
             addToast({
               type: 'error',
               title: 'Save Failed',
@@ -89,6 +93,7 @@ export const ToolbarFile: React.FC = () => {
         return;
       }
       logError('session', 'Failed to save PDF', { error: String(err), fileName });
+      recordSaveExportAction({ type: 'SAVE_WORKING_DOCUMENT' }, 'failure', String(err));
       addToast({
         type: 'error',
         title: 'Save Failed',
@@ -105,6 +110,11 @@ export const ToolbarFile: React.FC = () => {
       const exported = await PdfEditAdapter.exportWithAnnotations(workingBytes, annotations);
       const exportName = fileName.replace(/\.pdf$/i, '') + '-annotated.pdf';
       await FileAdapter.savePdfBytes(exported, exportName, null);
+      recordSaveExportAction(
+        { type: 'EXPORT_REVIEW_SNAPSHOT' },
+        'success',
+        `Exported ${exportName}`,
+      );
       addToast({
         type: 'success',
         title: 'Exported Successfully',
@@ -112,6 +122,7 @@ export const ToolbarFile: React.FC = () => {
       });
     } catch (err) {
       logError('session', 'Failed to export annotated PDF', { error: String(err), fileName });
+      recordSaveExportAction({ type: 'EXPORT_REVIEW_SNAPSHOT' }, 'failure', String(err));
       addToast({
         type: 'error',
         title: 'Export Failed',
@@ -125,6 +136,7 @@ export const ToolbarFile: React.FC = () => {
       return;
     }
     FileAdapter.downloadBytes(workingBytes, fileName);
+    recordSaveExportAction({ type: 'DOWNLOAD_PROCESSED_PDF' }, 'success', `Downloaded ${fileName}`);
   };
 
   return (

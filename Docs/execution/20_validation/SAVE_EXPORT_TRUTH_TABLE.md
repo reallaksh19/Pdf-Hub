@@ -20,3 +20,8 @@ This document explicitly defines the semantics for save, export, and download ac
 ## Important Considerations
 - Exporting a flattened copy must **never** mutate the active working document's editability.
 - If an automated macro executes a save operation, it follows the "Save" row logic unless explicitly configured to "Save As".
+
+## Automated Validation Snapshot (2026-04-22)
+- Session operation metadata (`lastOperation`, status, action type) is written for save/export/download flows.
+- Toolbar save/export paths pass typecheck, lint, tests, and build.
+- Command-layer mutation rules keep save/export semantics separate from document mutation undo stack.

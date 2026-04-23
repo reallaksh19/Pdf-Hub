@@ -109,7 +109,7 @@ export const MacrosSidebar: React.FC = () => {
     }));
   };
 
-  const runSelectedMacro = async () => {
+  const runSelectedMacro = async (dryRun: boolean) => {
     if (!workingBytes || !selectedRecipe) {
       return;
     }
@@ -119,8 +119,8 @@ export const MacrosSidebar: React.FC = () => {
 
     const toastId = addToast({
       type: 'progress',
-      title: `Running Macro: ${selectedRecipe.name}`,
-      message: 'Processing document...',
+      title: `${dryRun ? 'Dry Run' : 'Running'} Macro: ${selectedRecipe.name}`,
+      message: dryRun ? 'Validating recipe without document mutation...' : 'Processing document...',
       progress: 0,
     });
 
@@ -134,10 +134,11 @@ export const MacrosSidebar: React.FC = () => {
 
       const result = await runMacroRecipeAgainstSession(runtimeRecipe, {
         saveOutputs: false,
+        dryRun,
       });
 
       setRunLogs(result.logs);
-      if (result.extractedOutputs.length > 0) {
+      if (!dryRun && result.extractedOutputs.length > 0) {
         setOutputQueue((current) => [
           ...current,
           ...result.extractedOutputs.map((output) => ({
@@ -148,8 +149,10 @@ export const MacrosSidebar: React.FC = () => {
       }
       updateToast(toastId, {
         type: 'success',
-        title: 'Macro Complete',
-        message: `Generated ${result.extractedOutputs.length} output file(s).`,
+        title: dryRun ? 'Dry Run Complete' : 'Macro Complete',
+        message: dryRun
+          ? `Validation passed with ${result.logs.length} log entry(ies).`
+          : `Generated ${result.extractedOutputs.length} output file(s).`,
         progress: undefined,
       });
     } catch (err) {
@@ -564,13 +567,21 @@ export const MacrosSidebar: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" onClick={() => void runSelectedMacro()} disabled={isRunning || !selectedRecipe}>
+          <Button size="sm" onClick={() => void runSelectedMacro(false)} disabled={isRunning || !selectedRecipe}>
             {isRunning ? (
               <RotateCw className="w-4 h-4 mr-1 animate-spin" />
             ) : (
               <Play className="w-4 h-4 mr-1" />
             )}
             {isRunning ? 'Running' : 'Run Macro'}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void runSelectedMacro(true)}
+            disabled={isRunning || !selectedRecipe}
+          >
+            Dry Run
           </Button>
           <Button variant="ghost" size="sm" onClick={resetPanel}>
             Reset

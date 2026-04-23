@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '@/core/session/store';
 import { useAnnotationStore } from '@/core/annotations/store';
+import { useHistoryStore } from '@/core/document-history/store';
+import { applyRedo, applyUndo } from '@/core/document-history/transactions';
+import { isDebugRouteEnabled } from '@/core/debug/availability';
 
 export const useKeyboardShortcuts = () => {
   const navigate = useNavigate();
@@ -27,14 +30,20 @@ export const useKeyboardShortcuts = () => {
       const zoomSteps = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'd') {
-        event.preventDefault();
-        navigate('/debug');
+        if (isDebugRouteEnabled(window.location.hostname, import.meta.env.DEV)) {
+          event.preventDefault();
+          navigate('/debug');
+        }
         return;
       }
 
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey) {
         event.preventDefault();
-        undo();
+        if (useHistoryStore.getState().canUndo()) {
+          applyUndo();
+        } else {
+          undo();
+        }
         return;
       }
 
@@ -43,7 +52,11 @@ export const useKeyboardShortcuts = () => {
         ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'y')
       ) {
         event.preventDefault();
-        redo();
+        if (useHistoryStore.getState().canRedo()) {
+          applyRedo();
+        } else {
+          redo();
+        }
         return;
       }
 

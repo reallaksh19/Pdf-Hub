@@ -2,7 +2,6 @@
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import type { AnnotationType, PdfAnnotation } from '@/core/annotations/types';
-import { FeaturePlaceholder } from '@/components/ui/FeaturePlaceholder';
 import { Settings, Palette, Info, ChevronRight, ChevronLeft, MessageSquare, Send } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { ReviewReply, ReviewStatus } from '@/core/review/types';
@@ -125,11 +124,17 @@ export const InspectorPanel: React.FC = () => {
 
       <div className="flex-1 overflow-auto relative">
         {!activeAnnotation && (
-          <FeaturePlaceholder
-            name="No selection"
-            description="Select an annotation to edit it."
-            icon={<Settings />}
-          />
+          <div className="h-full flex items-center justify-center p-6">
+            <div className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 text-center">
+              <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center">
+                <Settings className="w-5 h-5" />
+              </div>
+              <div className="text-sm font-medium text-slate-800 dark:text-slate-100">No selection</div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Select an annotation to edit it.
+              </div>
+            </div>
+          </div>
         )}
 
         {activeAnnotation && inspectorTab === 'properties' && (

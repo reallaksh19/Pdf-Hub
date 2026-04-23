@@ -1,4 +1,4 @@
-import type { DocumentCommand } from '../commands/types';
+import type { CommandSource, DocumentCommand } from '../commands/types';
 
 export interface HistoryState {
   bytes: Uint8Array;
@@ -8,9 +8,12 @@ export interface HistoryState {
 export interface Transaction {
   id: string;
   command: DocumentCommand;
+  source: CommandSource;
+  label: string;
   timestamp: number;
   before: HistoryState;
   after: HistoryState;
+  groupId?: string;
 }
 
 export interface DocumentHistory {

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useLoggerStore } from '@/core/logger/store';
 import type { AppLogEntry } from '@/core/logger/types';
+import { isDebugRouteEnabled } from '@/core/debug/availability';
 
 export const DebugPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'logs' | 'state' | 'performance' | 'system'>('logs');
 
-  if (import.meta.env.PROD) {
+  if (!isDebugRouteEnabled(window.location.hostname, import.meta.env.DEV)) {
     window.location.replace('/');
     return null;
   }

@@ -2,7 +2,7 @@ import '@testing-library/jest-dom';
 
 // Polyfill DOMMatrix for pdfjs-dist in vitest (jsdom) environment
 if (typeof globalThis.DOMMatrix === 'undefined') {
-  globalThis.DOMMatrix = class DOMMatrix {
+  globalThis.DOMMatrix = class DOMMatrixMock {
     a = 1;
     b = 0;
     c = 0;
@@ -19,5 +19,5 @@ if (typeof globalThis.DOMMatrix === 'undefined') {
         this.f = init[5];
       }
     }
-  } as any;
+  } as unknown as typeof DOMMatrix;
 }

@@ -20,7 +20,11 @@ export interface SessionActions {
   setDocumentDirty: (isDirty: boolean) => void;
   setReviewDirty: (isDirty: boolean) => void;
   setSessionDirty: (isDirty: boolean) => void;
-  recordSaveExportAction: (action: import('./types').SessionSaveExportAction) => void;
+  recordSaveExportAction: (
+    action: import('./types').SessionSaveExportAction,
+    status: import('./types').SessionOperationStatus,
+    message: string | undefined,
+  ) => void;
   setSaveHandle: (saveHandle: FileSystemFileHandle | null) => void;
   setSelectedPages: (pages: number[]) => void;
   toggleSelectedPage: (page: number) => void;
@@ -64,6 +68,7 @@ export const useSessionStore = create<DocumentSession & SessionActions>((set) =>
       isSessionDirty: false,
       saveHandle,
       selectedPages: [],
+      lastOperation: undefined,
       viewState: {
         currentPage: 1,
         zoom: 100,
@@ -122,7 +127,16 @@ export const useSessionStore = create<DocumentSession & SessionActions>((set) =>
   setDocumentDirty: (isDocumentDirty) => set({ isDocumentDirty }),
   setReviewDirty: (isReviewDirty) => set({ isReviewDirty }),
   setSessionDirty: (isSessionDirty) => set({ isSessionDirty }),
-  recordSaveExportAction: (action) => set({ lastExportAction: action }),
+  recordSaveExportAction: (action, status, message) =>
+    set({
+      lastExportAction: action,
+      lastOperation: {
+        action: action.type,
+        status,
+        timestamp: Date.now(),
+        ...(message ? { message } : {}),
+      },
+    }),
   setSaveHandle: (saveHandle) => set({ saveHandle }),
 
   setSelectedPages: (pages) =>
@@ -158,6 +172,7 @@ export const useSessionStore = create<DocumentSession & SessionActions>((set) =>
       saveHandle: null,
       selectedPages: [],
       lastExportAction: undefined,
+      lastOperation: undefined,
       viewState: {
         currentPage: 1,
         zoom: 100,

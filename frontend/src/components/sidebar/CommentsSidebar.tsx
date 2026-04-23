@@ -4,7 +4,6 @@ import { useSessionStore } from '@/core/session/store';
 import { useReviewStore } from '@/core/review/store';
 import { exportReviewSummary, formatReviewSummaryText } from '@/core/review/export';
 import { MessageSquare, Download, CircleDot, CheckCircle2, XCircle, FileText } from 'lucide-react';
-import { FeaturePlaceholder } from '@/components/ui/FeaturePlaceholder';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 
@@ -55,11 +54,17 @@ export const CommentsSidebar: React.FC = () => {
 
   if (annotations.length === 0) {
     return (
-      <FeaturePlaceholder
-        name="Review Comments"
-        description="Create annotations on the page to see them listed here for review."
-        icon={<MessageSquare />}
-      />
+      <div className="h-full flex items-center justify-center p-4">
+        <div className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 text-center">
+          <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center">
+            <MessageSquare className="w-5 h-5" />
+          </div>
+          <div className="text-sm font-medium text-slate-800 dark:text-slate-100">Review Comments</div>
+          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Create annotations on the page to see them listed here for review.
+          </div>
+        </div>
+      </div>
     );
   }
 

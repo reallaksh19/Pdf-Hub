@@ -8,6 +8,8 @@ interface HistoryActions {
   clear: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
+  peekUndo: () => Transaction | null;
+  peekRedo: () => Transaction | null;
 }
 
 export const useHistoryStore = create<DocumentHistory & HistoryActions>((set, get) => ({
@@ -52,4 +54,14 @@ export const useHistoryStore = create<DocumentHistory & HistoryActions>((set, ge
 
   canUndo: () => get().undoStack.length > 0,
   canRedo: () => get().redoStack.length > 0,
+  peekUndo: () => {
+    const { undoStack } = get();
+    if (undoStack.length === 0) return null;
+    return undoStack[undoStack.length - 1];
+  },
+  peekRedo: () => {
+    const { redoStack } = get();
+    if (redoStack.length === 0) return null;
+    return redoStack[redoStack.length - 1];
+  },
 }));

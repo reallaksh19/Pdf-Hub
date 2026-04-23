@@ -8,6 +8,8 @@ import { useSearchStore } from '@/core/search/store';
 import { useSessionStore } from '@/core/session/store';
 import { useEditorStore } from '@/core/editor/store';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
+import { error as logError } from '@/core/logger/service';
+import { useToastStore } from '@/core/toast/store';
 
 export const TopNav: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -17,10 +19,12 @@ export const TopNav: React.FC = () => {
     query,
     setQuery,
     setHits,
+    setError,
     clearSearch,
     nextHit,
     setIsSearching
   } = useSearchStore();
+  const addToast = useToastStore((state) => state.addToast);
 
   const [localQuery, setLocalQuery] = useState(query);
   const debounceRef = useRef<number | null>(null);
@@ -42,12 +46,19 @@ export const TopNav: React.FC = () => {
     try {
       const results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
       setHits(results);
-    } catch {
-      // Ignore
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      logError('pdf-renderer', 'Search failed from top navigation', { error: message });
+      addToast({
+        type: 'error',
+        title: 'Search Failed',
+        message,
+      });
     } finally {
       setIsSearching(false);
     }
-  }, [workingBytes, clearSearch, setIsSearching, setHits]);
+  }, [workingBytes, clearSearch, setIsSearching, setHits, setError, addToast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

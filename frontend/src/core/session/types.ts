@@ -30,6 +30,15 @@ export type SessionSaveExportAction =
   | DownloadPdfAction
   | SaveSessionSnapshotAction;
 
+export type SessionOperationStatus = 'success' | 'failure';
+
+export interface SessionOperationMetadata {
+  action: SessionSaveExportAction['type'];
+  status: SessionOperationStatus;
+  timestamp: number;
+  message?: string;
+}
+
 export interface DocumentSession {
   documentKey: string | null;
   fileName: string | null;
@@ -49,4 +58,5 @@ export interface DocumentSession {
   viewState: ViewState;
 
   lastExportAction?: SessionSaveExportAction;
+  lastOperation?: SessionOperationMetadata;
 }

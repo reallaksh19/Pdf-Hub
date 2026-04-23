@@ -1,19 +1,37 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import ThumbnailSidebar from './ThumbnailSidebar';
 import { useSessionStore } from '@/core/session/store';
+import { useEditorStore } from '@/core/editor/store';
+import { useAnnotationStore } from '@/core/annotations/store';
+import { useSearchStore } from '@/core/search/store';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 
 vi.mock('virtua', () => ({
-  VList: ({ children, data }: any) => (
-    <div data-testid="vlist">
-      {data.map((item: any) => children(item))}
-    </div>
+  VList: ({ children, data }: { children: (item: unknown) => ReactNode; data: unknown[] }) => (
+    <div data-testid="vlist">{data.map((item) => children(item))}</div>
   ),
 }));
 
 vi.mock('@/core/session/store', () => ({
   useSessionStore: vi.fn(),
+}));
+
+vi.mock('@/core/editor/store', () => ({
+  useEditorStore: vi.fn(),
+}));
+
+vi.mock('@/core/annotations/store', () => ({
+  useAnnotationStore: vi.fn(),
+}));
+
+vi.mock('@/core/search/store', () => ({
+  useSearchStore: vi.fn(),
+}));
+
+vi.mock('@/core/commands/dispatch', () => ({
+  dispatchCommand: vi.fn().mockResolvedValue({ success: true, mutated: true }),
 }));
 
 vi.mock('@/adapters/pdf-renderer/PdfRendererAdapter', () => ({
@@ -23,31 +41,46 @@ vi.mock('@/adapters/pdf-renderer/PdfRendererAdapter', () => ({
   },
 }));
 
-vi.mock('@/adapters/pdf-edit/PdfEditAdapter', () => ({
-  PdfEditAdapter: {
-    movePage: vi.fn(),
-    countPages: vi.fn(),
-  },
-}));
-
 describe('ThumbnailSidebar', () => {
   it('handles keyboard navigation and selection', async () => {
     const mockSetPage = vi.fn();
     const mockSetSelectedPages = vi.fn();
+    const mockToggleSelectedPage = vi.fn();
+    const mockSetSidebarTab = vi.fn();
 
-    (useSessionStore as any).mockReturnValue({
+    const mockedUseSessionStore = useSessionStore as unknown as {
+      mockReturnValue: (value: unknown) => void;
+    };
+    const mockedUseEditorStore = useEditorStore as unknown as {
+      mockReturnValue: (value: unknown) => void;
+    };
+    const mockedUseAnnotationStore = useAnnotationStore as unknown as {
+      mockReturnValue: (value: unknown) => void;
+    };
+    const mockedUseSearchStore = useSearchStore as unknown as {
+      mockReturnValue: (value: unknown) => void;
+    };
+
+    mockedUseSessionStore.mockReturnValue({
       workingBytes: new Uint8Array([1, 2, 3]),
       viewState: { currentPage: 1 },
       setPage: mockSetPage,
-      replaceWorkingCopy: vi.fn(),
       selectedPages: [],
       setSelectedPages: mockSetSelectedPages,
-      toggleSelectedPage: vi.fn(),
+      toggleSelectedPage: mockToggleSelectedPage,
     });
+    mockedUseEditorStore.mockReturnValue({ setSidebarTab: mockSetSidebarTab });
+    mockedUseAnnotationStore.mockReturnValue({ annotations: [] });
+    mockedUseSearchStore.mockReturnValue({ hits: [] });
 
-    let mockDocDeferredResolve: any;
-    const mockDocPromise = new Promise((resolve) => {
-        mockDocDeferredResolve = resolve;
+    type MockDoc = {
+      numPages: number;
+      getPage: ReturnType<typeof vi.fn>;
+      destroy: ReturnType<typeof vi.fn>;
+    };
+    let mockDocDeferredResolve: (value: MockDoc) => void = () => {};
+    const mockDocPromise = new Promise<MockDoc>((resolve) => {
+      mockDocDeferredResolve = resolve;
     });
 
     const mockDoc = {
@@ -55,32 +88,39 @@ describe('ThumbnailSidebar', () => {
       getPage: vi.fn().mockResolvedValue({}),
       destroy: vi.fn(),
     };
-    (PdfRendererAdapter.loadDocument as any).mockReturnValue(mockDocPromise);
-    (PdfRendererAdapter.getThumbnail as any).mockResolvedValue('mock-url');
+    const mockedLoadDocument = PdfRendererAdapter.loadDocument as unknown as {
+      mockReturnValue: (value: unknown) => void;
+    };
+    const mockedGetThumbnail = PdfRendererAdapter.getThumbnail as unknown as {
+      mockResolvedValue: (value: string) => void;
+    };
+    mockedLoadDocument.mockReturnValue(mockDocPromise);
+    mockedGetThumbnail.mockResolvedValue('mock-url');
 
     render(<ThumbnailSidebar />);
 
-    // Trigger load
     mockDocDeferredResolve(mockDoc);
 
     await vi.waitFor(() => {
-        expect(screen.queryByText(/Generating thumbnails.../i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Generating thumbnails.../i)).not.toBeInTheDocument();
     });
 
-    const thumbnails = screen.getAllByRole('button');
+    const thumbnails = screen.getAllByRole('button', { name: /Page \d+/ });
     expect(thumbnails).toHaveLength(2);
 
-    // Test Enter to select
-    fireEvent.keyDown(thumbnails[0], { key: 'Enter' });
+    await act(async () => {
+      fireEvent.keyDown(thumbnails[0], { key: 'Enter' });
+    });
     expect(mockSetPage).toHaveBeenCalledWith(1);
     expect(mockSetSelectedPages).toHaveBeenCalledWith([1]);
 
-    // Focus mock for ArrowDown
     const nextThumb = thumbnails[1];
     nextThumb.focus = vi.fn();
     document.getElementById = vi.fn().mockReturnValue(nextThumb);
 
-    fireEvent.keyDown(thumbnails[0], { key: 'ArrowDown' });
+    await act(async () => {
+      fireEvent.keyDown(thumbnails[0], { key: 'ArrowDown' });
+    });
     expect(nextThumb.focus).toHaveBeenCalled();
   });
 });

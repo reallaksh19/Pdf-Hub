@@ -18,3 +18,8 @@ This document establishes the hard performance constraints that all agents (spec
 
 ## Macro Batch Processing
 - **Constraint:** Running a macro queue containing multiple operations against a document must process asynchronously or show clear progress without hanging the browser.
+
+## Current Verification Snapshot (2026-04-22)
+- Continuous mode uses virtualized list rendering (`virtua`) in workspace and thumbnail rails.
+- Build passes with chunk split sidebars (`SearchPanel`, `BookmarksSidebar`, `CommentsSidebar`, `ThumbnailSidebar`) loaded lazily.
+- Full 200+ page browser profiling remains a manual release gate item.

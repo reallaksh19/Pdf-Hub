@@ -6,6 +6,7 @@ export interface SearchActions {
   setIsSearching: (isSearching: boolean) => void;
   setHits: (hits: SearchHit[]) => void;
   setActiveHit: (id: string | null) => void;
+  setError: (error: string | null) => void;
   clearSearch: () => void;
   nextHit: () => void;
   prevHit: () => void;
@@ -16,11 +17,12 @@ export const useSearchStore = create<SearchState & SearchActions>((set) => ({
   isSearching: false,
   hits: [],
   activeHitId: null,
+  error: null,
 
   setQuery: (query) =>
     set((state) => {
       if (state.query === query) return state;
-      return { query, hits: [], activeHitId: null };
+      return { query, hits: [], activeHitId: null, error: null };
     }),
 
   setIsSearching: (isSearching) => set({ isSearching }),
@@ -32,13 +34,15 @@ export const useSearchStore = create<SearchState & SearchActions>((set) => ({
       const activeHitExists = state.activeHitId ? hits.some(h => h.id === state.activeHitId) : false;
       return {
         hits,
+        error: null,
         activeHitId: activeHitExists ? state.activeHitId : (hits.length > 0 ? hits[0].id : null),
       };
     }),
 
   setActiveHit: (id) => set({ activeHitId: id }),
+  setError: (error) => set({ error }),
 
-  clearSearch: () => set({ query: '', hits: [], activeHitId: null, isSearching: false }),
+  clearSearch: () => set({ query: '', hits: [], activeHitId: null, isSearching: false, error: null }),
 
   nextHit: () =>
     set((state) => {

@@ -1,13 +1,15 @@
-﻿import type { MacroRecipe } from './types';
-import { executeMacroRecipe } from './executor';
-import { useSessionStore } from '@/core/session/store';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
+import { dispatchCommand } from '@/core/commands/dispatch';
+import { useSessionStore } from '@/core/session/store';
+import { executeMacroRecipe } from './executor';
+import type { MacroRecipe } from './types';
 
 export async function runMacroRecipeAgainstSession(
   recipe: MacroRecipe,
   options?: {
     donorFiles?: Record<string, Uint8Array>;
     saveOutputs?: boolean;
+    dryRun?: boolean;
   },
 ) {
   const session = useSessionStore.getState();
@@ -16,7 +18,6 @@ export async function runMacroRecipeAgainstSession(
     throw new Error('No active document in session');
   }
 
-  const donorFiles = options?.donorFiles ?? {};
   const result = await executeMacroRecipe(
     {
       workingBytes: session.workingBytes,
@@ -24,27 +25,29 @@ export async function runMacroRecipeAgainstSession(
       selectedPages: session.selectedPages,
       currentPage: session.viewState.currentPage,
       fileName: session.fileName,
-      donorFiles,
+      donorFiles: options?.donorFiles ?? {},
       now: new Date(),
     },
     recipe,
   );
 
-  // Import dynamically or explicitly to use dispatcher but macro executor might do multiple steps
-  // A cleaner approach: since executor produces the final bytes, we can push a manual history state
-  // or wrap it in a macro command if we had one. Wait, we can push history state manually or dispatch a generic REPLACE command.
-  // Wait! The dispatchCommand doesn't have a generic REPLACE_ALL. Let's just push history manually, then call replaceWorkingCopy.
-  import('@/core/document-history/store').then(({ useHistoryStore }) => {
-    useHistoryStore.getState().push({
-      id: crypto.randomUUID(),
-      command: { type: 'MERGE_PDF', additionalBytes: [] }, // Dummy command for macro or we could add MACRO command
-      timestamp: Date.now(),
-      before: { bytes: session.workingBytes!, pageCount: session.pageCount },
-      after: { bytes: result.workingBytes, pageCount: result.pageCount }
+  if (options?.dryRun !== true) {
+    const commandResult = await dispatchCommand({
+      source: 'macro-runner',
+      command: {
+        type: 'REPLACE_WORKING_COPY',
+        nextBytes: result.workingBytes,
+        nextPageCount: result.pageCount,
+        reason: `Macro run: ${recipe.name}`,
+      },
     });
-    useSessionStore.getState().replaceWorkingCopy(result.workingBytes, result.pageCount);
+
+    if (!commandResult.success) {
+      throw new Error(commandResult.error?.message ?? commandResult.message);
+    }
+
     useSessionStore.getState().setSelectedPages(result.selectedPages);
-  });
+  }
 
   if (options?.saveOutputs) {
     for (const output of result.extractedOutputs) {
