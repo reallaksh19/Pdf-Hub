@@ -99,14 +99,19 @@ export const useAnnotationStore = create<AnnotationState & AnnotationActions>((s
 
   updateAnnotation: (id, data) =>
     set((state) => {
-      const nextAnnotations = state.annotations.map((annotation) =>
-        annotation.id === id
+      // Ensure we merge nested data objects correctly (like rotation, etc.)
+      const nextAnnotations = state.annotations.map((a) =>
+        a.id === id
           ? {
-              ...annotation,
+              ...a,
               ...data,
+              data: {
+                 ...a.data,
+                 ...(data.data || {})
+              },
               updatedAt: Date.now(),
             }
-          : annotation,
+          : a,
       );
 
       return snapshot(state, nextAnnotations);
@@ -121,6 +126,10 @@ export const useAnnotationStore = create<AnnotationState & AnnotationActions>((s
           ? {
               ...annotation,
               ...patch,
+              data: {
+                 ...annotation.data,
+                 ...(patch.data || {})
+              },
               updatedAt: Date.now(),
             }
           : annotation;

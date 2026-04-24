@@ -768,16 +768,16 @@ export const MacrosSidebar: React.FC = () => {
         </p>
 
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" disabled>
+          <Button size="sm" disabled className="opacity-50 cursor-not-allowed">
             New Recipe
           </Button>
-          <Button variant="ghost" size="sm" disabled>
+          <Button variant="ghost" size="sm" disabled className="opacity-50 cursor-not-allowed">
             Add Step
           </Button>
-          <Button variant="ghost" size="sm" disabled>
+          <Button variant="ghost" size="sm" disabled className="opacity-50 cursor-not-allowed">
             Remove Step
           </Button>
-          <Button variant="secondary" size="sm" disabled>
+          <Button variant="secondary" size="sm" disabled className="opacity-50 cursor-not-allowed">
             Run Custom
           </Button>
         </div>
