@@ -45,11 +45,73 @@ export class KonvaAdapter {
       case 'highlight':
         node = new Konva.Rect({ ...config, fill: 'yellow', opacity: 0.4 });
         break;
+      case 'squiggly':
+        node = new Konva.Line({
+          ...config,
+          points: [0, annotation.rect.height, annotation.rect.width, annotation.rect.height],
+          stroke: (annotation.data.borderColor as string) || 'red',
+          strokeWidth: 2,
+          dash: [2, 2] // Simple squiggly representation
+        });
+        break;
       case 'shape':
-        node = new Konva.Rect({ ...config, stroke: 'red', strokeWidth: 2 });
+      case 'rectangle':
+        node = new Konva.Rect({
+          ...config,
+          stroke: (annotation.data.borderColor as string) || 'red',
+          strokeWidth: (annotation.data.borderWidth as number) || 2,
+          fill: (annotation.data.backgroundColor as string) || 'transparent',
+          opacity: typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1
+        });
+        break;
+      case 'ellipse':
+        node = new Konva.Ellipse({
+          ...config,
+          radiusX: annotation.rect.width / 2,
+          radiusY: annotation.rect.height / 2,
+          stroke: (annotation.data.borderColor as string) || 'red',
+          strokeWidth: (annotation.data.borderWidth as number) || 2,
+          fill: (annotation.data.backgroundColor as string) || 'transparent',
+          opacity: typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1,
+          offsetX: -annotation.rect.width / 2, // Konva Ellipse uses center
+          offsetY: -annotation.rect.height / 2
+        });
+        break;
+      case 'polygon':
+        node = new Konva.Line({
+          ...config,
+          points: annotation.data.points as number[] || [0,0, annotation.rect.width,0, annotation.rect.width,annotation.rect.height, 0,annotation.rect.height],
+          stroke: (annotation.data.borderColor as string) || 'blue',
+          fill: (annotation.data.backgroundColor as string) || 'rgba(0,0,255,0.1)',
+          strokeWidth: (annotation.data.borderWidth as number) || 1,
+          closed: true,
+          opacity: typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1
+        });
+        break;
+      case 'polyline':
+        node = new Konva.Line({
+          ...config,
+          points: annotation.data.points as number[] || [0,0, annotation.rect.width, annotation.rect.height],
+          stroke: (annotation.data.borderColor as string) || 'blue',
+          strokeWidth: (annotation.data.borderWidth as number) || 1,
+          closed: false,
+          opacity: typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1
+        });
+        break;
+      case 'file-attachment':
+        node = new Konva.Group({ ...config });
+        node.add(new Konva.Rect({ width: 32, height: 32, fill: '#f1f5f9', cornerRadius: 4 }));
+        node.add(new Konva.Text({ text: '📎', fontSize: 16, x: 8, y: 8 }));
         break;
       case 'freehand':
-        node = new Konva.Line({ ...config, points: annotation.data.points as number[], stroke: 'black', strokeWidth: 2, tension: 0.5 });
+      case 'ink':
+        node = new Konva.Line({
+          ...config,
+          points: annotation.data.points as number[],
+          stroke: (annotation.data.borderColor as string) || 'black',
+          strokeWidth: (annotation.data.borderWidth as number) || 2,
+          tension: 0.5
+        });
         break;
       default:
         node = new Konva.Rect({ ...config, fill: 'gray', opacity: 0.5 });

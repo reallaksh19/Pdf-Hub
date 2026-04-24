@@ -74,6 +74,10 @@ export const MacrosSidebar: React.FC = () => {
     BUILTIN_RECIPES[0]?.id ?? '',
   );
 
+  const [customSteps, setCustomSteps] = React.useState<MacroStep[]>([]);
+  const [selectedStepIndex, setSelectedStepIndex] = React.useState<number | null>(null);
+  const [addStepOp, setAddStepOp] = React.useState<MacroStep['op']>('select_pages');
+
   const selectedRecipe = React.useMemo(
     () => allRecipes.find((recipe) => recipe.id === selectedRecipeId) ?? allRecipes[0],
     [selectedRecipeId, allRecipes],
@@ -760,24 +764,75 @@ export const MacrosSidebar: React.FC = () => {
       <section className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/40 p-3 space-y-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
           <Wrench className="w-4 h-4" />
-          Custom Recipe Builder (Coming Soon)
+          Custom Recipe Builder
         </div>
 
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Custom step-by-step builder ships in next phase; use Built-ins now.
+          Build your custom automation recipe by adding operations sequentially.
         </p>
 
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" disabled>
+        <div className="flex flex-wrap gap-2 items-center">
+          <Button size="sm" onClick={() => { setCustomSteps([]); setSelectedStepIndex(null); }}>
             New Recipe
           </Button>
-          <Button variant="ghost" size="sm" disabled>
-            Add Step
-          </Button>
-          <Button variant="ghost" size="sm" disabled>
+          <div className="flex bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden">
+            <select
+              className="text-xs px-2 py-1 bg-transparent outline-none cursor-pointer"
+              value={addStepOp}
+              onChange={(e) => setAddStepOp(e.target.value as MacroStep['op'])}
+            >
+              <option value="select_pages">Select Pages</option>
+              <option value="rotate_pages">Rotate Pages</option>
+              <option value="extract_pages">Extract Pages</option>
+              <option value="remove_pages">Remove Pages</option>
+              <option value="insert_blank_page">Insert Blank Page</option>
+              <option value="header_footer_text">Header/Footer Text</option>
+            </select>
+            <button
+              className="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-medium border-l border-slate-300 dark:border-slate-700 transition-colors"
+              onClick={() => {
+                const newSteps = [...customSteps, createDefaultStep(addStepOp)];
+                setCustomSteps(newSteps);
+                setSelectedStepIndex(newSteps.length - 1);
+              }}
+            >
+              Add Step
+            </button>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={selectedStepIndex === null}
+            onClick={() => {
+              if (selectedStepIndex !== null) {
+                const newSteps = [...customSteps];
+                newSteps.splice(selectedStepIndex, 1);
+                setCustomSteps(newSteps);
+                setSelectedStepIndex(null);
+              }
+            }}
+          >
             Remove Step
           </Button>
-          <Button variant="secondary" size="sm" disabled>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={customSteps.length === 0}
+            onClick={async () => {
+              const customRecipe: MacroRecipe = { id: `custom_${Date.now()}`, name: 'Custom Run', steps: customSteps };
+              setRunning(true);
+              try {
+                const result = await runMacroRecipeAgainstSession(customRecipe);
+                if (result.extractedOutputs.length > 0) {
+                  setOutputQueue((prev) => [...prev, ...result.extractedOutputs]);
+                }
+              } catch (e) {
+                logError('system', 'Custom recipe execution failed', { error: e });
+              } finally {
+                setRunning(false);
+              }
+            }}
+          >
             Run Custom
           </Button>
         </div>
@@ -786,20 +841,111 @@ export const MacrosSidebar: React.FC = () => {
           <table className="w-full text-xs">
             <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-500">
               <tr>
-                <th className="text-left px-2 py-1.5">Step</th>
+                <th className="text-left px-2 py-1.5 w-10">Step</th>
                 <th className="text-left px-2 py-1.5">Operation</th>
               </tr>
             </thead>
             <tbody>
-              {PLACEHOLDER_STEPS.map((operation, index) => (
-                <tr key={operation} className="border-t border-slate-200 dark:border-slate-800">
+              {customSteps.length === 0 && (
+                <tr className="border-t border-slate-200 dark:border-slate-800">
+                  <td colSpan={2} className="px-2 py-4 text-center text-slate-400 italic">No steps added yet.</td>
+                </tr>
+              )}
+              {customSteps.map((step, index) => (
+                <tr
+                  key={index}
+                  className={`border-t border-slate-200 dark:border-slate-800 cursor-pointer transition-colors ${selectedStepIndex === index ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                  onClick={() => setSelectedStepIndex(index)}
+                >
                   <td className="px-2 py-1.5">{index + 1}</td>
-                  <td className="px-2 py-1.5 font-mono">{operation}</td>
+                  <td className="px-2 py-1.5 font-mono text-[10px]">{step.op}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {selectedStepIndex !== null && customSteps[selectedStepIndex] && (
+          <div className="mt-4 p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md">
+            <div className="text-xs font-semibold mb-2 text-slate-700 dark:text-slate-300">
+              Configure Step {selectedStepIndex + 1}: {customSteps[selectedStepIndex].op}
+            </div>
+
+            {/* Extremely basic property editor based on op */}
+            {customSteps[selectedStepIndex].op === 'rotate_pages' && (
+              <label className="flex items-center gap-2 text-xs">
+                Degrees:
+                <select
+                  className="border rounded px-1 py-0.5 bg-transparent"
+                  value={(customSteps[selectedStepIndex] as any).degrees}
+                  onChange={(e) => {
+                    const newSteps = [...customSteps];
+                    (newSteps[selectedStepIndex] as any).degrees = parseInt(e.target.value);
+                    setCustomSteps(newSteps);
+                  }}
+                >
+                  <option value="90">90</option>
+                  <option value="180">180</option>
+                  <option value="270">270</option>
+                </select>
+              </label>
+            )}
+
+            {customSteps[selectedStepIndex].op === 'header_footer_text' && (
+              <label className="flex flex-col gap-1 text-xs">
+                Text:
+                <input
+                  type="text"
+                  className="border rounded px-2 py-1 bg-transparent w-full"
+                  value={(customSteps[selectedStepIndex] as any).text}
+                  onChange={(e) => {
+                    const newSteps = [...customSteps];
+                    (newSteps[selectedStepIndex] as any).text = e.target.value;
+                    setCustomSteps(newSteps);
+                  }}
+                />
+              </label>
+            )}
+
+            {customSteps[selectedStepIndex].op === 'extract_pages' && (
+              <label className="flex flex-col gap-1 text-xs mt-2">
+                Output File Name:
+                <input
+                  type="text"
+                  className="border rounded px-2 py-1 bg-transparent w-full"
+                  value={(customSteps[selectedStepIndex] as any).outputName || ''}
+                  onChange={(e) => {
+                    const newSteps = [...customSteps];
+                    (newSteps[selectedStepIndex] as any).outputName = e.target.value;
+                    setCustomSteps(newSteps);
+                  }}
+                />
+              </label>
+            )}
+
+            {/* Shared PageSelector editor for ops that have it */}
+            {('selector' in customSteps[selectedStepIndex]) && (
+              <label className="flex items-center gap-2 text-xs mt-2">
+                Apply to:
+                <select
+                  className="border rounded px-1 py-0.5 bg-transparent"
+                  value={(customSteps[selectedStepIndex] as any).selector.mode}
+                  onChange={(e) => {
+                    const newSteps = [...customSteps];
+                    (newSteps[selectedStepIndex] as any).selector = { mode: e.target.value };
+                    setCustomSteps(newSteps);
+                  }}
+                >
+                  <option value="selected">Selected Pages</option>
+                  <option value="all">All Pages</option>
+                  <option value="current">Current Page</option>
+                </select>
+              </label>
+            )}
+
+          </div>
+        )}
+
       </section>
     </div>
   );
@@ -1021,4 +1167,27 @@ function toPageSelector(overrides: RecipeOverrides, pageCount: number): PageSele
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+
+function createDefaultStep(op: MacroStep['op']): MacroStep {
+  const defaultSelector: PageSelector = { mode: 'selected' };
+  switch (op) {
+    case 'select_pages': return { op, selector: defaultSelector };
+    case 'merge_files': return { op, donorFileIds: [] };
+    case 'insert_pdf': return { op, donorFileId: '', atIndex: 0 };
+    case 'extract_pages': return { op, selector: defaultSelector, outputName: 'extracted.pdf' };
+    case 'split_pages': return { op, selector: defaultSelector, outputName: 'split.pdf' };
+    case 'duplicate_pages': return { op, selector: defaultSelector };
+    case 'rotate_pages': return { op, selector: defaultSelector, degrees: 90 };
+    case 'remove_pages': return { op, selector: defaultSelector };
+    case 'insert_blank_page': return { op, position: { mode: 'after', page: 1 }, size: 'match-current', count: 1 };
+    case 'replace_page': return { op, targetPage: 1, donorFileId: '', donorPage: 1 };
+    case 'reorder_pages': return { op, order: [] };
+    case 'draw_text_on_pages': return { op, selector: defaultSelector, text: 'Sample Text', x: 100, y: 100, fontSize: 12 };
+    case 'header_footer_text': return { op, selector: defaultSelector, zone: 'header', text: 'Page {page}', align: 'center', marginX: 20, marginY: 20, fontSize: 10 };
+    case 'insert_image': return { op, selector: defaultSelector, x: 100, y: 100, base64Image: '' };
+    case 'inject_rich_text': return { op, selector: defaultSelector, x: 100, y: 100, text: 'Text', fontSize: 12 };
+    default: return { op: 'select_pages', selector: defaultSelector } as any;
+  }
 }

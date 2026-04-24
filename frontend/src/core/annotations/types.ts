@@ -5,14 +5,21 @@ export type AnnotationType =
   | 'highlight'
   | 'underline'
   | 'strikeout'
+  | 'squiggly'
   | 'shape'
+  | 'rectangle'
+  | 'ellipse'
+  | 'polygon'
+  | 'polyline'
   | 'freehand'
+  | 'ink'
   | 'stamp'
   | 'sticky-note'
   | 'comment'
   | 'line'
   | 'arrow'
-  | 'callout';
+  | 'callout'
+  | 'file-attachment';
 
 export type ReviewStatus = 'open' | 'resolved' | 'rejected';
 
