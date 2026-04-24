@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
+import { ToolbarHistory } from './ToolbarHistory';
 import { dispatchCommand } from '@/core/commands/dispatch';
 import type { DocumentCommand } from '@/core/commands/types';
 import { useSessionStore } from '@/core/session/store';
@@ -304,6 +305,8 @@ export const ToolbarOrganize: React.FC = () => {
         onConfirm={confirmBatchRun}
       />
       <div className="flex items-center space-x-1">
+        <ToolbarHistory />
+
         <Tooltip content="Merge PDFs">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleMerge} disabled={!workingBytes}>
             <Layers className="w-4 h-4" />

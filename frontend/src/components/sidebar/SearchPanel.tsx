@@ -2,13 +2,13 @@ import React, { useState, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useSearchStore } from '@/core/search/store';
 import { useSessionStore } from '@/core/session/store';
-import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
+import { SearchIndexer } from '@/core/search/indexer';
 import { Button } from '@/components/ui/Button';
 import { error as logError } from '@/core/logger/service';
 import { useToastStore } from '@/core/toast/store';
 
 export const SearchPanel: React.FC = () => {
-  const { workingBytes, setPage } = useSessionStore();
+  const { documentKey, setPage } = useSessionStore();
   const {
     query,
     setQuery,
@@ -27,6 +27,9 @@ export const SearchPanel: React.FC = () => {
   const addToast = useToastStore((state) => state.addToast);
 
   const [localQuery, setLocalQuery] = useState(query);
+  const [caseSensitive, setCaseSensitive] = useState(false);
+  const [wholeWord, setWholeWord] = useState(false);
+  const [useRegex, setUseRegex] = useState(false);
 
   const [prevQuery, setPrevQuery] = useState(query);
   if (query !== prevQuery) {
@@ -34,8 +37,8 @@ export const SearchPanel: React.FC = () => {
     setLocalQuery(query);
   }
 
-  const executeSearch = useCallback(async (searchQuery: string) => {
-    if (!workingBytes) return;
+  const executeSearch = useCallback(async (searchQuery: string, options: { caseSensitive: boolean, wholeWord: boolean, useRegex: boolean }) => {
+    if (!documentKey) return;
     if (!searchQuery.trim()) {
       clearSearch();
       return;
@@ -43,8 +46,18 @@ export const SearchPanel: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
-      setHits(results);
+      const cache = SearchIndexer.getCache(documentKey);
+      if (!cache) {
+        setHits([]);
+        return;
+      }
+      const results = SearchIndexer.search(cache, searchQuery, options);
+      setHits(results.map((r, i) => ({
+        id: `hit-${i}`,
+        pageNumber: r.pageNumber,
+        snippet: r.text,
+        rects: [r.rect]
+      })));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
@@ -57,7 +70,7 @@ export const SearchPanel: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  }, [workingBytes, clearSearch, setIsSearching, setHits, setError, addToast]);
+  }, [documentKey, clearSearch, setIsSearching, setHits, setError, addToast]);
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalQuery(e.target.value);
@@ -70,7 +83,7 @@ export const SearchPanel: React.FC = () => {
         nextHit();
       } else {
         setQuery(localQuery);
-        executeSearch(localQuery);
+        executeSearch(localQuery, { caseSensitive, wholeWord, useRegex });
       }
     }
   };
@@ -79,6 +92,12 @@ export const SearchPanel: React.FC = () => {
     setLocalQuery('');
     clearSearch();
   };
+
+  React.useEffect(() => {
+    if (query && documentKey) {
+      executeSearch(query, { caseSensitive, wholeWord, useRegex });
+    }
+  }, [caseSensitive, wholeWord, useRegex, query, documentKey, executeSearch]);
 
   const handleHitClick = (hitId: string, pageNumber: number) => {
     setActiveHit(hitId);
@@ -113,6 +132,18 @@ export const SearchPanel: React.FC = () => {
               <X className="w-4 h-4" />
             </button>
           )}
+        </div>
+
+        <div className="flex items-center space-x-1 pb-1">
+          <Button variant={caseSensitive ? 'secondary' : 'ghost'} size="sm" className="h-6 text-[10px] px-2" onClick={() => setCaseSensitive(!caseSensitive)}>
+            [Aa]
+          </Button>
+          <Button variant={wholeWord ? 'secondary' : 'ghost'} size="sm" className="h-6 text-[10px] px-2" onClick={() => setWholeWord(!wholeWord)}>
+            [\b]
+          </Button>
+          <Button variant={useRegex ? 'secondary' : 'ghost'} size="sm" className="h-6 text-[10px] px-2" onClick={() => setUseRegex(!useRegex)}>
+            [.*]
+          </Button>
         </div>
 
         {hits.length > 0 && (

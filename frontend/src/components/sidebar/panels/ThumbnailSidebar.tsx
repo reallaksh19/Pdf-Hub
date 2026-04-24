@@ -2,6 +2,7 @@ import React from 'react';
 import { Layers, GripVertical } from 'lucide-react';
 import { VList } from 'virtua';
 import { useSessionStore } from '@/core/session/store';
+import { usePdfStore } from '@/core/session/pdfStore';
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import { useSearchStore } from '@/core/search/store';
@@ -50,6 +51,7 @@ const ThumbnailSidebar: React.FC = () => {
     setSelectedPages,
     toggleSelectedPage,
   } = useSessionStore();
+  const { pdfDoc } = usePdfStore();
   const { setSidebarTab } = useEditorStore();
   const { annotations } = useAnnotationStore();
   const { hits } = useSearchStore();
@@ -98,22 +100,29 @@ const ThumbnailSidebar: React.FC = () => {
     let cancelled = false;
 
     const loadThumbnails = async () => {
-      if (!workingBytes) {
+      if (!workingBytes || !pdfDoc) {
         setThumbs([]);
         return;
       }
       setLoading(true);
       try {
-        const doc = await PdfRendererAdapter.loadDocument(workingBytes);
         const result: ThumbItem[] = [];
-        for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
+        let pageNumber = 1;
+        while (pageNumber <= pdfDoc.numPages) {
           if (cancelled) break;
-          const page = await doc.getPage(pageNumber);
-          const imageUrl = await PdfRendererAdapter.getThumbnail(page);
-          result.push({ pageNumber, imageUrl });
+          const batch = [];
+          const batchSize = 5;
+          for (let i = 0; i < batchSize && pageNumber <= pdfDoc.numPages; i++, pageNumber++) {
+            batch.push((async (p: number) => {
+              const page = await pdfDoc.getPage(p);
+              const imageUrl = await PdfRendererAdapter.getThumbnail(page);
+              return { pageNumber: p, imageUrl };
+            })(pageNumber));
+          }
+          const batchResults = await Promise.all(batch);
+          result.push(...batchResults);
+          if (!cancelled) setThumbs([...result]);
         }
-        if (!cancelled) setThumbs(result);
-        await doc.destroy();
       } catch {
         if (!cancelled) setThumbs([]);
       } finally {
@@ -125,7 +134,7 @@ const ThumbnailSidebar: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [workingBytes]);
+  }, [workingBytes, pdfDoc]);
 
   const applySelection = (
     event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,

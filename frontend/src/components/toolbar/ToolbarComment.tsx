@@ -14,6 +14,10 @@ import {
   MessageCircle,
   Eye,
   EyeOff,
+  AlignLeft,
+  AlignStartVertical,
+  AlignHorizontalSpaceBetween,
+  AlignVerticalSpaceBetween,
 } from 'lucide-react';
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
@@ -136,18 +140,26 @@ export const ToolbarComment: React.FC = () => {
 
       <Separator orientation="vertical" className="h-6" />
 
-      <Button variant="ghost" size="sm" onClick={() => alignSelection('left')} disabled={selectedAnnotationIds.length < 2}>
-        Align L
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => alignSelection('top')} disabled={selectedAnnotationIds.length < 2}>
-        Align T
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => distributeSelection('horizontal')} disabled={selectedAnnotationIds.length < 3}>
-        Dist H
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => distributeSelection('vertical')} disabled={selectedAnnotationIds.length < 3}>
-        Dist V
-      </Button>
+      <Tooltip content="Align Left">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => alignSelection('left')} disabled={selectedAnnotationIds.length < 2}>
+          <AlignLeft className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Align Top">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => alignSelection('top')} disabled={selectedAnnotationIds.length < 2}>
+          <AlignStartVertical className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Distribute Horizontally">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => distributeSelection('horizontal')} disabled={selectedAnnotationIds.length < 3}>
+          <AlignHorizontalSpaceBetween className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Distribute Vertically">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => distributeSelection('vertical')} disabled={selectedAnnotationIds.length < 3}>
+          <AlignVerticalSpaceBetween className="w-4 h-4" />
+        </Button>
+      </Tooltip>
 
       <Separator orientation="vertical" className="h-6" />
 
