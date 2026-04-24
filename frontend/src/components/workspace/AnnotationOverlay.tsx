@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Transformer, Rect, Circle, Line, Text, Group } from 'react-konva';
+import { Stage, Layer, Transformer, Rect, Circle, Ellipse, Line, Text, Group } from 'react-konva';
 import { Html } from 'react-konva-utils';
 import Konva from 'konva';
 import { useAnnotationStore } from '@/core/annotations/store';
@@ -93,6 +93,25 @@ export const AnnotationOverlay: React.FC<AnnotationOverlayProps> = ({ pageNumber
       const textColor = typeof annotation.data.textColor === 'string' ? annotation.data.textColor : '#0f172a';
       const fontSize = typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12;
 
+
+      let leaderLine = null;
+      if (annotation.type === 'callout' && annotation.data.anchor) {
+        const anchor = annotation.data.anchor as { x: number; y: number };
+        const lineEndX = width / 2;
+        const lineEndY = height / 2;
+        const anchorX = (anchor.x * scale) - x;
+        const anchorY = (anchor.y * scale) - y;
+
+        leaderLine = (
+           <Line
+             points={[anchorX, anchorY, lineEndX, lineEndY]}
+             stroke={borderColor}
+             strokeWidth={1}
+             listening={false}
+           />
+        );
+      }
+
       return (
         <Group
           key={annotation.id}
@@ -113,6 +132,7 @@ export const AnnotationOverlay: React.FC<AnnotationOverlayProps> = ({ pageNumber
             }
           }}
         >
+          {leaderLine}
           <Rect
             width={width}
             height={height}
@@ -133,6 +153,7 @@ export const AnnotationOverlay: React.FC<AnnotationOverlayProps> = ({ pageNumber
                 borderRadius: annotation.type === 'comment' ? '12px' : '4px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 overflow: 'hidden',
+                whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
                 transition: 'background-color 0.2s, border-color 0.2s, box-shadow 0.2s'
               }}
@@ -170,7 +191,8 @@ export const AnnotationOverlay: React.FC<AnnotationOverlayProps> = ({ pageNumber
       );
     }
 
-    if (annotation.type === 'shape') {
+
+    if (annotation.type === 'shape' || annotation.type === 'rectangle') {
       return (
         <Rect
           key={annotation.id}
@@ -196,7 +218,56 @@ export const AnnotationOverlay: React.FC<AnnotationOverlayProps> = ({ pageNumber
       );
     }
 
-    if (annotation.type === 'freehand' || annotation.type === 'line' || annotation.type === 'arrow' || annotation.type === 'underline' || annotation.type === 'strikeout') {
+    if (annotation.type === 'ellipse') {
+      return (
+        <Ellipse
+          key={annotation.id}
+          id={annotation.id}
+          x={x + width / 2}
+          y={y + height / 2}
+          radiusX={width / 2}
+          radiusY={height / 2}
+          stroke={(annotation.data.borderColor as string) || 'red'}
+          strokeWidth={(annotation.data.borderWidth as number) || 2}
+          fill={(annotation.data.backgroundColor as string) || 'transparent'}
+          rotation={rotation}
+          draggable={draggable}
+          onDragEnd={(e) => handleDragEnd(e, annotation.id)}
+          onTransformEnd={(e) => handleTransformEnd(e, annotation.id)}
+          onClick={(e) => {
+            if (activeTool !== 'select') return;
+            e.cancelBubble = true;
+            if (e.evt.shiftKey) setSelection([...selectedAnnotationIds, annotation.id]);
+            else setSelection([annotation.id]);
+          }}
+        />
+      );
+    }
+
+    if (annotation.type === 'file-attachment') {
+      return (
+        <Group
+          key={annotation.id}
+          id={annotation.id}
+          x={x}
+          y={y}
+          rotation={rotation}
+          draggable={draggable}
+          onDragEnd={(e) => handleDragEnd(e, annotation.id)}
+          onTransformEnd={(e) => handleTransformEnd(e, annotation.id)}
+          onClick={(e) => {
+            if (activeTool !== 'select') return;
+            e.cancelBubble = true;
+            if (e.evt.shiftKey) setSelection([...selectedAnnotationIds, annotation.id]);
+            else setSelection([annotation.id]);
+          }}
+        >
+          <Rect width={32} height={32} fill="#f1f5f9" cornerRadius={4} />
+          <Text text="📎" fontSize={16} x={8} y={8} />
+        </Group>
+      );
+    }
+    if (annotation.type === 'freehand' || annotation.type === 'ink' || annotation.type === 'line' || annotation.type === 'arrow' || annotation.type === 'underline' || annotation.type === 'strikeout' || annotation.type === 'squiggly' || annotation.type === 'polygon' || annotation.type === 'polyline') {
       let points = (annotation.data.points as number[])?.map((p, i) => p * scale) || [];
       if (points.length === 0) {
          if (annotation.type === 'underline') points = [0, height, width, height];
@@ -225,9 +296,12 @@ export const AnnotationOverlay: React.FC<AnnotationOverlayProps> = ({ pageNumber
             points={points}
             stroke={(annotation.data.borderColor as string) || 'red'}
             strokeWidth={(annotation.data.borderWidth as number) || 2}
-            tension={annotation.type === 'freehand' ? 0.5 : 0}
+            tension={(annotation.type === 'freehand' || annotation.type === 'ink') ? 0.5 : 0}
             lineCap="round"
             lineJoin="round"
+            dash={annotation.type === 'squiggly' ? [2, 2] : undefined}
+            closed={annotation.type === 'polygon'}
+            fill={annotation.type === 'polygon' ? ((annotation.data.backgroundColor as string) || 'rgba(0,0,255,0.1)') : undefined}
           />
         </Group>
       );

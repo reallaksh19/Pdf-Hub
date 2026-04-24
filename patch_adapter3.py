@@ -1,51 +1,7 @@
-import Konva from 'konva';
-import type { PdfAnnotation } from '@/core/annotations/types';
-import { deserializeKonvaNodeToAnnotation, serializeAnnotationToKonvaConfig } from './serializer';
+with open("frontend/src/adapters/annotation-canvas/KonvaAdapter.ts", "r") as f:
+    content = f.read()
 
-interface SerializedKonvaChild {
-  attrs: Record<string, unknown> & { id: string };
-  className: string;
-}
-
-interface SerializedKonvaLayer {
-  children: SerializedKonvaChild[];
-}
-
-export class KonvaAdapter {
-  private stage: Konva.Stage | null = null;
-  private layer: Konva.Layer | null = null;
-
-  initStage(container: HTMLDivElement, width: number, height: number): Konva.Stage {
-    this.stage = new Konva.Stage({
-      container,
-      width,
-      height,
-    });
-
-    this.layer = new Konva.Layer();
-    this.stage.add(this.layer);
-
-    // Prevent the default scrolling behavior when interacting with canvas
-    container.style.touchAction = 'none';
-
-    return this.stage;
-  }
-
-  addObject(annotation: PdfAnnotation): Konva.Shape | null {
-    if (!this.layer) return null;
-
-    let node: Konva.Shape;
-    const config = serializeAnnotationToKonvaConfig(annotation);
-
-    // Choose correct Konva Node based on the annotation type
-    switch (annotation.type) {
-      case 'textbox':
-        node = new Konva.Text({ ...config, text: annotation.data.text as string || 'Text', fill: 'black', fontSize: 16 });
-        break;
-      case 'highlight':
-        node = new Konva.Rect({ ...config, fill: 'yellow', opacity: 0.4 });
-        break;
-      case 'squiggly':
+replacement = """      case 'squiggly':
         node = new Konva.Line({
           ...config,
           points: [0, annotation.rect.height, annotation.rect.width, annotation.rect.height],
@@ -112,53 +68,15 @@ export class KonvaAdapter {
           strokeWidth: (annotation.data.borderWidth as number) || 2,
           tension: 0.5
         });
-        break;
-      default:
-        node = new Konva.Rect({ ...config, fill: 'gray', opacity: 0.5 });
-        break;
-    }
+        break;"""
 
-    // Add draggable capability for editor mode
-    node.draggable(true);
+# Need to replace existing case 'shape': and case 'freehand':
+start_shape = content.find("      case 'shape':")
+if start_shape != -1:
+    end_shape = content.find("      case 'line':", start_shape)
+    if end_shape != -1:
+        content = content[:start_shape] + replacement + "\n" + content[end_shape:]
+        print("Success")
 
-    this.layer.add(node);
-    this.layer.draw();
-    return node;
-  }
-
-  removeObject(id: string): void {
-    if (!this.layer) return;
-    const node = this.layer.findOne(`#${id}`);
-    if (node) {
-      node.destroy();
-      this.layer.draw();
-    }
-  }
-
-  serialize(pageNumber: number): PdfAnnotation[] {
-    if (!this.layer) return [];
-
-    // Konva.Layer().toJSON() provides children
-    const layerJSON = JSON.parse(this.layer.toJSON()) as SerializedKonvaLayer;
-    const annotations: PdfAnnotation[] = layerJSON.children.map((child) => {
-      const { attrs, className } = child;
-      const baseObj = deserializeKonvaNodeToAnnotation(attrs, className);
-      return {
-        ...baseObj,
-        id: attrs.id,
-        pageNumber,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      } as PdfAnnotation;
-    });
-
-    return annotations;
-  }
-
-  deserialize(annotations: PdfAnnotation[]): void {
-    if (!this.layer) return;
-    this.layer.destroyChildren(); // clear
-    annotations.forEach(ann => this.addObject(ann));
-    this.layer.draw();
-  }
-}
+with open("frontend/src/adapters/annotation-canvas/KonvaAdapter.ts", "w") as f:
+    f.write(content)
