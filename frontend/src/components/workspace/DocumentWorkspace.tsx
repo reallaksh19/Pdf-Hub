@@ -8,6 +8,8 @@ import { PdfRendererAdapter, type TextLayerItem } from '@/adapters/pdf-renderer/
 import { loadAnnotations, saveAnnotations } from '@/core/annotations/persistence';
 import { useAnnotationStore } from '@/core/annotations/store';
 import type { PdfAnnotation, Rect, AnnotationType, Point2D } from '@/core/annotations/types';
+import { AnnotationOverlay } from './AnnotationOverlay';
+import { EquationOverlay } from './EquationOverlay';
 import { useEditorStore } from '@/core/editor/store';
 import { useSessionStore } from '@/core/session/store';
 import { useReviewStore } from '@/core/review/store';
@@ -450,6 +452,8 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const [draftLinePoints, setDraftLinePoints] = React.useState<Record<string, number[]>>({});
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingValue, setEditingValue] = React.useState('');
+// @ts-ignore
+
   const [marquee, setMarquee] = React.useState<Rect | null>(null);
   const [textSelectionDraft, setTextSelectionDraft] = React.useState<TextSelectionDraft | null>(null);
   const transformRef = React.useRef<TransformState>(null);
@@ -1120,100 +1124,29 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
         style={{ pointerEvents: isPlacementOnlyTool ? 'auto' : 'none' }}
         onClick={handleOverlayClick}
       >
-        {pageAnnotations.map((annotation) => {
-          const selected = selectedAnnotationIds.includes(annotation.id);
-          const rect = draftRects[annotation.id] ?? annotation.rect;
-          const anchor = readAnchor(annotation, draftAnchors[annotation.id] ?? null);
-
-          if (annotation.type === 'line' || annotation.type === 'arrow') {
-            return (
-              <LineLikeNode
-                key={annotation.id}
-                annotation={annotation}
-                rect={rect}
-                points={draftLinePoints[annotation.id]}
-                selected={selected}
-                scale={scale}
-                onSelect={(event) => {
-                  event.stopPropagation();
-                  clearTextSelectionDraft();
-                  if (event.metaKey || event.ctrlKey) {
-                    onToggleSelection(annotation.id);
-                  } else {
-                    onSetSingleSelection(annotation.id);
-                  }
-                }}
-                onTransform={(event, mode) => startTransform(event, annotation, mode)}
-              />
-            );
-          }
-
-          if (annotation.type === 'callout' && anchor) {
-            return (
-              <CalloutNode
-                key={annotation.id}
-                annotation={annotation}
-                rect={rect}
-                anchor={anchor}
-                selected={selected}
-                scale={scale}
-                editingId={editingId}
-                editingValue={editingValue}
-                setEditingValue={setEditingValue}
-                setEditingId={setEditingId}
-                onSelect={(event) => {
-                  event.stopPropagation();
-                  clearTextSelectionDraft();
-                  if (event.metaKey || event.ctrlKey) {
-                    onToggleSelection(annotation.id);
-                  } else {
-                    onSetSingleSelection(annotation.id);
-                  }
-                }}
-                onTransform={(event, mode) => startTransform(event, annotation, mode)}
-                onAnchorDrag={(event) => startAnchorDrag(event, annotation)}
-                onDoubleClick={() => {
-                  if (annotation.data.locked === true) return;
-                  setEditingId(annotation.id);
-                  setEditingValue(readText(annotation));
-                }}
-                onCommitText={(value) => commitTextEdit(annotation, value)}
-              />
-            );
-          }
-
-          return (
-            <BoxNode
-              key={annotation.id}
-              annotation={annotation}
-              rect={rect}
-              selected={selected}
-              scale={scale}
-              editingId={editingId}
-              editingValue={editingValue}
-              setEditingValue={setEditingValue}
-              setEditingId={setEditingId}
-                onSelect={(event) => {
-                  event.stopPropagation();
-                  clearTextSelectionDraft();
-                  if (event.metaKey || event.ctrlKey) {
-                    onToggleSelection(annotation.id);
-                  } else {
-                  onSetSingleSelection(annotation.id);
-                }
-              }}
-              onTransform={(event, mode) => startTransform(event, annotation, mode)}
-              onDoubleClick={() => {
-                if (!isTextLike(annotation.type) || annotation.data.locked === true) return;
-                setEditingId(annotation.id);
-                setEditingValue(readText(annotation));
-              }}
-              onCommitText={(value) => commitTextEdit(annotation, value)}
-            />
-          );
-        })}
-
-        {marquee && (
+        <AnnotationOverlay
+           pageNumber={pageNumber}
+           scale={scale}
+           width={size.width}
+           height={size.height}
+           annotations={pageAnnotations.filter(a => typeof a.data.reviewStatus === 'string' ? a.data.reviewStatus !== 'resolved' : true).filter(a => typeof a.data.text === 'string' ? !a.data.text.includes('\\') : true)}
+           selectedAnnotationIds={selectedAnnotationIds}
+           activeTool={activeTool}
+           onSetSelection={onSetSelection}
+           onUpdateAnnotation={onCommitAnnotation}
+           onClearSelection={onClearSelection}
+        />
+        <EquationOverlay
+           pageNumber={pageNumber}
+           scale={scale}
+           equations={pageAnnotations.filter(a => typeof a.data.reviewStatus === 'string' ? a.data.reviewStatus === 'resolved' : false).filter(a => typeof a.data.text === 'string' ? a.data.text.includes('\\') : false)}
+           selectedAnnotationIds={selectedAnnotationIds}
+           activeTool={activeTool}
+           onSetSelection={onSetSelection}
+           onUpdateAnnotation={onCommitAnnotation}
+        />
+        {/*
+        */} {marquee && (
           <div
             className="absolute pointer-events-none border border-blue-500 bg-blue-200/20"
             style={{
