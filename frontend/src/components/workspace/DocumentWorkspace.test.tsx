@@ -81,6 +81,20 @@ describe('DocumentWorkspace', () => {
       fillRect: vi.fn(),
       fillStyle: '',
       setTransform: vi.fn(),
+      transform: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      getImageData: vi.fn().mockReturnValue({ data: new Uint8ClampedArray(4) }),
+      createPattern: vi.fn(),
+      measureText: vi.fn().mockReturnValue({ width: 0 }),
+      fillText: vi.fn(),
+      strokeText: vi.fn(),
+      lineTo: vi.fn(),
+      moveTo: vi.fn(),
+      stroke: vi.fn(),
+      fill: vi.fn(),
+      closePath: vi.fn(),
+      arc: vi.fn(),
     }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   });
 

@@ -2,7 +2,7 @@
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import type { AnnotationType, PdfAnnotation } from '@/core/annotations/types';
-import { Settings, Palette, Info, ChevronRight, ChevronLeft, MessageSquare, Send } from 'lucide-react';
+import { Settings, Palette, Info, ChevronRight, ChevronLeft, MessageSquare, Send, AlignLeft, AlignCenter, AlignRight, Bold, Type } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { ReviewReply, ReviewStatus } from '@/core/review/types';
 import { Button } from '@/components/ui/Button';
@@ -465,11 +465,12 @@ const PropertiesTab: React.FC<{
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <SectionTitle title="General" />
-        <Button variant="ghost" size="sm" onClick={deleteSelection} className="text-red-600">
+        <Button variant="ghost" size="sm" onClick={deleteSelection} className="text-red-600" title="Delete annotation">
           Delete
         </Button>
       </div>
 
+      <Section title="Geometry">
       <LabeledSelect
         label="Type"
         value={annotation.type}
@@ -500,6 +501,8 @@ const PropertiesTab: React.FC<{
           });
         }}
       />
+      </Section>
+
 
       <LabeledSelect
         label="Review Status"
@@ -566,7 +569,7 @@ const StyleTab: React.FC<{
 
   return (
     <div className="p-4 space-y-4">
-      <SectionTitle title="Appearance" />
+      <Section title="Appearance">
 
       <TwoColumnRow>
         <LabeledColorInput
@@ -587,65 +590,77 @@ const StyleTab: React.FC<{
           value={readColor(annotation.data.textColor, '#0f172a')}
           onChange={(value) => applyToSelection({ textColor: value })}
         />
-        <LabeledNumberInput
+        <LabeledSlider
           label="Border Width"
+          min={0}
+          max={10}
+          step={1}
           value={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 1}
-          onChange={(value) => {
-            const next = Number(value);
-            if (Number.isNaN(next)) {
-              return;
-            }
-            applyToSelection({ borderWidth: next });
-          }}
+          onChange={(value) => applyToSelection({ borderWidth: value })}
         />
-      </TwoColumnRow>
 
-      {isTextLike(annotation.type) && (
-        <>
+      <LabeledSlider
+        label="Opacity"
+        min={0}
+        max={1}
+        step={0.05}
+        value={typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1}
+        onChange={(value) => applyToSelection({ opacity: value })}
+      />
+</TwoColumnRow>
+
+      </Section>
+      {isTextLike(annotation.type) && (<Section title="Typography">
+
           <TwoColumnRow>
             <LabeledNumberInput
               label="Font Size"
               value={typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12}
               onChange={(value) => {
                 const next = Number(value);
-                if (Number.isNaN(next)) {
-                  return;
-                }
-                applyToSelection({ fontSize: next });
+                if (!Number.isNaN(next)) applyToSelection({ fontSize: next });
               }}
             />
 
-            <LabeledSelect
-              label="Weight"
-              value={typeof annotation.data.fontWeight === 'string' ? annotation.data.fontWeight : 'normal'}
-              onChange={(value) => applyToSelection({ fontWeight: value })}
-              options={[
-                { label: 'normal', value: 'normal' },
-                { label: 'bold', value: 'bold' },
-              ]}
-            />
+            <LabeledInputShell label="Weight">
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-md">
+                <button
+                  className={`flex-1 flex justify-center p-1 rounded-sm ${annotation.data.fontWeight !== 'bold' ? 'bg-white shadow-sm dark:bg-slate-700' : ''}`}
+                  onClick={() => applyToSelection({ fontWeight: 'normal' })}
+                  title="Normal"
+                ><Type className="w-4 h-4" /></button>
+                <button
+                  className={`flex-1 flex justify-center p-1 rounded-sm ${annotation.data.fontWeight === 'bold' ? 'bg-white shadow-sm dark:bg-slate-700' : ''}`}
+                  onClick={() => applyToSelection({ fontWeight: 'bold' })}
+                  title="Bold"
+                ><Bold className="w-4 h-4" /></button>
+              </div>
+            </LabeledInputShell>
           </TwoColumnRow>
 
-          <LabeledSelect
-            label="Text Align"
-            value={typeof annotation.data.textAlign === 'string' ? annotation.data.textAlign : 'left'}
-            onChange={(value) => applyToSelection({ textAlign: value })}
-            options={[
-              { label: 'left', value: 'left' },
-              { label: 'center', value: 'center' },
-              { label: 'right', value: 'right' },
-            ]}
-          />
+          <LabeledInputShell label="Alignment">
+             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-md mb-4">
+                <button
+                  className={`flex-1 flex justify-center p-1 rounded-sm ${(annotation.data.textAlign || 'left') === 'left' ? 'bg-white shadow-sm dark:bg-slate-700' : ''}`}
+                  onClick={() => applyToSelection({ textAlign: 'left' })}
+                  title="Align Left"
+                ><AlignLeft className="w-4 h-4" /></button>
+                <button
+                  className={`flex-1 flex justify-center p-1 rounded-sm ${annotation.data.textAlign === 'center' ? 'bg-white shadow-sm dark:bg-slate-700' : ''}`}
+                  onClick={() => applyToSelection({ textAlign: 'center' })}
+                  title="Align Center"
+                ><AlignCenter className="w-4 h-4" /></button>
+                <button
+                  className={`flex-1 flex justify-center p-1 rounded-sm ${annotation.data.textAlign === 'right' ? 'bg-white shadow-sm dark:bg-slate-700' : ''}`}
+                  onClick={() => applyToSelection({ textAlign: 'right' })}
+                  title="Align Right"
+                ><AlignRight className="w-4 h-4" /></button>
+              </div>
+          </LabeledInputShell>
+          </Section>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={annotation.data.autoSize !== false}
-              onChange={(event) => applyToSelection({ autoSize: event.target.checked })}
-            />
-            Auto-size text box
-          </label>
-        </>
+
+
       )}
 
       <label className="flex items-center gap-2 text-sm">
@@ -701,6 +716,31 @@ const LabeledInputShell: React.FC<{ label: string; children: React.ReactNode }> 
   </label>
 );
 
+
+const LabeledSlider: React.FC<{
+  label: string;
+  value: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  onChange: (value: number) => void;
+}> = ({ label, value, min = 0, max = 100, step = 1, onChange }) => (
+  <LabeledInputShell label={label}>
+    <div className="flex items-center gap-2">
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700"
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+      />
+      <span className="text-xs font-mono w-8 text-right">{value}</span>
+    </div>
+  </LabeledInputShell>
+);
+
 const LabeledNumberInput: React.FC<{
   label: string;
   value: number;
@@ -742,15 +782,43 @@ const LabeledTextarea: React.FC<{
   </LabeledInputShell>
 );
 
+
+const PRESET_COLORS = [
+  'transparent', '#ffffff', '#000000',
+  '#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#34d399', '#2dd4bf', '#38bdf8', '#60a5fa', '#818cf8', '#a78bfa', '#e879f9', '#f472b6',
+  '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#ec4899',
+  '#b91c1c', '#c2410c', '#b45309', '#4d7c0f', '#15803d', '#047857', '#0f766e', '#0369a1', '#1d4ed8', '#4338ca', '#6d28d9', '#a21caf', '#be185d',
+  '#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b', '#0f172a'
+];
+
 const LabeledColorInput: React.FC<{
   label: string;
   value: string;
   onChange: (value: string) => void;
 }> = ({ label, value, onChange }) => (
   <LabeledInputShell label={label}>
-    <input type="color" className="h-10 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-2" value={value} onChange={(e) => onChange(e.target.value)} />
+    <div className="flex gap-2">
+      <input
+        type="color"
+        className="h-10 w-10 shrink-0 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-1 cursor-pointer"
+        value={value === 'transparent' ? '#ffffff' : value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <div className="flex flex-wrap gap-1 content-start bg-slate-50 dark:bg-slate-900/50 p-1 rounded-md border border-slate-200 dark:border-slate-800">
+        {['transparent', '#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff', '#000000', '#64748b'].map((c) => (
+          <button
+            key={c}
+            className={`w-4 h-4 rounded-full border border-slate-300 dark:border-slate-600 ${value === c ? 'ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-slate-900' : ''}`}
+            style={{ backgroundColor: c === 'transparent' ? undefined : c, backgroundImage: c === 'transparent' ? 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)' : undefined, backgroundPosition: '0 0, 4px 4px', backgroundSize: '8px 8px' }}
+            onClick={() => onChange(c)}
+            title={c}
+          />
+        ))}
+      </div>
+    </div>
   </LabeledInputShell>
 );
+
 
 const KeyValue: React.FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono = false }) => (
   <div className="space-y-1">
@@ -764,4 +832,3 @@ const KeyValue: React.FC<{ label: string; value: string; mono?: boolean }> = ({ 
 function readColor(value: unknown, fallback: string): string {
   return typeof value === 'string' ? value : fallback;
 }
-

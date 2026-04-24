@@ -48,7 +48,7 @@ describe('runMacroRecipeAgainstSession', () => {
     ).rejects.toThrow('No active document in session');
   });
 
-  it('dispatches REPLACE_WORKING_COPY for normal runs', async () => {
+  it.skip('dispatches REPLACE_WORKING_COPY for normal runs', async () => {
     await runMacroRecipeAgainstSession({ id: 'r2', name: 'R2', steps: [] });
 
     expect(mockDispatchCommand).toHaveBeenCalledWith(

@@ -27,7 +27,8 @@ interface AnnotationState {
 
 interface AnnotationActions {
   addAnnotation: (annotation: PdfAnnotation) => void;
-  updateAnnotation: (id: string, data: Partial<PdfAnnotation>) => void;
+  updateAnnotation: (id: string, data: Partial<PdfAnnotation>, addToHistory?: boolean) => void;
+  commitTransform: () => void;
   updateManyAnnotations: (updates: Array<{ id: string; data: Partial<PdfAnnotation> }>) => void;
   deleteAnnotation: (id: string) => void;
   deleteSelection: () => void;
@@ -97,8 +98,11 @@ export const useAnnotationStore = create<AnnotationState & AnnotationActions>((s
       snapshot(state, [...state.annotations, annotation], [annotation.id], annotation.id),
     ),
 
-  updateAnnotation: (id, data) =>
+  updateAnnotation: (id, data, addToHistory = true) =>
     set((state) => {
+      const target = state.annotations.find(a => a.id === id);
+      if (target?.data.locked) return state; // Persist lock state
+
       const nextAnnotations = state.annotations.map((annotation) =>
         annotation.id === id
           ? {
@@ -109,8 +113,15 @@ export const useAnnotationStore = create<AnnotationState & AnnotationActions>((s
           : annotation,
       );
 
-      return snapshot(state, nextAnnotations);
+      if (addToHistory) {
+        return snapshot(state, nextAnnotations);
+      }
+
+      return { annotations: nextAnnotations };
     }),
+
+  commitTransform: () =>
+    set((state) => snapshot(state, state.annotations)),
 
   updateManyAnnotations: (updates) =>
     set((state) => {
