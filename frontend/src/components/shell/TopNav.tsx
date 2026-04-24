@@ -161,8 +161,15 @@ export const TopNav: React.FC = () => {
         <Button data-testid="theme-toggle" variant="ghost" size="icon" onClick={toggleDarkMode}>
           {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </Button>
-        <Button variant="ghost" size="icon">
-          <Settings className="w-4 h-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Settings (coming soon)"
+          onClick={() =>
+            addToast({ type: 'info', title: 'Settings', message: 'Settings panel coming in the next phase.' })
+          }
+        >
+          <Settings className="w-4 h-4 text-slate-400 dark:text-slate-500" />
         </Button>
       </div>
     </div>

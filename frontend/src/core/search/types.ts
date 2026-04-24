@@ -19,3 +19,22 @@ export interface SearchState {
   activeHitId: string | null;
   error: string | null;
 }
+
+// --- New types for the SearchIndexer ---
+
+export interface BBoxHit {
+  pageNumber: number;
+  text: string;
+  rect: { x: number; y: number; width: number; height: number };
+}
+
+export interface SearchOptions {
+  caseSensitive: boolean;
+  wholeWord: boolean;
+  useRegex: boolean;
+}
+
+export interface PageTextItem {
+  str: string;
+  rect: { x: number; y: number; width: number; height: number };
+}
