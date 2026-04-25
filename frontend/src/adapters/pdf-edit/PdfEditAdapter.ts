@@ -123,6 +123,11 @@ function drawArrowHead(
 }
 
 export class PdfEditAdapter {
+  static async createEmptyPdf(): Promise<Uint8Array> {
+    const pdfDoc = await PDFDocument.create();
+    return await pdfDoc.save();
+  }
+
   static async countPages(bytes: Uint8Array): Promise<number> {
     const pdfDoc = await PDFDocument.load(bytes);
     return pdfDoc.getPageCount();
