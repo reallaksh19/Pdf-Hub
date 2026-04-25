@@ -1,5 +1,5 @@
 import React from 'react';
-import { UploadCloud, Lock } from 'lucide-react';
+import { UploadCloud, Lock, Pin, X } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { VList } from 'virtua';
@@ -400,6 +400,22 @@ export const DocumentWorkspace: React.FC = () => {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          <marker id="arrow-filled" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="currentColor" />
+          </marker>
+          <marker id="arrow-open" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L9,3 L0,6" fill="none" stroke="currentColor" strokeWidth="1" />
+          </marker>
+          <marker id="circle-cap" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto" markerUnits="strokeWidth">
+            <circle cx="4" cy="4" r="3" fill="currentColor" />
+          </marker>
+          <marker id="square-cap" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto" markerUnits="strokeWidth">
+            <rect x="1" y="1" width="6" height="6" fill="currentColor" />
+          </marker>
+        </defs>
+      </svg>
       <div className="min-h-full flex flex-col items-center py-8">
         {viewState.viewMode === 'continuous' ? (
           <VList
@@ -457,14 +473,19 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const { hits, activeHitId } = useSearchStore();
   const isSelectTool = activeTool === 'select';
   const isTextMarkTool =
-    activeTool === 'highlight' || activeTool === 'underline' || activeTool === 'strikeout';
-  const isNoteTool = activeTool === 'comment' || activeTool === 'callout';
+    activeTool === 'highlight' || activeTool === 'underline' || activeTool === 'strikeout' || activeTool === 'squiggly';
+  const isNoteTool = activeTool === 'comment' || activeTool === 'callout' || activeTool === 'sticky-note';
   const isPlacementOnlyTool =
     activeTool === 'textbox' ||
     activeTool === 'shape' ||
+    activeTool === 'shape-rect' ||
+    activeTool === 'shape-ellipse' ||
+    activeTool === 'shape-cloud' ||
+    activeTool === 'redaction' ||
     activeTool === 'line' ||
     activeTool === 'arrow' ||
     activeTool === 'stamp';
+  const isInkTool = activeTool === 'ink';
 
   const [size, setSize] = React.useState({ width: 800, height: 1000 });
   const [textItems, setTextItems] = React.useState<TextLayerItem[]>([]);
@@ -475,6 +496,8 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const [editingValue, setEditingValue] = React.useState('');
   const [marquee, setMarquee] = React.useState<Rect | null>(null);
   const [textSelectionDraft, setTextSelectionDraft] = React.useState<TextSelectionDraft | null>(null);
+  const [inkPaths, setInkPaths] = React.useState<number[][]>([]);
+  const currentPathRef = React.useRef<number[]>([]);
   const transformRef = React.useRef<TransformState>(null);
   const anchorDragRef = React.useRef<AnchorDragState>(null);
   const draftRectsRef = React.useRef<Record<string, Rect>>({});
@@ -868,6 +891,9 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       } else if (activeTool === 'strikeout') {
         const items = draft.rects.map((rect) => buildStrikeoutAnnotation(pageNumber, rect));
         onCreateManyAnnotations(items);
+      } else if (activeTool === 'squiggly') {
+        const items = draft.rects.map((rect) => buildSquigglyAnnotation(pageNumber, rect));
+        onCreateManyAnnotations(items);
       } else if (activeTool === 'comment' || activeTool === 'callout') {
         const item = buildCalloutFromSelection(
           pageNumber,
@@ -944,6 +970,10 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   }, [marquee]);
 
   const startMarquee = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (isInkTool) {
+      startInkPath(event);
+      return;
+    }
     if (activeTool !== 'select') return;
     if (event.target !== event.currentTarget) return;
 
@@ -991,6 +1021,67 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     window.addEventListener('mouseup', onUp);
   };
 
+  const startInkPath = (event: React.MouseEvent<HTMLDivElement>) => {
+    const hostRect = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - hostRect.left) / scale;
+    const y = (event.clientY - hostRect.top) / scale;
+    currentPathRef.current = [x, y];
+
+    // Create temporary overlay that captures mouse movement globally for this stroke
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.zIndex = '9999';
+    overlay.style.cursor = 'crosshair';
+    document.body.appendChild(overlay);
+
+    const onMove = (moveEvent: MouseEvent) => {
+      const cx = (moveEvent.clientX - hostRect.left) / scale;
+      const cy = (moveEvent.clientY - hostRect.top) / scale;
+      currentPathRef.current.push(cx, cy);
+      // Force trigger state update to render live ink
+      setInkPaths([...inkPaths, [...currentPathRef.current]]);
+    };
+
+    const onUp = () => {
+      document.body.removeChild(overlay);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+
+      const path = currentPathRef.current;
+      if (path.length >= 4) {
+        const xs = path.filter((_, i) => i % 2 === 0);
+        const ys = path.filter((_, i) => i % 2 === 1);
+        const minX = Math.min(...xs);
+        const minY = Math.min(...ys);
+        const finalRect = {
+          x: minX,
+          y: minY,
+          width: Math.max(4, Math.max(...xs) - minX),
+          height: Math.max(4, Math.max(...ys) - minY),
+        };
+
+        // Re-center path coords relative to the rect bounding box
+        const relativePath = path.map((val, i) => (i % 2 === 0 ? val - minX : val - minY));
+
+        const newAnnotation = buildAnnotation('ink', pageNumber, minX, minY);
+        newAnnotation.rect = finalRect; // Overwrite rect with final bounds
+        newAnnotation.data.paths = [relativePath];
+
+        onCreateAnnotation(newAnnotation);
+      }
+
+      setInkPaths([]);
+      currentPathRef.current = [];
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     onActivate();
 
@@ -1001,9 +1092,15 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     if (
       activeTool === 'textbox' ||
       activeTool === 'comment' ||
+      activeTool === 'sticky-note' ||
       activeTool === 'stamp' ||
       activeTool === 'highlight' ||
       activeTool === 'shape' ||
+      activeTool === 'shape-rect' ||
+      activeTool === 'shape-ellipse' ||
+      activeTool === 'shape-cloud' ||
+      activeTool === 'shape-polygon' ||
+      activeTool === 'redaction' ||
       activeTool === 'line' ||
       activeTool === 'arrow' ||
       activeTool === 'callout'
@@ -1033,12 +1130,29 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       <div
         className="absolute inset-0"
         style={{
-          pointerEvents: isSelectTool || isTextMarkTool || isNoteTool ? 'auto' : 'none',
+          pointerEvents: isSelectTool || isTextMarkTool || isNoteTool || isInkTool ? 'auto' : 'none',
           userSelect: isSelectTool || isTextMarkTool || isNoteTool ? 'text' : 'none',
+          cursor: isInkTool ? 'crosshair' : undefined,
         }}
         onMouseDown={startMarquee}
         onMouseUp={handleTextSelectionMouseUp}
       >
+        {inkPaths.length > 0 && (
+          <svg className="absolute inset-0 pointer-events-none w-full h-full overflow-visible">
+            {inkPaths.map((path, i) => (
+              <path
+                key={i}
+                d={inkPathToSvgD(path, scale)}
+                stroke="#111827"
+                strokeWidth={2}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ))}
+          </svg>
+        )}
+
         {hits
           .filter((hit) => hit.pageNumber === pageNumber)
           .map((hit) =>
@@ -1124,6 +1238,12 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                 Strikeout
               </button>
               <button
+                className="text-xs hover:text-red-300"
+                onClick={createSquigglyFromSelection}
+              >
+                Squiggly
+              </button>
+              <button
                 className="text-xs hover:text-blue-300"
                 onClick={() => createNoteFromSelection('comment')}
               >
@@ -1177,6 +1297,36 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                   }
                 }}
                 onTransform={(event, mode) => startTransform(event, annotation, mode)}
+              />
+            );
+          }
+
+          if (annotation.type === 'sticky-note') {
+            return (
+              <StickyNoteNode
+                key={annotation.id}
+                annotation={annotation}
+                rect={rect}
+                selected={selected}
+                scale={scale}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
+                }}
+                onDoubleClick={() => {
+                  if (annotation.data.locked === true) return;
+                  if (annotation.data.isCollapsed !== false) {
+                    onCommitAnnotation(annotation.id, { data: { ...annotation.data, isCollapsed: false } });
+                  }
+                }}
+                onToggleCollapse={() => {
+                  onCommitAnnotation(annotation.id, { data: { ...annotation.data, isCollapsed: true } });
+                }}
               />
             );
           }
@@ -1297,13 +1447,13 @@ const BoxNode: React.FC<{
 
   return (
     <div
-      className="absolute pointer-events-auto overflow-hidden transition-shadow"
+      className="absolute pointer-events-auto overflow-visible transition-shadow"
       style={{
         left: rect.x * scale,
         top: rect.y * scale,
         width: rect.width * scale,
         height: rect.height * scale,
-        ...style,
+        ...(annotation.type === 'shape-cloud' ? {} : style),
       }}
       onClick={onSelect}
       onDoubleClick={(event) => {
@@ -1321,10 +1471,70 @@ const BoxNode: React.FC<{
         </div>
       )}
 
+      {annotation.type === 'shape-cloud' && (
+        <svg
+          className="absolute inset-0 pointer-events-none w-full h-full overflow-visible"
+          style={{ width: '100%', height: '100%', top: 0, left: 0, position: 'absolute' }}
+        >
+          <path
+            d={cloudPath({ x: 0, y: 0, width: rect.width, height: rect.height }, scale, 6)}
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#60a5fa'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+            fill={typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : 'transparent'}
+            opacity={typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1}
+          />
+        </svg>
+      )}
+
+        {annotation.type === 'shape-polygon' && Array.isArray(annotation.data.points) && (
+          <svg
+            className="absolute inset-0 pointer-events-none w-full h-full overflow-visible"
+            style={{ width: '100%', height: '100%', top: 0, left: 0, position: 'absolute' }}
+          >
+            <polygon
+              points={annotation.data.points.map((p: number, i: number) => i % 2 === 0 ? p * scale : p * scale).join(' ')}
+              stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#3b82f6'}
+              strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+              fill={typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : 'transparent'}
+              opacity={typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1}
+            />
+          </svg>
+        )}
+
+        {annotation.type === 'ink' && Array.isArray(annotation.data.paths) && (
+          <svg
+            className="absolute inset-0 pointer-events-none w-full h-full overflow-visible"
+            style={{ width: '100%', height: '100%', top: 0, left: 0, position: 'absolute' }}
+          >
+            {annotation.data.paths.map((path, i) => (
+              <path
+                key={i}
+                d={inkPathToSvgD(path as number[], scale)}
+                stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#111827'}
+                strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ))}
+          </svg>
+        )}
+
+        {annotation.type === 'redaction' && (
+          <div
+            className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none"
+            style={{ background: '#000000', border: '2px solid #000' }}
+          >
+            <span style={{ color: '#ffffff', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', opacity: 0.5, userSelect: 'none' }}>
+              REDACTED
+            </span>
+          </div>
+        )}
+
       {editingId === annotation.id && isTextLike(annotation.type) ? (
         <textarea
           autoFocus
-          className="w-full h-full bg-white/95 text-slate-900 p-1 text-[11px] outline-none resize-none"
+          className="w-full h-full bg-white/95 text-slate-900 p-1 text-[11px] outline-none resize-none relative z-10"
           value={editingValue}
           onChange={(event) => setEditingValue(event.target.value)}
           onBlur={() => {
@@ -1368,6 +1578,59 @@ const BoxNode: React.FC<{
   );
 };
 
+const StickyNoteNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  selected: boolean;
+  scale: number;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onDoubleClick: () => void;
+  onToggleCollapse: () => void;
+}> = ({ annotation, rect, selected, scale, onSelect, onDoubleClick, onToggleCollapse }) => {
+  const collapsed = annotation.data.isCollapsed !== false;
+
+  if (collapsed) {
+    return (
+      <div
+        className="absolute pointer-events-auto cursor-pointer group"
+        style={{ left: rect.x * scale, top: rect.y * scale }}
+        onClick={onSelect}
+        onDoubleClick={onDoubleClick}
+      >
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 ${
+          selected ? 'ring-2 ring-blue-500' : ''
+        }`} style={{ background: typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : '#fde047' }}>
+          <Pin className="w-4 h-4 text-slate-700" />
+        </div>
+        <div className="absolute left-8 top-0 hidden group-hover:block z-50 w-48 p-2 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-slate-200 text-xs text-slate-700 dark:text-slate-200 pointer-events-none">
+          <div className="font-semibold mb-0.5">{typeof annotation.data.author === 'string' ? annotation.data.author : 'Anonymous'}</div>
+          {typeof annotation.data.text === 'string' ? annotation.data.text.slice(0, 80) : ''}
+          {(typeof annotation.data.text === 'string' ? annotation.data.text.length : 0) > 80 ? '…' : ''}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="absolute pointer-events-auto overflow-hidden rounded-xl shadow-xl"
+      style={{
+        left: rect.x * scale, top: rect.y * scale,
+        width: Math.max(150, rect.width) * scale, height: Math.max(100, rect.height) * scale,
+        background: typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : '#fef9c3',
+        border: `1.5px solid ${typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#fde047'}`,
+      }}
+      onClick={onSelect}
+    >
+      <div className="flex items-center justify-between px-2 py-1 bg-black/10">
+        <span className="text-[10px] font-semibold">{typeof annotation.data.author === 'string' ? annotation.data.author : 'Note'}</span>
+        <button onClick={onToggleCollapse}><X className="w-3 h-3" /></button>
+      </div>
+      <div className="p-2 text-xs">{typeof annotation.data.text === 'string' ? annotation.data.text : ''}</div>
+    </div>
+  );
+};
+
 const CalloutNode: React.FC<{
   annotation: PdfAnnotation;
   rect: Rect;
@@ -1400,21 +1663,23 @@ const CalloutNode: React.FC<{
   onCommitText,
 }) => {
   const style = annotationVisualStyle(annotation, selected);
-  const line = computeCalloutLeader(anchor, rect);
+  const knee = annotation.data.knee;
+  const arrowHead = annotation.data.arrowHead;
 
   return (
     <>
       <svg
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none w-full h-full overflow-visible"
         style={{ width: '100%', height: '100%' }}
       >
-        <line
-          x1={line.x1 * scale}
-          y1={line.y1 * scale}
-          x2={line.x2 * scale}
-          y2={line.y2 * scale}
+        <path
+          d={computeCalloutLeader3pt(anchor, knee, rect, scale)}
           stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#334155'}
-          strokeWidth={2}
+          strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 1.5}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          markerEnd={arrowHead === 'filled' ? 'url(#arrow-filled)' : (arrowHead === 'open' ? 'url(#arrow-open)' : undefined)}
         />
         {selected && (
           <circle
@@ -1531,6 +1796,9 @@ const LineLikeNode: React.FC<{
       ? annotation.data.borderColor
       : '#111827';
 
+  const endCap = annotation.data.lineEndCap;
+  const startCap = annotation.data.lineStartCap;
+
   return (
     <div
       className="absolute pointer-events-auto"
@@ -1546,21 +1814,17 @@ const LineLikeNode: React.FC<{
         onTransform(event, 'move');
       }}
     >
-      <svg width="100%" height="100%" className={selected ? 'overflow-visible' : ''}>
+      <svg width="100%" height="100%" className="overflow-visible">
         <line
           x1={points[0] * scale}
           y1={points[1] * scale}
           x2={points[2] * scale}
           y2={points[3] * scale}
           stroke={color}
-          strokeWidth={2}
+          strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          markerEnd={endCap === 'arrow' ? 'url(#arrow-filled)' : endCap === 'circle' ? 'url(#circle-cap)' : endCap === 'square' ? 'url(#square-cap)' : (annotation.type === 'arrow' && !endCap ? 'url(#arrow-filled)' : undefined)}
+          markerStart={startCap === 'arrow' ? 'url(#arrow-filled)' : startCap === 'circle' ? 'url(#circle-cap)' : startCap === 'square' ? 'url(#square-cap)' : undefined}
         />
-        {annotation.type === 'arrow' && (
-          <polygon
-            points={arrowHeadPolygon(points, scale)}
-            fill={color}
-          />
-        )}
       </svg>
 
       {selected && annotation.data.locked !== true && (
@@ -1604,13 +1868,64 @@ function buildAnnotation(
       };
 
     case 'shape':
+    case 'shape-rect':
+    case 'shape-ellipse':
+    case 'shape-cloud':
       return {
         ...common,
-        type: 'shape',
+        type: tool,
         rect: { x, y, width: 180, height: 60 },
         data: {
           backgroundColor: 'transparent',
           borderColor: '#3b82f6',
+          borderWidth: 2,
+        },
+      };
+
+    case 'shape-polygon':
+      return {
+        ...common,
+        type: 'shape-polygon',
+        rect: { x, y, width: 150, height: 150 },
+        data: {
+          backgroundColor: 'transparent',
+          borderColor: '#3b82f6',
+          borderWidth: 2,
+          points: [75, 0, 150, 60, 120, 150, 30, 150, 0, 60],
+        },
+      };
+
+    case 'redaction':
+      return {
+        ...common,
+        type: 'redaction',
+        rect: { x, y, width: 200, height: 26 },
+        data: {
+          backgroundColor: '#000000',
+          borderColor: '#000000',
+          borderWidth: 2,
+        },
+      };
+
+    case 'sticky-note':
+      return {
+        ...common,
+        type: 'sticky-note',
+        rect: { x, y, width: 30, height: 30 },
+        data: {
+          backgroundColor: '#fde047',
+          borderColor: '#fde047',
+          isCollapsed: true,
+        },
+      };
+
+    case 'ink':
+      return {
+        ...common,
+        type: 'ink',
+        rect: { x, y, width: 100, height: 100 },
+        data: {
+          borderColor: '#111827',
           borderWidth: 2,
         },
       };
@@ -1713,6 +2028,21 @@ function buildHighlightAnnotation(pageNumber: number, rect: Rect): PdfAnnotation
       backgroundColor: '#fde047',
       borderColor: '#facc15',
       opacity: 0.38,
+    },
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function buildSquigglyAnnotation(pageNumber: number, rect: Rect): PdfAnnotation {
+  const now = Date.now();
+  return {
+    id: uuidv4(),
+    type: 'squiggly',
+    pageNumber,
+    rect,
+    data: {
+      borderColor: '#dc2626',
     },
     createdAt: now,
     updatedAt: now,
@@ -1915,27 +2245,74 @@ function autoSizeRectForText(text: string, fontSize: number, rect: Rect): Rect {
   return { ...rect, width, height };
 }
 
-function computeCalloutLeader(anchor: Point2D, rect: Rect) {
-  const left = rect.x;
-  const right = rect.x + rect.width;
-  const top = rect.y;
-  const bottom = rect.y + rect.height;
-  const cx = clamp(anchor.x, left, right);
-  const cy = clamp(anchor.y, top, bottom);
+function computeCalloutLeader3pt(
+  anchor: Point2D,
+  knee: Point2D | undefined,
+  rect: Rect,
+  scale: number,
+) {
+  // Closest point on box edge to knee (or anchor if no knee)
+  const ref = knee ?? anchor;
+  const boxX = clamp(ref.x, rect.x, rect.x + rect.width);
+  const boxY = clamp(ref.y, rect.y, rect.y + rect.height);
 
-  const distances = [
-    { x: left, y: cy, d: Math.abs(anchor.x - left) },
-    { x: right, y: cy, d: Math.abs(anchor.x - right) },
-    { x: cx, y: top, d: Math.abs(anchor.y - top) },
-    { x: cx, y: bottom, d: Math.abs(anchor.y - bottom) },
-  ].sort((a, b) => a.d - b.d);
+  // Pick nearest edge
+  const dists = [
+    { x: rect.x, y: clamp(ref.y, rect.y, rect.y + rect.height) },           // left
+    { x: rect.x + rect.width, y: clamp(ref.y, rect.y, rect.y + rect.height) }, // right
+    { x: clamp(ref.x, rect.x, rect.x + rect.width), y: rect.y },             // top
+    { x: clamp(ref.x, rect.x, rect.x + rect.width), y: rect.y + rect.height }, // bottom
+  ].sort((a, b) =>
+    Math.hypot(a.x - ref.x, a.y - ref.y) - Math.hypot(b.x - ref.x, b.y - ref.y)
+  );
+  const exit = dists[0];
 
-  return {
-    x1: anchor.x,
-    y1: anchor.y,
-    x2: distances[0].x,
-    y2: distances[0].y,
-  };
+  const points = knee
+    ? [anchor, knee, exit]   // 3-point elbow
+    : [anchor, exit];        // 2-point straight
+
+  const d = points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x * scale} ${p.y * scale}`)
+    .join(' ');
+
+  return d;
+}
+
+function inkPathToSvgD(points: number[], scale: number): string {
+  if (points.length < 4) return '';
+  const pairs: string[] = [];
+  for (let i = 0; i < points.length; i += 2) {
+    const x = points[i] * scale;
+    const y = points[i + 1] * scale;
+    pairs.push(i === 0 ? `M${x},${y}` : `L${x},${y}`);
+  }
+  return pairs.join(' ');
+}
+
+function cloudPath(rect: Rect, scale: number, amplitude = 6): string {
+  const { x, y, width, height } = rect;
+  const bumps = Math.max(3, Math.round(width / 18));
+  const step = (width * scale) / bumps;
+  let d = `M ${x * scale} ${(y + height / 2) * scale} `;
+
+  // Top edge — bumps going right
+  for (let i = 0; i < bumps; i++) {
+    const cx = (x * scale) + i * step + step / 2;
+    const cy = (y * scale) - amplitude;
+    const ex = (x * scale) + (i + 1) * step;
+    d += `Q ${cx} ${cy} ${ex} ${y * scale} `;
+  }
+  // Right edge — bumps going down
+  const rightBumps = Math.max(2, Math.round(height / 18));
+  const rStep = (height * scale) / rightBumps;
+  for (let i = 0; i < rightBumps; i++) {
+    const cx = ((x + width) * scale) + amplitude;
+    const cy = (y * scale) + i * rStep + rStep / 2;
+    const ey = (y * scale) + (i + 1) * rStep;
+    d += `Q ${cx} ${cy} ${(x + width) * scale} ${ey} `;
+  }
+  d += 'Z';
+  return d;
 }
 
 function readPoints(

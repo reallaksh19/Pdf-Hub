@@ -5,14 +5,19 @@ export type ActiveTool =
   | 'highlight'
   | 'underline'
   | 'strikeout'
+  | 'squiggly'
   | 'shape'
+  | 'shape-cloud'
+  | 'shape-polygon'
   | 'freehand'
+  | 'ink'
   | 'stamp'
   | 'sticky-note'
   | 'comment'
   | 'line'
   | 'arrow'
-  | 'callout';
+  | 'callout'
+  | 'redaction';
 
 export type SidebarTab =
   | 'thumbnails'
