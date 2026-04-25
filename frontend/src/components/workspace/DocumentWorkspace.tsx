@@ -15,6 +15,7 @@ import { useSearchStore } from '@/core/search/store';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 import { SearchIndexer } from '@/core/search/indexer';
+import { usePdfDoc } from '@/core/session/PdfDocContext';
 
 type TransformState =
   | {
@@ -74,7 +75,7 @@ export const DocumentWorkspace: React.FC = () => {
   const { activeTool } = useEditorStore();
   const { hideResolved } = useReviewStore();
 
-  const [pdfDoc, setPdfDoc] = React.useState<PDFDocumentProxy | null>(null);
+  const { pdfDoc, setPdfDoc } = usePdfDoc();
   const [loading, setLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -128,22 +129,6 @@ export const DocumentWorkspace: React.FC = () => {
 
         previousDoc = doc;
         setPdfDoc(doc);
-
-        if (workingBytes) {
-          try {
-             const documentKeyToUse = documentKey || "local_temp_key";
-             const pagesText: Record<number, any[]> = {};
-             for (let i = 1; i <= doc.numPages; i++) {
-               if (cancelled) break;
-               const page = await doc.getPage(i);
-               const items = await PdfRendererAdapter.getPageTextItems(page, 1.0);
-               pagesText[i] = items.map(item => ({ str: item.text, rect: { x: item.x, y: item.y, width: item.width, height: item.height } }));
-             }
-             SearchIndexer.setCache(documentKeyToUse, pagesText);
-          } catch (err) {
-             console.error('Failed to build SearchIndexer cache', err);
-          }
-        }
       } catch (err) {
         if (!cancelled) {
           setLoadError(String(err));
@@ -160,7 +145,32 @@ export const DocumentWorkspace: React.FC = () => {
       cancelled = true;
       if (previousDoc) void previousDoc.destroy();
     };
-  }, [workingBytes]);
+  }, [workingBytes, documentKey, setPdfDoc]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    if (pdfDoc && workingBytes) {
+      const buildIndex = async () => {
+        try {
+           const documentKeyToUse = documentKey || "local_temp_key";
+           const pagesText: Record<number, any[]> = {};
+           for (let i = 1; i <= pdfDoc.numPages; i++) {
+             if (cancelled) break;
+             const page = await pdfDoc.getPage(i);
+             const items = await PdfRendererAdapter.getPageTextItems(page, 1.0);
+             pagesText[i] = items.map(item => ({ str: item.text, rect: { x: item.x, y: item.y, width: item.width, height: item.height } }));
+           }
+           if (!cancelled) {
+             SearchIndexer.setCache(documentKeyToUse, pagesText);
+           }
+        } catch (err) {
+           console.error('Failed to build SearchIndexer cache', err);
+        }
+      };
+      buildIndex();
+    }
+    return () => { cancelled = true; };
+  }, [pdfDoc, workingBytes, documentKey]);
 
   React.useEffect(() => {
     const loadStored = async () => {
@@ -506,6 +516,15 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   React.useEffect(() => {
     draftRectsRef.current = draftRects;
   }, [draftRects]);
+
+  React.useEffect(() => {
+    if (activeHitId) {
+      const el = document.getElementById('active-search-hit');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [activeHitId, pageNumber]);
 
   React.useEffect(() => {
     draftAnchorsRef.current = draftAnchors;
@@ -1031,11 +1050,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
               const isActive = hit.id === activeHitId;
               return (
                 <div
-                  ref={(el) => {
-                    if (isActive && el && index === 0) {
-                      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }
-                  }}
+                  id={isActive && index === 0 ? 'active-search-hit' : undefined}
                   key={`hit-${hit.id}-${index}`}
                   className={`absolute pointer-events-none ${
                     isActive ? 'bg-orange-300/35 border border-orange-500/60' : 'bg-yellow-200/30 border border-yellow-400/35'

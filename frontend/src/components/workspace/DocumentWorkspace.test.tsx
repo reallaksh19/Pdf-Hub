@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DocumentWorkspace } from './DocumentWorkspace';
+import { PdfDocProvider } from '@/core/session/PdfDocContext';
 import { useSessionStore } from '@/core/session/store';
 import { useEditorStore } from '@/core/editor/store';
 
@@ -86,7 +87,7 @@ describe('DocumentWorkspace', () => {
 
   it('renders continuously', async () => {
     await act(async () => {
-      render(<DocumentWorkspace />);
+      render(<PdfDocProvider><DocumentWorkspace /></PdfDocProvider>);
     });
 
     // We mock VList to render its children directly
@@ -105,7 +106,7 @@ describe('DocumentWorkspace', () => {
     });
 
     await act(async () => {
-      render(<DocumentWorkspace />);
+      render(<PdfDocProvider><DocumentWorkspace /></PdfDocProvider>);
     });
     const page2 = await screen.findByText('Page 2');
     expect(page2).toBeInTheDocument();
@@ -122,7 +123,7 @@ describe('DocumentWorkspace', () => {
     });
 
     await act(async () => {
-      render(<DocumentWorkspace />);
+      render(<PdfDocProvider><DocumentWorkspace /></PdfDocProvider>);
     });
     const page2 = await screen.findByText('Page 2');
     expect(page2).toBeInTheDocument();
@@ -133,7 +134,7 @@ describe('DocumentWorkspace', () => {
 
     let containerElement: HTMLElement;
     await act(async () => {
-      const { container } = render(<DocumentWorkspace />);
+      const { container } = render(<PdfDocProvider><DocumentWorkspace /></PdfDocProvider>);
       containerElement = container;
     });
 
@@ -161,7 +162,7 @@ describe('DocumentWorkspace', () => {
     });
 
     await act(async () => {
-      render(<DocumentWorkspace />);
+      render(<PdfDocProvider><DocumentWorkspace /></PdfDocProvider>);
     });
 
     await vi.waitFor(() => {
