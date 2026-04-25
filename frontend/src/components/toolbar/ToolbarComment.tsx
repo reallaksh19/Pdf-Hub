@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  MessageSquarePlus,
   Type,
   Highlighter,
   Underline as UnderlineIcon,
@@ -156,6 +157,12 @@ export const ToolbarComment: React.FC = () => {
       <Tooltip content="Arrow">
         <Button variant={getToolVariant('arrow')} size="icon" onClick={() => handleToolClick('arrow')}>
           <MoveRight className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content="Callout">
+        <Button variant={getToolVariant('callout')} size="icon" onClick={() => handleToolClick('callout')}>
+          <MessageSquarePlus className="w-4 h-4" />
         </Button>
       </Tooltip>
 

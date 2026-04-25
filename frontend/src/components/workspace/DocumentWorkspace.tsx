@@ -781,6 +781,69 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     window.addEventListener('mouseup', onUp);
   };
 
+
+  const startKneeDrag = (
+    event: React.MouseEvent<HTMLDivElement>,
+    annotation: PdfAnnotation,
+  ) => {
+    if (annotation.data.locked === true) return;
+
+    const knee = annotation.data.knee as Point2D | undefined;
+    if (!knee) return;
+
+    event.stopPropagation();
+    clearTextSelectionDraft();
+    onSetSingleSelection(annotation.id);
+
+    const surface = event.currentTarget.closest('[data-testid^="page-surface-"]') as HTMLElement;
+    if (!surface) return;
+
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const initialKnee = { ...knee };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      const dx = (e.clientX - startX) / scale;
+      const dy = (e.clientY - startY) / scale;
+
+
+
+      setDraftKnees((prev) => ({
+        ...prev,
+        [annotation.id]: {
+          x: initialKnee.x + dx,
+          y: initialKnee.y + dy,
+        },
+      }));
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+
+      const finalDx = (e.clientX - startX) / scale;
+      const finalDy = (e.clientY - startY) / scale;
+
+      const finalKnee = {
+        x: initialKnee.x + finalDx,
+        y: initialKnee.y + finalDy,
+      };
+
+      setDraftKnees((prev) => {
+        const next = { ...prev };
+        delete next[annotation.id];
+        return next;
+      });
+
+      updateAnnotation(annotation.id, {
+        data: { knee: finalKnee },
+      });
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  };
+
   const startAnchorDrag = (
     event: React.MouseEvent<HTMLDivElement>,
     annotation: PdfAnnotation,
@@ -1239,7 +1302,20 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
               </button>
               <button
                 className="text-xs hover:text-red-300"
-                onClick={createSquigglyFromSelection}
+                onClick={() => {
+                  if (!textSelectionDraft || textSelectionDraft.rects.length === 0) return;
+                  const annId = uuidv4();
+                  const newAnn: PdfAnnotation = buildSquigglyFromSelection(
+                    textSelectionDraft.rects[0],
+                    textSelectionDraft.text,
+                    textSelectionDraft.pageNumber,
+                    viewState
+                  );
+                  newAnn.id = annId;
+                  addAnnotation(newAnn);
+                  clearTextSelectionDraft();
+                  onSetSingleSelection(annId);
+                }}
               >
                 Squiggly
               </button>
@@ -1338,6 +1414,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                 annotation={annotation}
                 rect={rect}
                 anchor={anchor}
+                knee={readKnee(annotation, draftKnees[annotation.id] ?? null)}
                 selected={selected}
                 scale={scale}
                 editingId={editingId}
@@ -1355,6 +1432,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                 }}
                 onTransform={(event, mode) => startTransform(event, annotation, mode)}
                 onAnchorDrag={(event) => startAnchorDrag(event, annotation)}
+                onKneeDrag={(event) => startKneeDrag(event, annotation)}
                 onDoubleClick={() => {
                   if (annotation.data.locked === true) return;
                   setEditingId(annotation.id);
@@ -1635,6 +1713,7 @@ const CalloutNode: React.FC<{
   annotation: PdfAnnotation;
   rect: Rect;
   anchor: Point2D;
+  knee: Point2D | null;
   selected: boolean;
   scale: number;
   editingId: string | null;
@@ -1644,12 +1723,14 @@ const CalloutNode: React.FC<{
   onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
   onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
   onAnchorDrag: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onKneeDrag: (event: React.MouseEvent<HTMLDivElement>) => void;
   onDoubleClick: () => void;
   onCommitText: (value: string) => void;
 }> = ({
   annotation,
   rect,
   anchor,
+  knee,
   selected,
   scale,
   editingId,
@@ -1659,11 +1740,11 @@ const CalloutNode: React.FC<{
   onSelect,
   onTransform,
   onAnchorDrag,
+  onKneeDrag,
   onDoubleClick,
   onCommitText,
 }) => {
   const style = annotationVisualStyle(annotation, selected);
-  const knee = annotation.data.knee;
   const arrowHead = annotation.data.arrowHead;
 
   return (
@@ -1687,6 +1768,18 @@ const CalloutNode: React.FC<{
             cy={anchor.y * scale}
             r={4}
             fill="#2563eb"
+            className="pointer-events-auto cursor-move"
+            onPointerDown={onAnchorDrag}
+          />
+        )}
+        {selected && knee && typeof knee.x === 'number' && typeof knee.y === 'number' && (
+          <circle
+            cx={knee.x * scale}
+            cy={knee.y * scale}
+            r={4}
+            fill="#eab308"
+            className="pointer-events-auto cursor-move"
+            onPointerDown={onKneeDrag}
           />
         )}
       </svg>
@@ -2253,8 +2346,8 @@ function computeCalloutLeader3pt(
 ) {
   // Closest point on box edge to knee (or anchor if no knee)
   const ref = knee ?? anchor;
-  const boxX = clamp(ref.x, rect.x, rect.x + rect.width);
-  const boxY = clamp(ref.y, rect.y, rect.y + rect.height);
+
+
 
   // Pick nearest edge
   const dists = [
@@ -2346,7 +2439,7 @@ function resizeLineLikeRect(
   return { rect: newRect, points: nextPoints };
 }
 
-function arrowHeadPolygon(points: number[], scale: number): string {
+/* function arrowHeadPolygon(points: number[], scale: number): string {
   const [x1, y1, x2, y2] = points.map((value) => value * scale);
   const angle = Math.atan2(y2 - y1, x2 - x1);
   const size = 10;
@@ -2355,7 +2448,7 @@ function arrowHeadPolygon(points: number[], scale: number): string {
   const rightX = x2 - size * Math.cos(angle + Math.PI / 6);
   const rightY = y2 - size * Math.sin(angle + Math.PI / 6);
   return `${x2},${y2} ${leftX},${leftY} ${rightX},${rightY}`;
-}
+} */
 
 function domRectToPageRect(domRect: DOMRect, pageRect: DOMRect, scale: number): Rect {
   return {
