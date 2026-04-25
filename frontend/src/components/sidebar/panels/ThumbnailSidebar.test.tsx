@@ -93,7 +93,9 @@ describe('ThumbnailSidebar', () => {
 
     const mockDoc = {
       numPages: 2,
-      getPage: vi.fn().mockResolvedValue({}),
+      getPage: vi.fn().mockResolvedValue({
+        cleanup: vi.fn(),
+      }),
       destroy: vi.fn(),
     };
     const mockedLoadDocument = PdfRendererAdapter.loadDocument as unknown as {
@@ -109,7 +111,9 @@ describe('ThumbnailSidebar', () => {
       render(<ThumbnailSidebar />);
     });
 
-    mockDocDeferredResolve(mockDoc);
+    await act(async () => {
+      mockDocDeferredResolve(mockDoc);
+    });
 
     await vi.waitFor(() => {
       expect(screen.queryByText(/Generating thumbnails.../i)).not.toBeInTheDocument();

@@ -13,7 +13,7 @@ import { useToastStore } from '@/core/toast/store';
 
 export const TopNav: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
-  const { documentKey, fileName, isDirty } = useSessionStore();
+  const { workingBytes, fileName, isDirty } = useSessionStore();
   const { setSidebarTab, setLeftPanelWidth, leftPanelWidth } = useEditorStore();
 
   React.useEffect(() => {
@@ -140,6 +140,15 @@ export const TopNav: React.FC = () => {
             STATIC
           </Badge>
         </div>
+
+        {fileName && (
+          <div className="hidden lg:flex items-center ml-4 px-3 py-1 bg-slate-100 dark:bg-slate-800/50 rounded text-sm text-slate-700 dark:text-slate-300 font-medium">
+            <span className="truncate max-w-[300px]">
+              {isDirty && <span className="text-blue-500 mr-1 font-bold">•</span>}
+              {fileName}
+            </span>
+          </div>
+        )}
 
         <div className="hidden md:flex space-x-1 pl-4 ml-4 border-l border-slate-200 dark:border-slate-800">
           <NavLink

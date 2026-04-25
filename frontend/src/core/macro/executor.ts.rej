@@ -1,0 +1,13 @@
+--- frontend/src/core/macro/executor.ts
++++ frontend/src/core/macro/executor.ts
+@@ -375,10 +375,6 @@
+         break;
+       }
+
+-      case 'add_content_page':
+-      case 'add_image_header_page':
+-        break; // Handled above
+-
+       default: {
+         // exhaustiveness check
+         const _exhaustiveCheck: never = step;

@@ -1,0 +1,10 @@
+--- frontend/src/core/annotations/readers.ts
++++ frontend/src/core/annotations/readers.ts
+@@ -26,7 +26,7 @@
+   if (typeof annotation.data.fillColor === 'string') return annotation.data.fillColor;
+   if (typeof annotation.data.backgroundColor === 'string') return annotation.data.backgroundColor;
+
+-  if (annotation.type === 'rectangle' || annotation.type === 'ellipse') return 'transparent';
++  if (annotation.type === 'shape-rect' || annotation.type === 'shape-ellipse') return 'transparent';
+   return fallback;
+ }

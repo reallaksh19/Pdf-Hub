@@ -45,10 +45,13 @@ export class KonvaAdapter {
       case 'highlight':
         node = new Konva.Rect({ ...config, fill: 'yellow', opacity: 0.4 });
         break;
-      case 'shape':
+      case 'shape-rect':
+      case 'shape-ellipse':
+      case 'shape-polygon':
+      case 'shape-cloud':
         node = new Konva.Rect({ ...config, stroke: 'red', strokeWidth: 2 });
         break;
-      case 'freehand':
+      case 'ink':
         node = new Konva.Line({ ...config, points: annotation.data.points as number[], stroke: 'black', strokeWidth: 2, tension: 0.5 });
         break;
       default:

@@ -53,8 +53,8 @@ export async function executeMacroRecipe(
           size: step.size ?? 'a4',
           blocks: [
             { type: 'image-header', src: step.imageSrc, height: step.headerHeight ?? 200 },
-            { type: 'heading', text: step.title, level: 1 as const },
-            ...(step.subtitle ? [{ type: 'heading' as const, text: step.subtitle, level: 3 as const, color: '#64748b' }] : []),
+            { type: 'heading', text: step.title, level: 1 },
+            ...(step.subtitle ? [{ type: 'heading' as const, text: step.subtitle, level: 3, color: '#64748b' }] : []),
             { type: 'divider' },
             ...(step.bodyMarkdown ? [{ type: 'rich-text' as const, markdown: step.bodyMarkdown }] : []),
           ],
@@ -376,15 +376,17 @@ export async function executeMacroRecipe(
           break;
         }
 
-        workingBytes = await PdfEditAdapter.drawTextOnPages(workingBytes, {
+        workingBytes = await PdfEditAdapter.injectRichText(workingBytes, {
           pages: pages.map((p) => p - 1),
           text: step.text,
           x: step.x,
           y: step.y,
+          width: step.width,
+          height: step.height,
           fontSize: step.fontSize,
           color: step.color ?? '#0f172a',
           opacity: step.opacity ?? 1,
-          align: step.textAlign === 'justify' ? 'left' : (step.textAlign ?? 'left'),
+          textAlign: step.textAlign ?? 'left',
           fileName: ctx.fileName,
           now: ctx.now,
           enablePageNumberToken: step.pageNumberToken ?? true,

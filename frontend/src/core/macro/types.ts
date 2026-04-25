@@ -13,7 +13,26 @@ export type InsertPosition =
   | { mode: 'start' }
   | { mode: 'end' };
 
+import type { ContentBlock } from './layout/LayoutEngine';
+
 export type MacroStep =
+  | {
+      op: 'add_content_page';
+      position: InsertPosition;
+      size?: 'a4' | 'letter';
+      background?: string;
+      blocks: ContentBlock[];
+    }
+  | {
+      op: 'add_image_header_page';
+      position: InsertPosition;
+      imageSrc: string;
+      headerHeight?: number;
+      title: string;
+      subtitle?: string;
+      bodyMarkdown?: string;
+      size?: 'a4' | 'letter';
+    }
   | { op: 'select_pages'; selector: PageSelector }
   | { op: 'merge_files'; donorFileIds: string[] }
   | { op: 'insert_pdf'; donorFileId: string; atIndex: number }

@@ -16,6 +16,7 @@ export const ToolbarFile: React.FC = () => {
     fileName,
     saveHandle,
     setSaveHandle,
+    isDirty,
     setDirty,
     isDirty,
     recordSaveExportAction,
@@ -178,14 +179,12 @@ export const ToolbarFile: React.FC = () => {
       </Tooltip>
 
       <Tooltip content="Save">
-        <div className="relative">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSave} disabled={!isDirty}>
-            <Save className="w-4 h-4" />
-          </Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8 relative" onClick={handleSave} disabled={!workingBytes || !isDirty}>
+          <Save className="w-4 h-4" />
           {isDirty && (
-            <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full ring-1 ring-white dark:ring-slate-900" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full border border-white dark:border-slate-900" />
           )}
-        </div>
+        </Button>
       </Tooltip>
 
       <Tooltip content="Export flattened PDF">

@@ -2,30 +2,28 @@
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import type { AnnotationType, PdfAnnotation } from '@/core/annotations/types';
-import { Settings, Palette, Info, ChevronRight, ChevronLeft, MessageSquare, Send, ChevronDown, Minus, X } from 'lucide-react';
+import { Settings, Palette, Info, ChevronRight, ChevronLeft, ChevronDown, MessageSquare, Send, Minus, X } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { ReviewReply, ReviewStatus } from '@/core/review/types';
 import { Button } from '@/components/ui/Button';
 
 const ANNOTATION_TYPES: AnnotationType[] = [
   'textbox',
+  'callout',
+  'sticky-note',
   'highlight',
   'underline',
   'strikeout',
   'squiggly',
-  'shape',
   'shape-rect',
   'shape-ellipse',
   'shape-polygon',
   'shape-cloud',
-  'freehand',
-  'ink',
-  'stamp',
-  'sticky-note',
-  'comment',
   'line',
   'arrow',
-  'callout',
+  'ink',
+  'stamp',
+  'comment',
   'redaction',
 ];
 
@@ -182,7 +180,7 @@ const Section: React.FC<{
   defaultOpen?: boolean;
   children: React.ReactNode;
 }> = ({ title, defaultOpen = true, children }) => {
-  const [open, setOpen] = React.useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="border-b border-slate-200 dark:border-slate-800">
       <button
@@ -569,9 +567,13 @@ const StyleTab: React.FC<{
     updateStyleForSelection(dataPatch);
   };
 
+  const isTextLike = ['textbox', 'callout', 'sticky-note'].includes(annotation.type);
+  const isLineLike = ['line', 'arrow'].includes(annotation.type);
+  const isCallout = annotation.type === 'callout';
+
   return (
-    <div className="flex flex-col space-y-0">
-      <Section title="Appearance" defaultOpen>
+    <div className="p-4 space-y-4">
+      <Section title="Appearance">
         <TwoColumnRow>
           <LabeledColorInput
             label="Background"
@@ -585,15 +587,15 @@ const StyleTab: React.FC<{
           />
         </TwoColumnRow>
 
-        <TwoColumnRow>
-          <LabeledNumberInput
-            label="Opacity (%)"
-            value={typeof annotation.data.opacity === 'number' ? annotation.data.opacity * 100 : 100}
-            onChange={(value) => {
-              const next = Number(value);
-              if (!Number.isNaN(next)) applyToSelection({ opacity: Math.max(0, Math.min(100, next)) / 100 });
-            }}
+        <div className="my-2">
+          <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Border Style</span>
+          <BorderStylePicker
+            value={typeof annotation.data.borderStyle === 'string' ? annotation.data.borderStyle : 'solid'}
+            onChange={(val) => applyToSelection({ borderStyle: val })}
           />
+        </div>
+
+        <TwoColumnRow>
           <LabeledNumberInput
             label="Border Width"
             value={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 1}
@@ -602,25 +604,25 @@ const StyleTab: React.FC<{
               if (!Number.isNaN(next)) applyToSelection({ borderWidth: next });
             }}
           />
-        </TwoColumnRow>
-
-        <LabeledInputShell label="Border Style">
-          <BorderStylePicker
-            value={typeof annotation.data.borderStyle === 'string' ? annotation.data.borderStyle : 'solid'}
-            onChange={(value) => applyToSelection({ borderStyle: value })}
+          <LabeledNumberInput
+            label="Opacity"
+            value={typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1}
+            onChange={(value) => {
+              const next = Number(value);
+              if (!Number.isNaN(next)) applyToSelection({ opacity: next });
+            }}
           />
-        </LabeledInputShell>
+        </TwoColumnRow>
       </Section>
 
-      {isTextLike(annotation.type) && (
-        <Section title="Typography" defaultOpen>
-          <LabeledColorInput
-            label="Text Color"
-            value={readColor(annotation.data.textColor, '#0f172a')}
-            onChange={(value) => applyToSelection({ textColor: value })}
-          />
-
+      {isTextLike && (
+        <Section title="Typography">
           <TwoColumnRow>
+            <LabeledColorInput
+              label="Text Color"
+              value={readColor(annotation.data.textColor, '#0f172a')}
+              onChange={(value) => applyToSelection({ textColor: value })}
+            />
             <LabeledNumberInput
               label="Font Size"
               value={typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12}
@@ -629,18 +631,7 @@ const StyleTab: React.FC<{
                 if (!Number.isNaN(next)) applyToSelection({ fontSize: next });
               }}
             />
-
-            <LabeledSelect
-              label="Weight"
-              value={typeof annotation.data.fontWeight === 'string' ? annotation.data.fontWeight : 'normal'}
-              onChange={(value) => applyToSelection({ fontWeight: value })}
-              options={[
-                { label: 'normal', value: 'normal' },
-                { label: 'bold', value: 'bold' },
-              ]}
-            />
           </TwoColumnRow>
-
           <LabeledSelect
             label="Text Align"
             value={typeof annotation.data.textAlign === 'string' ? annotation.data.textAlign : 'left'}
@@ -651,8 +642,7 @@ const StyleTab: React.FC<{
               { label: 'right', value: 'right' },
             ]}
           />
-
-          <label className="flex items-center gap-2 text-sm mt-2">
+          <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               checked={annotation.data.autoSize !== false}
@@ -663,44 +653,63 @@ const StyleTab: React.FC<{
         </Section>
       )}
 
-      {annotation.type === 'callout' && (
-        <Section title="Leader" defaultOpen>
-          <LabeledSelect
-            label="Leader Style"
-            value={typeof annotation.data.leaderStyle === 'string' ? annotation.data.leaderStyle : 'straight'}
-            onChange={(value) => applyToSelection({ leaderStyle: value })}
-            options={[
-              { label: 'Straight', value: 'straight' },
-              { label: 'Elbow', value: 'elbow' },
-            ]}
-          />
-          <LabeledSelect
-            label="Arrowhead"
-            value={typeof annotation.data.arrowHead === 'string' ? annotation.data.arrowHead : 'open'}
-            onChange={(value) => applyToSelection({ arrowHead: value })}
-            options={[
-              { label: 'Open', value: 'open' },
-              { label: 'Filled', value: 'filled' },
-              { label: 'None', value: 'none' },
-            ]}
-          />
+      {isCallout && (
+        <Section title="Leader">
+          <div className="space-y-3">
+            <LabeledSelect
+              label="Style"
+              value={typeof annotation.data.leaderStyle === 'string' ? annotation.data.leaderStyle : 'elbow'}
+              onChange={(val) => applyToSelection({ leaderStyle: val })}
+              options={[{ label: 'Elbow (3-pt)', value: 'elbow' }, { label: 'Straight (2-pt)', value: 'straight' }]}
+            />
+            <LabeledSelect
+              label="Arrowhead"
+              value={typeof annotation.data.arrowHead === 'string' ? annotation.data.arrowHead : 'open'}
+              onChange={(val) => applyToSelection({ arrowHead: val })}
+              options={[{ label: 'Open', value: 'open' }, { label: 'Filled', value: 'filled' }, { label: 'None', value: 'none' }]}
+            />
+          </div>
         </Section>
       )}
 
-      {(annotation.type === 'line' || annotation.type === 'arrow') && (
-        <Section title="Line Ends" defaultOpen>
-          <LineCapPicker
-            label="Start"
-            value={typeof annotation.data.lineStartCap === 'string' ? annotation.data.lineStartCap as any : 'none'}
-            onChange={(value) => applyToSelection({ lineStartCap: value })}
-          />
-          <LineCapPicker
-            label="End"
-            value={typeof annotation.data.lineEndCap === 'string' ? annotation.data.lineEndCap as any : (annotation.type === 'arrow' ? 'arrow' : 'none')}
-            onChange={(value) => applyToSelection({ lineEndCap: value })}
-          />
+      {isLineLike && (
+        <Section title="Line Ends">
+          <div className="space-y-3">
+            <LineCapPicker
+              label="Start"
+              value={typeof annotation.data.lineStartCap === 'string' ? (annotation.data.lineStartCap as any) : 'none'}
+              onChange={(v) => applyToSelection({ lineStartCap: v })}
+            />
+            <LineCapPicker
+              label="End"
+              value={typeof annotation.data.lineEndCap === 'string' ? (annotation.data.lineEndCap as any) : 'arrow'}
+              onChange={(v) => applyToSelection({ lineEndCap: v })}
+            />
+          </div>
         </Section>
       )}
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={annotation.data.locked === true}
+          onChange={(event) => applyToSelection({ locked: event.target.checked })}
+        />
+        Locked
+      </label>
+
+      <Section title="Quick Presets" defaultOpen={false}>
+        <div className="grid grid-cols-4 gap-2">
+          {['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#d946ef'].map((color) => (
+            <button
+              key={color}
+              className="w-full aspect-square rounded-md border border-slate-200 dark:border-slate-800 transition-transform hover:scale-110"
+              style={{ backgroundColor: color }}
+              onClick={() => applyToSelection({ backgroundColor: color, borderColor: color })}
+            />
+          ))}
+        </div>
+      </Section>
     </div>
   );
 };
@@ -716,7 +725,7 @@ const MetadataTab: React.FC<{ annotation: PdfAnnotation }> = ({ annotation }) =>
   </div>
 );
 
-function isTextLike(type: AnnotationType): boolean {
+export function isTextLike(type: AnnotationType): boolean {
   return (
     type === 'textbox' ||
     type === 'comment' ||

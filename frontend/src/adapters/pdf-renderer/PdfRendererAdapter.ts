@@ -61,7 +61,13 @@ function isTransformItem(
 }
 
 export class PdfRendererAdapter {
+  private static cachedDoc: { bytes: Uint8Array | ArrayBuffer; doc: PDFDocumentProxy } | null = null;
+
   static async loadDocument(buffer: Uint8Array | ArrayBuffer): Promise<PDFDocumentProxy> {
+    if (this.cachedDoc && this.cachedDoc.bytes === buffer) {
+      return this.cachedDoc.doc;
+    }
+
     try {
       // PDF.js may transfer typed-array buffers to the worker, which detaches them.
       // Clone input bytes so shared session state remains readable across reloads.
@@ -71,7 +77,14 @@ export class PdfRendererAdapter {
           : buffer.slice(0);
 
       const task = getDocument({ data });
-      return await task.promise;
+      const doc = await task.promise;
+
+      if (this.cachedDoc) {
+        await this.cachedDoc.doc.destroy().catch(() => {});
+      }
+      this.cachedDoc = { bytes: buffer, doc };
+
+      return doc;
     } catch (err) {
       error('pdf-renderer', 'Failed to load document', { error: String(err) });
       throw err;

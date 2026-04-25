@@ -1,0 +1,11 @@
+--- frontend/src/core/search/indexer.test.ts
++++ frontend/src/core/search/indexer.test.ts
+@@ -15,7 +15,7 @@
+   };
+
+   it('returns empty array when query is empty', () => {
+-    expect(SearchIndexer.search(mockCache, '', {})).toEqual([]);
++    expect(SearchIndexer.search(mockCache, '', { caseSensitive: false, wholeWord: false, useRegex: false })).toEqual([]);
+   });
+
+   it('finds simple matches', () => {

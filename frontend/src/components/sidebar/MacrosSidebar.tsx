@@ -17,8 +17,10 @@ import { useSessionStore } from '@/core/session/store';
 import { error as logError } from '@/core/logger/service';
 import { BUILTIN_MACROS } from '@/core/macro/builtins';
 import { runMacroRecipeAgainstSession } from '@/core/macro/sessionRunner';
+import { GENERATION_MACROS } from '@/core/macro/generationBuiltins';
 import { validateRecipeBeforeRun, type PreflightReport } from '@/core/macro/validation/validator';
 import { usePresetsStore } from '@/core/macro/store/presets';
+import { ImageIcon } from 'lucide-react';
 import type {
   MacroOutputFile,
   MacroRecipe,
@@ -56,6 +58,7 @@ interface OutputQueueItem extends MacroOutputFile {
 }
 
 const BUILTIN_RECIPES: MacroRecipe[] = Object.values(BUILTIN_MACROS);
+const GENERATION_RECIPES: MacroRecipe[] = Object.values(GENERATION_MACROS);
 
 const PLACEHOLDER_STEPS: Array<MacroStep['op']> = [
   'select_pages',
@@ -78,6 +81,11 @@ export const MacrosSidebar: React.FC = () => {
     () => allRecipes.find((recipe) => recipe.id === selectedRecipeId) ?? allRecipes[0],
     [selectedRecipeId, allRecipes],
   );
+
+  const [brandImageDataUrl, setBrandImageDataUrl] = React.useState<string>('');
+  const [generationTitle, setGenerationTitle] = React.useState<string>('Untitled Report');
+  const [selectedGenerationId, setSelectedGenerationId] = React.useState<string>('professional_report_full');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [overridesByRecipe, setOverridesByRecipe] = React.useState<
     Record<string, RecipeOverrides>
@@ -287,12 +295,111 @@ export const MacrosSidebar: React.FC = () => {
     );
   }
 
+  const handleGenerate = async () => {
+    const generationRecipe = GENERATION_RECIPES.find((r) => r.id === selectedGenerationId);
+    if (!generationRecipe) return;
+
+    // Apply generation parameters if needed
+    const finalRecipe = JSON.parse(JSON.stringify(generationRecipe)) as MacroRecipe;
+    finalRecipe.steps.forEach((step) => {
+      if (step.op === 'add_image_header_page') {
+        step.title = generationTitle || 'Untitled Report';
+        if (brandImageDataUrl) step.imageSrc = brandImageDataUrl;
+      }
+    });
+
+    setIsRunning(true);
+    try {
+      await runMacroRecipeAgainstSession(finalRecipe, {
+        saveOutputs: false,
+      });
+    } catch (err) {
+      logError('macro', 'Failed to generate document', { error: String(err) });
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
   return (
     <div className="p-3 space-y-4">
       <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
           <Sparkles className="w-4 h-4" />
-          Recipes
+          Generate Document
+        </div>
+
+        <select
+          className="block w-full text-xs rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+          value={selectedGenerationId}
+          onChange={(e) => setSelectedGenerationId(e.target.value)}
+          disabled={isRunning}
+        >
+          {GENERATION_RECIPES.map((recipe) => (
+            <option key={recipe.id} value={recipe.id}>
+              {recipe.name}
+            </option>
+          ))}
+        </select>
+
+        {selectedGenerationId === 'branded_cover_page' && (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              Brand / Header Image
+            </span>
+            <div
+              className="w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors relative overflow-hidden"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {brandImageDataUrl ? (
+                <img src={brandImageDataUrl} className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-center text-slate-400 text-xs">
+                  <ImageIcon className="w-6 h-6 mx-auto mb-1" />
+                  Click to pick header image
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setBrandImageDataUrl(reader.result as string);
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
+          </label>
+        )}
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Title
+          </span>
+          <input
+            type="text"
+            className="w-full text-xs rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5"
+            value={generationTitle}
+            onChange={(e) => setGenerationTitle(e.target.value)}
+          />
+        </label>
+
+        <Button
+          onClick={handleGenerate}
+          disabled={isRunning || (selectedGenerationId === 'branded_cover_page' && !brandImageDataUrl)}
+          className="w-full justify-center bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+        >
+          {isRunning ? 'Generating...' : 'Generate PDF'}
+        </Button>
+      </section>
+
+      <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <Wrench className="w-4 h-4" />
+          Enhance Document
         </div>
 
         <div className="flex gap-2 items-center">
@@ -538,7 +645,7 @@ export const MacrosSidebar: React.FC = () => {
               <label className="inline-flex items-center gap-1">
                 <input
                   type="checkbox"
-                  checked={overrides.headerFooterPageToken}
+                  checked={overrides.headerFooterPageToken === true}
                   onChange={(event) =>
                     updateOverrides({
                       headerFooterPageToken: event.target.checked,
@@ -550,7 +657,7 @@ export const MacrosSidebar: React.FC = () => {
               <label className="inline-flex items-center gap-1">
                 <input
                   type="checkbox"
-                  checked={overrides.headerFooterFileToken}
+                  checked={overrides.headerFooterFileToken === true}
                   onChange={(event) =>
                     updateOverrides({
                       headerFooterFileToken: event.target.checked,
@@ -562,7 +669,7 @@ export const MacrosSidebar: React.FC = () => {
               <label className="inline-flex items-center gap-1">
                 <input
                   type="checkbox"
-                  checked={overrides.headerFooterDateToken}
+                  checked={overrides.headerFooterDateToken === true}
                   onChange={(event) =>
                     updateOverrides({
                       headerFooterDateToken: event.target.checked,
@@ -681,7 +788,7 @@ export const MacrosSidebar: React.FC = () => {
           )}
 
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => void runSelectedMacro()} disabled={isRunning || !selectedRecipe || (preflightReport && !preflightReport.isValid)}>
+            <Button size="sm" onClick={() => void runSelectedMacro()} disabled={isRunning || !selectedRecipe || (preflightReport ? !preflightReport.isValid : false)}>
               {isRunning ? (
                 <RotateCw className="w-4 h-4 mr-1 animate-spin" />
               ) : (
@@ -880,7 +987,7 @@ function createDefaultOverrides(recipe: MacroRecipe | undefined, pageCount: numb
         : false,
     headerFooterDateToken:
       headerFooterStep?.op === 'header_footer_text'
-        ? headerFooterStep.dateToken ?? false
+        ? (headerFooterStep.dateToken ?? false)
         : false,
     blankPlacement:
       blankInsertStep?.op === 'insert_blank_page' && blankInsertStep.position.mode === 'before'

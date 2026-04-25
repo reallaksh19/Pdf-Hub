@@ -14,16 +14,19 @@ import {
   MessageCircle,
   Eye,
   EyeOff,
-  AlignLeft,
-  AlignStartVertical,
-  AlignHorizontalSpaceBetween,
-  AlignVerticalSpaceBetween,
-  Waves,
   PenTool,
   Cloud,
   Hexagon,
   SquareSquare,
-  RectangleHorizontal,
+  Activity,
+  AlignLeft,
+  AlignHorizontalDistributeCenter,
+  AlignVerticalDistributeCenter,
+  Copy,
+  ClipboardPaste,
+  CopyPlus,
+  Trash2,
+  Lock,
 } from 'lucide-react';
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
@@ -49,7 +52,6 @@ export const ToolbarComment: React.FC = () => {
     distributeSelection,
     deleteSelection,
     toggleLockSelection,
-    setReviewStatusForSelection,
   } = useAnnotationStore();
 
   const { viewState } = useSessionStore();
@@ -94,8 +96,14 @@ export const ToolbarComment: React.FC = () => {
       </Tooltip>
 
       <Tooltip content="Squiggly Underline">
-        <Button variant={getToolVariant('squiggly')} size="icon" onClick={() => handleToolClick('squiggly')}>
-          <Waves className="w-4 h-4" />
+        <Button variant={getToolVariant('squiggly')} size="icon" onClick={() => handleToolClick('squiggly' as any)}>
+          <Activity className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content="Freehand / Ink">
+        <Button variant={getToolVariant('ink')} size="icon" onClick={() => handleToolClick('ink' as any)}>
+          <PenTool className="w-4 h-4" />
         </Button>
       </Tooltip>
 
@@ -111,21 +119,33 @@ export const ToolbarComment: React.FC = () => {
         </Button>
       </Tooltip>
 
-      <Tooltip content="Shape">
-        <Button variant={getToolVariant('shape')} size="icon" onClick={() => handleToolClick('shape')}>
+      <Tooltip content="Callout">
+        <Button variant={getToolVariant('callout')} size="icon" onClick={() => handleToolClick('callout' as any)}>
+          <SquareSquare className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content="Rectangle Shape">
+        <Button variant={getToolVariant('shape-rect')} size="icon" onClick={() => handleToolClick('shape-rect' as any)}>
           <Square className="w-4 h-4" />
         </Button>
       </Tooltip>
 
+      <Tooltip content="Polygon Shape">
+        <Button variant={getToolVariant('shape-polygon')} size="icon" onClick={() => handleToolClick('shape-polygon' as any)}>
+          <Hexagon className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
       <Tooltip content="Cloud Shape">
-        <Button variant={getToolVariant('shape-cloud')} size="icon" onClick={() => handleToolClick('shape-cloud')}>
+        <Button variant={getToolVariant('shape-cloud')} size="icon" onClick={() => handleToolClick('shape-cloud' as any)}>
           <Cloud className="w-4 h-4" />
         </Button>
       </Tooltip>
 
-      <Tooltip content="Polygon">
-        <Button variant={getToolVariant('shape-polygon')} size="icon" onClick={() => handleToolClick('shape-polygon')}>
-          <Hexagon className="w-4 h-4" />
+      <Tooltip content="Redaction">
+        <Button variant={getToolVariant('redaction')} size="icon" onClick={() => handleToolClick('redaction' as any)}>
+          <Square className="w-4 h-4 fill-black" />
         </Button>
       </Tooltip>
 
@@ -161,56 +181,57 @@ export const ToolbarComment: React.FC = () => {
 
       <Separator orientation="vertical" className="h-6" />
 
-      <Button variant="ghost" size="sm" onClick={copySelection} disabled={!hasSelection}>
-        Copy
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => pasteClipboard(viewState.currentPage)}>
-        Paste
-      </Button>
-      <Button variant="ghost" size="sm" onClick={duplicateSelection} disabled={!hasSelection}>
-        Duplicate
-      </Button>
-      <Button variant="ghost" size="sm" onClick={deleteSelection} disabled={!hasSelection}>
-        Delete
-      </Button>
+      <Tooltip content="Copy">
+        <Button variant="ghost" size="icon" onClick={copySelection} disabled={!hasSelection}>
+          <Copy className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Paste">
+        <Button variant="ghost" size="icon" onClick={() => pasteClipboard(viewState.currentPage)}>
+          <ClipboardPaste className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Duplicate">
+        <Button variant="ghost" size="icon" onClick={duplicateSelection} disabled={!hasSelection}>
+          <CopyPlus className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Delete">
+        <Button variant="ghost" size="icon" onClick={deleteSelection} disabled={!hasSelection} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </Tooltip>
 
       <Separator orientation="vertical" className="h-6" />
 
       <Tooltip content="Align Left">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => alignSelection('left')} disabled={selectedAnnotationIds.length < 2}>
+        <Button variant="ghost" size="icon" onClick={() => alignSelection('left')} disabled={selectedAnnotationIds.length < 2}>
           <AlignLeft className="w-4 h-4" />
         </Button>
       </Tooltip>
       <Tooltip content="Align Top">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => alignSelection('top')} disabled={selectedAnnotationIds.length < 2}>
-          <AlignStartVertical className="w-4 h-4" />
+        <Button variant="ghost" size="icon" onClick={() => alignSelection('top')} disabled={selectedAnnotationIds.length < 2}>
+          <AlignLeft className="w-4 h-4 rotate-90" />
         </Button>
       </Tooltip>
       <Tooltip content="Distribute Horizontally">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => distributeSelection('horizontal')} disabled={selectedAnnotationIds.length < 3}>
-          <AlignHorizontalSpaceBetween className="w-4 h-4" />
+        <Button variant="ghost" size="icon" onClick={() => distributeSelection('horizontal')} disabled={selectedAnnotationIds.length < 3}>
+          <AlignHorizontalDistributeCenter className="w-4 h-4" />
         </Button>
       </Tooltip>
       <Tooltip content="Distribute Vertically">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => distributeSelection('vertical')} disabled={selectedAnnotationIds.length < 3}>
-          <AlignVerticalSpaceBetween className="w-4 h-4" />
+        <Button variant="ghost" size="icon" onClick={() => distributeSelection('vertical')} disabled={selectedAnnotationIds.length < 3}>
+          <AlignVerticalDistributeCenter className="w-4 h-4" />
         </Button>
       </Tooltip>
 
       <Separator orientation="vertical" className="h-6" />
 
-      <Button variant="ghost" size="sm" onClick={toggleLockSelection} disabled={!hasSelection}>
-        Lock
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => setReviewStatusForSelection('open')} disabled={!hasSelection}>
-        Open
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => setReviewStatusForSelection('resolved')} disabled={!hasSelection}>
-        Resolve
-      </Button>
-      <Button variant="ghost" size="sm" onClick={() => setReviewStatusForSelection('rejected')} disabled={!hasSelection}>
-        Reject
-      </Button>
+      <Tooltip content="Lock / Unlock">
+        <Button variant="ghost" size="icon" onClick={toggleLockSelection} disabled={!hasSelection}>
+          <Lock className="w-4 h-4" />
+        </Button>
+      </Tooltip>
 
       <Separator orientation="vertical" className="h-6" />
 

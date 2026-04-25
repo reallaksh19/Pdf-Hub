@@ -1,0 +1,11 @@
+--- frontend/src/core/search/overlayReplace.ts
++++ frontend/src/core/search/overlayReplace.ts
+@@ -29,7 +29,7 @@
+           strokeColor: 'transparent',
+           strokeWidth: 0,
+           textColor: '#000000',
+-          textAlign: 'left',
++          textAlign: 'left' as const,
+           zIndex: 10,
+         },
+         createdAt: Date.now(),

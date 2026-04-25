@@ -13,7 +13,7 @@ export function createOverlayReplaceAnnotation(hit: BBoxHit, replacementText: st
       x: hit.rect.x,
       y: hit.rect.y,
       width: Math.max(hit.rect.width, replacementText.length * (fontSize * 0.6)), // roughly scale box to match text size natively
-      height: Math.max(hit.rect.height, fontSize * 1.5), 
+      height: Math.max(hit.rect.height, fontSize * 1.5),
     },
     data: {
       text: replacementText,
@@ -22,7 +22,7 @@ export function createOverlayReplaceAnnotation(hit: BBoxHit, replacementText: st
       strokeColor: 'transparent',
       strokeWidth: 0,
       textColor: '#0f172a',
-      textAlign: 'left' as const,
+      textAlign: 'left',
       zIndex: 100, // force on top
     },
     createdAt: Date.now(),
