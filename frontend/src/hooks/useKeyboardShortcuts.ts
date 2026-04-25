@@ -87,7 +87,7 @@ export const useKeyboardShortcuts = () => {
         return;
       }
 
-      if (!isTypingTarget && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
+      if (!isTypingTarget && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd' && !event.shiftKey) {
         event.preventDefault();
         duplicateSelection();
         return;
