@@ -99,12 +99,30 @@ export type MacroStep =
       pageNumberToken?: boolean;
       fileNameToken?: boolean;
       dateToken?: boolean;
+    }
+  | {
+      op: 'add_content_page';
+      position: InsertPosition;
+      size?: 'a4' | 'letter';
+      background?: string;
+      blocks: import('./layout/LayoutEngine').ContentBlock[];
+    }
+  | {
+      op: 'add_image_header_page';
+      position: InsertPosition;
+      imageSrc: string;          // base64 data URL or http URL
+      headerHeight?: number;
+      title: string;
+      subtitle?: string;
+      bodyMarkdown?: string;
+      size?: 'a4' | 'letter';
     };
 
 export interface MacroRecipe {
   id: string;
   name: string;
   dryRun?: boolean;
+  init?: 'new';
   steps: MacroStep[];
 }
 
