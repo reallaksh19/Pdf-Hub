@@ -13,7 +13,7 @@ import { useToastStore } from '@/core/toast/store';
 
 export const TopNav: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
-  const { workingBytes, fileName, isDirty } = useSessionStore();
+  const { documentKey, fileName, isDirty } = useSessionStore();
   const { setSidebarTab, setLeftPanelWidth, leftPanelWidth } = useEditorStore();
 
   React.useEffect(() => {

@@ -17,7 +17,6 @@ import { useSearchStore } from '@/core/search/store';
 import { SearchIndexer } from '@/core/search/indexer';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
-import { SearchIndexer } from '@/core/search/indexer';
 
 type TransformState =
   | {
@@ -76,6 +75,7 @@ export const DocumentWorkspace: React.FC = () => {
 
   const { activeTool } = useEditorStore();
   const { hideResolved } = useReviewStore();
+  const setSharedPdfDoc = usePdfStore((state) => state.setPdfDoc);
 
   const [pdfDoc, setPdfDoc] = React.useState<PDFDocumentProxy | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -98,7 +98,6 @@ export const DocumentWorkspace: React.FC = () => {
         fileName: picked.name,
         bytes: safeBytes,
         pageCount,
-        saveHandle: picked.handle ?? null,
       });
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -114,6 +113,7 @@ export const DocumentWorkspace: React.FC = () => {
     const load = async () => {
       if (!workingBytes) {
         setPdfDoc(null);
+        setSharedPdfDoc(null);
         setLoadError(null);
         return;
       }
@@ -128,6 +128,7 @@ export const DocumentWorkspace: React.FC = () => {
         }
 
         setPdfDoc(doc);
+        setSharedPdfDoc(doc);
 
         if (documentKey && !SearchIndexer.getCache(documentKey)) {
           // Cache text indexing for regex/word search
@@ -148,6 +149,7 @@ export const DocumentWorkspace: React.FC = () => {
         if (!cancelled) {
           setLoadError(String(err));
           setPdfDoc(null);
+          setSharedPdfDoc(null);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -159,7 +161,7 @@ export const DocumentWorkspace: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [workingBytes]);
+  }, [workingBytes, documentKey, setSharedPdfDoc]);
 
   React.useEffect(() => {
     const loadStored = async () => {

@@ -90,7 +90,11 @@ export const SearchPanel: React.FC = () => {
         nextHit();
       } else {
         setQuery(localQuery);
-        executeSearch(localQuery, { caseSensitive, wholeWord, useRegex });
+        executeSearch(localQuery, {
+          caseSensitive: searchOptions.caseSensitive,
+          wholeWord: searchOptions.wholeWord,
+          useRegex: searchOptions.useRegex,
+        });
       }
     }
   };
@@ -102,9 +106,13 @@ export const SearchPanel: React.FC = () => {
 
   React.useEffect(() => {
     if (query && documentKey) {
-      executeSearch(query, { caseSensitive, wholeWord, useRegex });
+      executeSearch(query, {
+        caseSensitive: searchOptions.caseSensitive,
+        wholeWord: searchOptions.wholeWord,
+        useRegex: searchOptions.useRegex,
+      });
     }
-  }, [caseSensitive, wholeWord, useRegex, query, documentKey, executeSearch]);
+  }, [searchOptions, query, documentKey, executeSearch]);
 
   const handleHitClick = (hitId: string, pageNumber: number) => {
     setActiveHit(hitId);

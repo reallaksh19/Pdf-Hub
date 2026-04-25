@@ -18,7 +18,6 @@ export const ToolbarFile: React.FC = () => {
     setSaveHandle,
     isDirty,
     setDirty,
-    isDirty,
     recordSaveExportAction,
   } = useSessionStore();
 
@@ -40,7 +39,6 @@ export const ToolbarFile: React.FC = () => {
         fileName: picked.name,
         bytes: picked.bytes,
         pageCount,
-        saveHandle: picked.handle ?? null,
       });
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {

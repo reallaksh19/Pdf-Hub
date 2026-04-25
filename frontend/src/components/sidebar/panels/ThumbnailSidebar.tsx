@@ -109,17 +109,17 @@ const ThumbnailSidebar: React.FC = () => {
         const result: ThumbItem[] = [];
         const batchSize = 5;
 
-        for (let i = 1; i <= doc.numPages; i += batchSize) {
+        for (let i = 1; i <= pdfDoc.numPages; i += batchSize) {
           if (cancelled) break;
 
           const batch = [];
-          for (let j = 0; j < batchSize && i + j <= doc.numPages; j++) {
+          for (let j = 0; j < batchSize && i + j <= pdfDoc.numPages; j++) {
             batch.push(i + j);
           }
 
           const batchResults = await Promise.all(
             batch.map(async (pageNumber) => {
-              const page = await doc.getPage(pageNumber);
+              const page = await pdfDoc.getPage(pageNumber);
               const imageUrl = await PdfRendererAdapter.getThumbnail(page);
               page.cleanup();
               return { pageNumber, imageUrl };
