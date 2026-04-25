@@ -6,6 +6,8 @@ export type AnnotationType =
   | 'underline'
   | 'strikeout'
   | 'shape'
+  | 'rectangle'
+  | 'ellipse'
   | 'freehand'
   | 'stamp'
   | 'sticky-note'

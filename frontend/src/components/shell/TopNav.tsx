@@ -10,10 +10,11 @@ import { useEditorStore } from '@/core/editor/store';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 import { error as logError } from '@/core/logger/service';
 import { useToastStore } from '@/core/toast/store';
+import { SearchIndexer } from '@/core/search/indexer';
 
 export const TopNav: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
-  const { workingBytes } = useSessionStore();
+  const { documentKey, workingBytes, isDirty, fileName } = useSessionStore();
   const { setSidebarTab, setLeftPanelWidth, leftPanelWidth } = useEditorStore();
   const {
     query,
@@ -22,7 +23,8 @@ export const TopNav: React.FC = () => {
     setError,
     clearSearch,
     nextHit,
-    setIsSearching
+    setIsSearching,
+    options
   } = useSearchStore();
   const addToast = useToastStore((state) => state.addToast);
 
@@ -44,7 +46,21 @@ export const TopNav: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
+      let results = [];
+      const documentKeyToUse = documentKey || "local_temp_key";
+      const cache = SearchIndexer.getCache(documentKeyToUse);
+
+      if (cache) {
+        const bboxHits = SearchIndexer.search(cache, searchQuery, options);
+        results = bboxHits.map((h, i) => ({
+          id: `hit-${h.pageNumber}-${i}`,
+          pageNumber: h.pageNumber,
+          snippet: h.text,
+          rects: [h.rect],
+        }));
+      } else {
+         results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
+      }
       setHits(results);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -58,7 +74,7 @@ export const TopNav: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  }, [workingBytes, clearSearch, setIsSearching, setHits, setError, addToast]);
+  }, [workingBytes, documentKey, clearSearch, setIsSearching, setHits, setError, addToast, options]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -79,6 +95,14 @@ export const TopNav: React.FC = () => {
       executeSearch(value);
     }, 300);
   };
+
+  React.useEffect(() => {
+    if (fileName) {
+      document.title = `${isDirty ? '• ' : ''}${fileName} - DocCraft`;
+    } else {
+      document.title = 'DocCraft';
+    }
+  }, [fileName, isDirty]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -136,6 +160,13 @@ export const TopNav: React.FC = () => {
           </NavLink>
         </div>
       </div>
+
+      {fileName && (
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none text-sm font-medium text-slate-700 dark:text-slate-300">
+          {isDirty && <span className="text-blue-500 mr-1 font-bold">•</span>}
+          {fileName}
+        </div>
+      )}
 
       <div className="flex items-center space-x-2">
         <div className="relative hidden lg:block">

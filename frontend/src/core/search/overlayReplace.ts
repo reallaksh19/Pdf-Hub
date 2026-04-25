@@ -22,7 +22,7 @@ export function createOverlayReplaceAnnotation(hit: BBoxHit, replacementText: st
       strokeColor: 'transparent',
       strokeWidth: 0,
       textColor: '#0f172a',
-      textAlign: 'left',
+      textAlign: 'left' as const,
       zIndex: 100, // force on top
     },
     createdAt: Date.now(),

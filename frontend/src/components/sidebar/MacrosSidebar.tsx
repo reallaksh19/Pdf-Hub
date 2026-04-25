@@ -681,7 +681,7 @@ export const MacrosSidebar: React.FC = () => {
           )}
 
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => void runSelectedMacro()} disabled={isRunning || !selectedRecipe || (preflightReport && !preflightReport.isValid)}>
+            <Button size="sm" onClick={() => void runSelectedMacro()} disabled={Boolean(isRunning || !selectedRecipe || (preflightReport && !preflightReport.isValid))}>
               {isRunning ? (
                 <RotateCw className="w-4 h-4 mr-1 animate-spin" />
               ) : (

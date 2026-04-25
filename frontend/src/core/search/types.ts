@@ -18,6 +18,7 @@ export interface SearchState {
   hits: SearchHit[];
   activeHitId: string | null;
   error: string | null;
+  options: SearchOptions;
 }
 
 // --- New types for the SearchIndexer ---

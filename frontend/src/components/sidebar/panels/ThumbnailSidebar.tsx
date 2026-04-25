@@ -7,6 +7,7 @@ import { useAnnotationStore } from '@/core/annotations/store';
 import { useSearchStore } from '@/core/search/store';
 import { dispatchCommand } from '@/core/commands/dispatch';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
+import { usePdfDoc } from '@/core/session/PdfDocContext';
 import { ThumbnailActionStrip } from '@/components/sidebar/thumbnails/ThumbnailActionStrip';
 import { ThumbnailContextMenu } from '@/components/sidebar/thumbnails/ThumbnailContextMenu';
 
@@ -50,6 +51,7 @@ const ThumbnailSidebar: React.FC = () => {
     setSelectedPages,
     toggleSelectedPage,
   } = useSessionStore();
+  const { pdfDoc } = usePdfDoc();
   const { setSidebarTab } = useEditorStore();
   const { annotations } = useAnnotationStore();
   const { hits } = useSearchStore();
@@ -104,7 +106,7 @@ const ThumbnailSidebar: React.FC = () => {
       }
       setLoading(true);
       try {
-        const doc = await PdfRendererAdapter.loadDocument(workingBytes);
+        const doc = pdfDoc || await PdfRendererAdapter.loadDocument(workingBytes);
         const result: ThumbItem[] = [];
         for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
           if (cancelled) break;
@@ -113,7 +115,7 @@ const ThumbnailSidebar: React.FC = () => {
           result.push({ pageNumber, imageUrl });
         }
         if (!cancelled) setThumbs(result);
-        await doc.destroy();
+        if (!pdfDoc) await doc.destroy();
       } catch {
         if (!cancelled) setThumbs([]);
       } finally {
@@ -125,7 +127,7 @@ const ThumbnailSidebar: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [workingBytes]);
+  }, [workingBytes, pdfDoc]);
 
   const applySelection = (
     event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,

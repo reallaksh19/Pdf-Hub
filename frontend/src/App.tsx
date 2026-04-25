@@ -6,6 +6,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { ToastProvider } from '@/components/ui/Toast';
 import { isDebugRouteEnabled } from '@/core/debug/availability';
+import { PdfDocProvider } from '@/core/session/PdfDocContext';
 
 const AppContent = () => {
   useKeyboardShortcuts();
@@ -25,8 +26,10 @@ const AppContent = () => {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
-      <ToastProvider />
+      <PdfDocProvider>
+        <AppContent />
+        <ToastProvider />
+      </PdfDocProvider>
     </BrowserRouter>
   );
 }
