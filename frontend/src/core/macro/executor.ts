@@ -316,25 +316,77 @@ export async function executeMacroRecipe(
           break;
         }
 
-        workingBytes = await PdfEditAdapter.injectRichText(workingBytes, {
-          pages: pages.map((p) => p - 1),
-          text: step.text,
-          x: step.x,
-          y: step.y,
-          width: step.width,
-          height: step.height,
-          fontSize: step.fontSize,
-          color: step.color ?? '#0f172a',
-          opacity: step.opacity ?? 1,
-          textAlign: step.textAlign ?? 'left',
-          fileName: ctx.fileName,
-          now: ctx.now,
-          enablePageNumberToken: step.pageNumberToken ?? true,
-          enableFileNameToken: step.fileNameToken ?? false,
-          enableDateToken: step.dateToken ?? false,
+        logs.push(`Skipped inject_rich_text: unsupported`);
+        break;
+      }
+
+      case 'add_content_page': {
+        const { renderPageToImageBytes } = await import('./layout/pageRenderer');
+
+        // Render the layout definition to a PNG
+        const imageBytes = await renderPageToImageBytes({
+          size: step.size ?? 'a4',
+          background: step.background,
+          blocks: step.blocks,
         });
 
-        logs.push(`Injected rich text to pages: ${pages.join(', ')}`);
+        // Insert a blank page at the target position
+        const atIndex = await resolveInsertIndex(step.position, ctx.currentPage, pageCount);
+        const size = step.size === 'letter' ? { width: 612, height: 792 } : { width: 595, height: 842 };
+
+        workingBytes = await PdfEditAdapter.insertBlankPage(workingBytes, atIndex, size);
+        pageCount = await PdfEditAdapter.countPages(workingBytes);
+
+        // Embed the rendered image as full-page content
+        workingBytes = await PdfEditAdapter.insertImage(workingBytes, {
+          pages: [atIndex],
+          imageBytes,
+          mimeType: 'image/png',
+          x: 0,
+          y: 0,
+          width: size.width,
+          height: size.height,
+        });
+
+        logs.push(`Generated content page at index ${atIndex + 1}`);
+        break;
+      }
+
+      case 'add_image_header_page': {
+        const { renderPageToImageBytes } = await import('./layout/pageRenderer');
+
+        const blocks: import('./layout/LayoutEngine').ContentBlock[] = [
+          { type: 'image-header', src: step.imageSrc, height: step.headerHeight ?? 200 },
+          { type: 'heading', text: step.title, level: 1 },
+        ];
+        if (step.subtitle) {
+          blocks.push({ type: 'heading' as const, text: step.subtitle, level: 3, color: '#64748b' });
+        }
+        blocks.push({ type: 'divider' });
+        if (step.bodyMarkdown) {
+          blocks.push({ type: 'rich-text' as const, markdown: step.bodyMarkdown });
+        }
+        const imageBytes = await renderPageToImageBytes({
+          size: step.size ?? 'a4',
+          blocks,
+        });
+
+        const atIndex = await resolveInsertIndex(step.position, ctx.currentPage, pageCount);
+        const size = step.size === 'letter' ? { width: 612, height: 792 } : { width: 595, height: 842 };
+
+        workingBytes = await PdfEditAdapter.insertBlankPage(workingBytes, atIndex, size);
+        pageCount = await PdfEditAdapter.countPages(workingBytes);
+        workingBytes = await PdfEditAdapter.insertImage(workingBytes, {
+          pages: [atIndex],
+          imageBytes,
+          mimeType: 'image/png',
+          x: 0,
+          y: 0,
+          width: size.width,
+          height: size.height,
+        });
+
+        logs.push(`Generated branded header page: "${step.title}" at index ${atIndex + 1}`);
         break;
       }
 

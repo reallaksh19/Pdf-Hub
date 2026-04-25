@@ -19,6 +19,7 @@ import { BUILTIN_MACROS } from '@/core/macro/builtins';
 import { runMacroRecipeAgainstSession } from '@/core/macro/sessionRunner';
 import { validateRecipeBeforeRun, type PreflightReport } from '@/core/macro/validation/validator';
 import { usePresetsStore } from '@/core/macro/store/presets';
+import { GENERATION_MACROS } from '@/core/macro/generationBuiltins';
 import type {
   MacroOutputFile,
   MacroRecipe,
@@ -56,6 +57,7 @@ interface OutputQueueItem extends MacroOutputFile {
 }
 
 const BUILTIN_RECIPES: MacroRecipe[] = Object.values(BUILTIN_MACROS);
+const GENERATION_RECIPES: MacroRecipe[] = Object.values(GENERATION_MACROS);
 
 const PLACEHOLDER_STEPS: Array<MacroStep['op']> = [
   'select_pages',
@@ -68,11 +70,14 @@ export const MacrosSidebar: React.FC = () => {
   const { workingBytes, pageCount, viewState, fileName } = useSessionStore();
   const { savedPresets, savePreset, deletePreset } = usePresetsStore();
 
-  const allRecipes = React.useMemo(() => [...BUILTIN_RECIPES, ...savedPresets], [savedPresets]);
+  const allRecipes = React.useMemo(() => [...BUILTIN_RECIPES, ...savedPresets, ...GENERATION_RECIPES], [savedPresets]);
 
   const [selectedRecipeId, setSelectedRecipeId] = React.useState<string>(
     BUILTIN_RECIPES[0]?.id ?? '',
   );
+  const [brandImageDataUrl, setBrandImageDataUrl] = React.useState<string>('');
+  const [generationTitle, setGenerationTitle] = React.useState<string>('Untitled Report');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const selectedRecipe = React.useMemo(
     () => allRecipes.find((recipe) => recipe.id === selectedRecipeId) ?? allRecipes[0],
@@ -169,23 +174,35 @@ export const MacrosSidebar: React.FC = () => {
   };
 
   const runSelectedMacro = async () => {
-    if (!workingBytes || !selectedRecipe || !fileName) {
+    if ((!workingBytes && !selectedRecipe?.init) || !selectedRecipe) {
       return;
     }
 
     // Always validate before run
-    const runtimeRecipe = applyOverridesToRecipe(
+    let runtimeRecipe = applyOverridesToRecipe(
       selectedRecipe,
       overrides,
       viewState.currentPage,
       Math.max(1, pageCount),
     );
 
+    // Inject parameterized settings for generation
+    if (selectedRecipeId === 'branded_cover_page') {
+      runtimeRecipe = {
+        ...runtimeRecipe,
+        steps: runtimeRecipe.steps.map(s =>
+          s.op === 'add_image_header_page'
+            ? { ...s, title: generationTitle, imageSrc: brandImageDataUrl || 'https://placehold.co/800x400/0f172a/fff?text=No+Brand+Image' }
+            : s
+        )
+      };
+    }
+
     const report = await validateRecipeBeforeRun(runtimeRecipe, {
         pageCount: Math.max(1, pageCount),
         selectedPages: useSessionStore.getState().selectedPages,
         currentPage: viewState.currentPage,
-        fileName,
+        fileName: fileName ?? 'generated.pdf',
         donorFiles: {},
         now: new Date(),
       });
@@ -277,7 +294,9 @@ export const MacrosSidebar: React.FC = () => {
     setOutputQueue([]);
   };
 
-  if (!workingBytes) {
+  const hasGenerationMacros = GENERATION_RECIPES.some(r => r.id === selectedRecipeId);
+
+  if (!workingBytes && !hasGenerationMacros) {
     return (
       <div className="p-4">
         <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 text-sm text-slate-500 dark:text-slate-400">
@@ -292,6 +311,92 @@ export const MacrosSidebar: React.FC = () => {
       <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
           <Sparkles className="w-4 h-4" />
+          Generate Document
+        </div>
+
+        <div className="flex gap-2 items-center">
+          <select
+            className="block w-full text-xs rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+            value={hasGenerationMacros ? selectedRecipeId : ''}
+            onChange={(e) => setSelectedRecipeId(e.target.value)}
+            disabled={isRunning}
+          >
+            <option value="" disabled>Select generation recipe...</option>
+            {GENERATION_RECIPES.map((recipe) => (
+              <option key={recipe.id} value={recipe.id}>
+                {recipe.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {selectedRecipeId === 'branded_cover_page' && (
+          <div className="space-y-3 mt-3">
+            <label className="text-xs text-slate-500 block">
+              Title
+              <input
+                type="text"
+                value={generationTitle}
+                onChange={(e) => setGenerationTitle(e.target.value)}
+                className="mt-1 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                Brand / Header Image
+              </span>
+              <div
+                className="w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors relative overflow-hidden bg-slate-50 dark:bg-slate-900"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {brandImageDataUrl ? (
+                  <img src={brandImageDataUrl} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-center text-slate-400 text-xs">
+                    <Sparkles className="w-6 h-6 mx-auto mb-1 opacity-50" />
+                    Click to pick header image
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => setBrandImageDataUrl(reader.result as string);
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </div>
+            </label>
+          </div>
+        )}
+
+        {hasGenerationMacros && (
+          <Button
+            className="w-full mt-2"
+            onClick={() => void runSelectedMacro()}
+            disabled={isRunning || (preflightReport && !preflightReport.isValid) || false}
+          >
+            {isRunning ? (
+              <RotateCw className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Play className="w-4 h-4 mr-2" />
+            )}
+            Generate PDF
+          </Button>
+        )}
+      </section>
+
+      {workingBytes && (
+        <>
+      <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <Sparkles className="w-4 h-4" />
           Recipes
         </div>
 
@@ -299,10 +404,11 @@ export const MacrosSidebar: React.FC = () => {
           <select
             id="recipe-select"
             className="block w-full text-xs rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
-            value={selectedRecipeId}
+            value={!hasGenerationMacros ? selectedRecipeId : ''}
             onChange={(e) => setSelectedRecipeId(e.target.value)}
             disabled={isRunning || !workingBytes}
           >
+            <option value="" disabled>Select enhance recipe...</option>
             <optgroup label="Built-ins">
               {BUILTIN_RECIPES.map((recipe) => (
                 <option key={recipe.id} value={recipe.id}>
@@ -550,7 +656,7 @@ export const MacrosSidebar: React.FC = () => {
               <label className="inline-flex items-center gap-1">
                 <input
                   type="checkbox"
-                  checked={overrides.headerFooterFileToken}
+                  checked={overrides.headerFooterFileToken ?? false}
                   onChange={(event) =>
                     updateOverrides({
                       headerFooterFileToken: event.target.checked,
@@ -562,7 +668,7 @@ export const MacrosSidebar: React.FC = () => {
               <label className="inline-flex items-center gap-1">
                 <input
                   type="checkbox"
-                  checked={overrides.headerFooterDateToken}
+                  checked={overrides.headerFooterDateToken ?? false}
                   onChange={(event) =>
                     updateOverrides({
                       headerFooterDateToken: event.target.checked,
@@ -681,7 +787,7 @@ export const MacrosSidebar: React.FC = () => {
           )}
 
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => void runSelectedMacro()} disabled={isRunning || !selectedRecipe || (preflightReport && !preflightReport.isValid)}>
+            <Button size="sm" onClick={() => void runSelectedMacro()} disabled={isRunning || !selectedRecipe || (preflightReport && !preflightReport.isValid) || false}>
               {isRunning ? (
                 <RotateCw className="w-4 h-4 mr-1 animate-spin" />
               ) : (
@@ -801,6 +907,8 @@ export const MacrosSidebar: React.FC = () => {
           </table>
         </div>
       </section>
+      </>
+      )}
     </div>
   );
 };

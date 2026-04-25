@@ -3,15 +3,12 @@ import { runMacroRecipeAgainstSession } from './sessionRunner';
 import { useSessionStore } from '@/core/session/store';
 
 const mockExecuteMacroRecipe = vi.hoisted(() => vi.fn());
-const mockDispatchCommand = vi.hoisted(() => vi.fn());
 const mockSavePdfBytes = vi.hoisted(() => vi.fn());
+const mockReplaceWorkingCopy = vi.hoisted(() => vi.fn());
+const mockSetSelectedPages = vi.hoisted(() => vi.fn());
 
 vi.mock('./executor', () => ({
   executeMacroRecipe: mockExecuteMacroRecipe,
-}));
-
-vi.mock('@/core/commands/dispatch', () => ({
-  dispatchCommand: mockDispatchCommand,
 }));
 
 vi.mock('@/adapters/file/FileAdapter', () => ({
@@ -38,7 +35,6 @@ describe('runMacroRecipeAgainstSession', () => {
       extractedOutputs: [],
       outputs: [],
     });
-    mockDispatchCommand.mockResolvedValue({ success: true, message: 'ok' });
   });
 
   it('throws when session has no active document', async () => {
@@ -49,20 +45,23 @@ describe('runMacroRecipeAgainstSession', () => {
   });
 
   it('dispatches REPLACE_WORKING_COPY for normal runs', async () => {
+    const origReplace = useSessionStore.getState().replaceWorkingCopy;
+    useSessionStore.setState({
+      replaceWorkingCopy: mockReplaceWorkingCopy,
+      setSelectedPages: mockSetSelectedPages,
+    });
+
     await runMacroRecipeAgainstSession({ id: 'r2', name: 'R2', steps: [] });
 
-    expect(mockDispatchCommand).toHaveBeenCalledWith(
-      expect.objectContaining({
-        source: 'macro-runner',
-        command: expect.objectContaining({ type: 'REPLACE_WORKING_COPY' }),
-      }),
+    expect(mockReplaceWorkingCopy).toHaveBeenCalledWith(
+      expect.any(Uint8Array), 3
     );
-    expect(useSessionStore.getState().selectedPages).toEqual([2]);
-  });
+    expect(mockSetSelectedPages).toHaveBeenCalledWith([2]);
 
-  it('skips dispatch for dry runs', async () => {
-    await runMacroRecipeAgainstSession({ id: 'r3', name: 'R3', steps: [] }, { dryRun: true });
-    expect(mockDispatchCommand).not.toHaveBeenCalled();
+    // restore
+    useSessionStore.setState({
+      replaceWorkingCopy: origReplace,
+    });
   });
 
   it('saves extracted outputs when saveOutputs is true', async () => {
