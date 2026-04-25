@@ -2,15 +2,38 @@ from playwright.sync_api import sync_playwright
 import os
 
 def run_cuj(page):
-    # Navigate to the workspace with the default document
     page.goto("http://localhost:5173/workspace")
     page.wait_for_timeout(2000)
 
-    # Click on the "Annotate" tab
-    page.locator('button:has-text("Annotate")').first.click()
-    page.wait_for_timeout(1000)
+    try:
+      page.locator('button:has-text("Comment")').first.click(timeout=1000)
+    except:
+      pass
 
-    # Take a screenshot of the tools
+    try:
+      page.locator('button:has-text("Annotate")').first.click(timeout=1000)
+    except:
+      pass
+
+    page.wait_for_timeout(500)
+
+    # Click on the Callout tool
+    page.locator('button').filter(has=page.locator('svg.lucide-message-square-plus')).click()
+    page.wait_for_timeout(500)
+
+    # Click somewhere on the canvas
+    canvas = page.locator('div[data-testid="page-surface-1"]').first
+    if canvas.is_visible():
+        canvas.click(position={"x": 300, "y": 300})
+        page.wait_for_timeout(1000)
+
+    # Click somewhere else to drop the second point of the callout (anchor vs rect depending on how tool is built)
+    if canvas.is_visible():
+        canvas.click(position={"x": 100, "y": 100})
+        page.wait_for_timeout(1000)
+        canvas.click(position={"x": 300, "y": 300})
+        page.wait_for_timeout(1000)
+
     page.screenshot(path="/home/jules/verification/screenshots/verification.png")
     page.wait_for_timeout(1000)
 

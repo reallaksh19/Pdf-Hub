@@ -482,7 +482,17 @@ export class PdfEditAdapter {
       const borderColor = borderColorHex === 'transparent' ? undefined : hexToRgb(borderColorHex);
       const fillColor = fillColorHex === 'transparent' ? undefined : hexToRgb(fillColorHex);
 
+
+      const borderStyle = annotation.data.borderStyle || 'solid';
+      let borderDashArray: number[] | undefined;
+      if (borderStyle === 'dashed') {
+        borderDashArray = [5, 5];
+      } else if (borderStyle === 'dotted') {
+        borderDashArray = [2, 2];
+      }
+
       if (annotation.type === 'highlight') {
+
         page.drawRectangle({
           x,
           y,
@@ -529,6 +539,7 @@ export class PdfEditAdapter {
                 start: { x: prevX, y: prevY },
                 end: { x: currX, y: currY },
                 thickness: strokeWidth,
+              dashArray: borderDashArray,
                 color: borderColor,
               });
             }
@@ -541,6 +552,7 @@ export class PdfEditAdapter {
               start: { x: prevX, y: prevY },
               end: { x: x + polyPoints[0], y: y + annotation.rect.height - polyPoints[1] },
               thickness: strokeWidth,
+              dashArray: borderDashArray,
               color: borderColor,
             });
           }
@@ -556,6 +568,7 @@ export class PdfEditAdapter {
           borderWidth: strokeWidth,
           borderColor,
           color: fillColor,
+          borderDashArray,
         });
         continue;
       }
@@ -591,6 +604,7 @@ export class PdfEditAdapter {
                 start: { x: prevX, y: prevY },
                 end: { x: currX, y: currY },
                 thickness: strokeWidth,
+              dashArray: borderDashArray,
                 color: borderColor,
               });
             }
@@ -602,6 +616,8 @@ export class PdfEditAdapter {
       }
 
       if (annotation.type === 'shape-cloud') {
+        // PDF-lib does not have native SVG path drawing support.
+        // We use an approximation or fallback to a standard rect to avoid parsing full SVG wavy logic.
         page.drawRectangle({
           x, y,
           width: annotation.rect.width,
@@ -610,6 +626,7 @@ export class PdfEditAdapter {
           borderColor,
           color: fillColor,
           opacity: 0.8,
+          borderDashArray,
         });
         continue;
       }
@@ -623,6 +640,7 @@ export class PdfEditAdapter {
           borderWidth: strokeWidth,
           borderColor,
           color: fillColor,
+          borderDashArray,
         });
         continue;
       }
@@ -642,6 +660,7 @@ export class PdfEditAdapter {
             start: { x: x1, y: y1 },
             end: { x: x2, y: y2 },
             thickness: strokeWidth,
+              dashArray: borderDashArray,
             color: borderColor,
           });
           if (annotation.type === 'arrow') {
@@ -683,6 +702,7 @@ export class PdfEditAdapter {
           opacity: typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 0.8,
           borderWidth: typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 1,
           borderColor,
+          borderDashArray,
         });
 
         page.drawLine({
@@ -721,6 +741,7 @@ export class PdfEditAdapter {
           color: fillColor,
           opacity: typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 0.75,
           borderWidth: strokeWidth,
+          borderDashArray,
           borderColor,
         });
 
@@ -747,4 +768,3 @@ export class PdfEditAdapter {
     return await pdfDoc.save();
   }
 }
-
