@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import type { AnnotationType, PdfAnnotation } from '@/core/annotations/types';
@@ -45,6 +45,8 @@ export const InspectorPanel: React.FC = () => {
 
   const activeAnnotation =
     annotations.find((annotation) => annotation.id === activeAnnotationId) ?? selection[0] ?? null;
+
+  const isAnyLocked = selection.some((a) => a.data.locked);
 
   const toggleCollapse = () => {
     if (isCollapsed) {
@@ -152,6 +154,7 @@ export const InspectorPanel: React.FC = () => {
             annotation={activeAnnotation}
             updateManyAnnotations={updateManyAnnotations}
             selection={selection}
+            disabled={isAnyLocked}
           />
         )}
 
@@ -531,6 +534,7 @@ const PropertiesTab: React.FC<{
         <LabeledTextarea
           label="Text"
           value={typeof annotation.data.text === 'string' ? annotation.data.text : ''}
+          disabled={isLocked}
           onChange={(value) =>
             updateAnnotation(annotation.id, {
               data: { ...annotation.data, text: value },
@@ -548,7 +552,8 @@ const StyleTab: React.FC<{
   updateManyAnnotations: (
     updates: Array<{ id: string; data: Partial<PdfAnnotation> }>,
   ) => void;
-}> = ({ annotation, selection, updateManyAnnotations }) => {
+  disabled?: boolean;
+}> = ({ annotation, selection, updateManyAnnotations, disabled }) => {
   const applyToSelection = (dataPatch: Record<string, unknown>) => {
     const targets = selection.length > 1 ? selection : [annotation];
     updateManyAnnotations(
@@ -573,11 +578,13 @@ const StyleTab: React.FC<{
           label="Background"
           value={readColor(annotation.data.backgroundColor, '#ffffff')}
           onChange={(value) => applyToSelection({ backgroundColor: value })}
+          disabled={disabled}
         />
         <LabeledColorInput
           label="Border"
           value={readColor(annotation.data.borderColor, '#60a5fa')}
           onChange={(value) => applyToSelection({ borderColor: value })}
+          disabled={disabled}
         />
       </TwoColumnRow>
 
@@ -586,6 +593,7 @@ const StyleTab: React.FC<{
           label="Text"
           value={readColor(annotation.data.textColor, '#0f172a')}
           onChange={(value) => applyToSelection({ textColor: value })}
+          disabled={disabled}
         />
         <LabeledNumberInput
           label="Border Width"
@@ -597,6 +605,7 @@ const StyleTab: React.FC<{
             }
             applyToSelection({ borderWidth: next });
           }}
+          disabled={disabled}
         />
       </TwoColumnRow>
 
@@ -606,6 +615,7 @@ const StyleTab: React.FC<{
             <LabeledNumberInput
               label="Font Size"
               value={typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12}
+              disabled={disabled}
               onChange={(value) => {
                 const next = Number(value);
                 if (Number.isNaN(next)) {
@@ -618,6 +628,7 @@ const StyleTab: React.FC<{
             <LabeledSelect
               label="Weight"
               value={typeof annotation.data.fontWeight === 'string' ? annotation.data.fontWeight : 'normal'}
+              disabled={disabled}
               onChange={(value) => applyToSelection({ fontWeight: value })}
               options={[
                 { label: 'normal', value: 'normal' },
@@ -629,6 +640,7 @@ const StyleTab: React.FC<{
           <LabeledSelect
             label="Text Align"
             value={typeof annotation.data.textAlign === 'string' ? annotation.data.textAlign : 'left'}
+            disabled={disabled}
             onChange={(value) => applyToSelection({ textAlign: value })}
             options={[
               { label: 'left', value: 'left' },
@@ -641,6 +653,7 @@ const StyleTab: React.FC<{
             <input
               type="checkbox"
               checked={annotation.data.autoSize !== false}
+              disabled={disabled}
               onChange={(event) => applyToSelection({ autoSize: event.target.checked })}
             />
             Auto-size text box
@@ -705,9 +718,10 @@ const LabeledNumberInput: React.FC<{
   label: string;
   value: number;
   onChange: (value: string) => void;
-}> = ({ label, value, onChange }) => (
+  disabled?: boolean;
+}> = ({ label, value, onChange, disabled }) => (
   <LabeledInputShell label={label}>
-    <input type="number" className={baseInputClass} value={value} onChange={(e) => onChange(e.target.value)} />
+    <input type="number" className={baseInputClass} value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} />
   </LabeledInputShell>
 );
 
@@ -716,9 +730,10 @@ const LabeledSelect: React.FC<{
   value: string;
   onChange: (value: string) => void;
   options: Array<{ label: string; value: string }>;
-}> = ({ label, value, onChange, options }) => (
+  disabled?: boolean;
+}> = ({ label, value, onChange, options, disabled }) => (
   <LabeledInputShell label={label}>
-    <select className={baseInputClass} value={value} onChange={(e) => onChange(e.target.value)}>
+    <select className={baseInputClass} value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}
@@ -764,4 +779,3 @@ const KeyValue: React.FC<{ label: string; value: string; mono?: boolean }> = ({ 
 function readColor(value: unknown, fallback: string): string {
   return typeof value === 'string' ? value : fallback;
 }
-

@@ -134,7 +134,6 @@ export const DocumentWorkspace: React.FC = () => {
              const documentKeyToUse = documentKey || "local_temp_key";
              const pagesText: Record<number, any[]> = {};
              for (let i = 1; i <= doc.numPages; i++) {
-               if (cancelled) break;
                const page = await doc.getPage(i);
                const items = await PdfRendererAdapter.getPageTextItems(page, 1.0);
                pagesText[i] = items.map(item => ({ str: item.text, rect: { x: item.x, y: item.y, width: item.width, height: item.height } }));

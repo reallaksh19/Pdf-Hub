@@ -6,9 +6,10 @@ import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 import { Button } from '@/components/ui/Button';
 import { error as logError } from '@/core/logger/service';
 import { useToastStore } from '@/core/toast/store';
+import { SearchIndexer } from '@/core/search/indexer';
 
 export const SearchPanel: React.FC = () => {
-  const { workingBytes, setPage } = useSessionStore();
+  const { documentKey, workingBytes, setPage } = useSessionStore();
   const {
     query,
     setQuery,
@@ -23,6 +24,8 @@ export const SearchPanel: React.FC = () => {
     setIsSearching,
     error,
     setError,
+    options,
+    setOptions,
   } = useSearchStore();
   const addToast = useToastStore((state) => state.addToast);
 
@@ -43,7 +46,22 @@ export const SearchPanel: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
+      let results = [];
+      const documentKeyToUse = documentKey || "local_temp_key";
+      const cache = SearchIndexer.getCache(documentKeyToUse);
+
+      if (cache) {
+        const bboxHits = SearchIndexer.search(cache, searchQuery, options);
+        results = bboxHits.map((h, i) => ({
+          id: `hit-${h.pageNumber}-${i}`,
+          pageNumber: h.pageNumber,
+          snippet: h.text,
+          rects: [h.rect],
+        }));
+      } else {
+         results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
+      }
+
       setHits(results);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -57,7 +75,7 @@ export const SearchPanel: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  }, [workingBytes, clearSearch, setIsSearching, setHits, setError, addToast]);
+  }, [workingBytes, documentKey, clearSearch, setIsSearching, setHits, setError, addToast, options]);
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalQuery(e.target.value);
@@ -113,6 +131,42 @@ export const SearchPanel: React.FC = () => {
               <X className="w-4 h-4" />
             </button>
           )}
+        </div>
+
+        <div className="flex gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={options.caseSensitive}
+              onChange={(e) => {
+                setOptions({ caseSensitive: e.target.checked });
+                if (localQuery) executeSearch(localQuery);
+              }}
+            />
+            Aa
+          </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={options.wholeWord}
+              onChange={(e) => {
+                setOptions({ wholeWord: e.target.checked });
+                if (localQuery) executeSearch(localQuery);
+              }}
+            />
+            \b
+          </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={options.useRegex}
+              onChange={(e) => {
+                setOptions({ useRegex: e.target.checked });
+                if (localQuery) executeSearch(localQuery);
+              }}
+            />
+            .*
+          </label>
         </div>
 
         {hits.length > 0 && (
