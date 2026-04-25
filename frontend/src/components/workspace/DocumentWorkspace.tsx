@@ -491,6 +491,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const [textItems, setTextItems] = React.useState<TextLayerItem[]>([]);
   const [draftRects, setDraftRects] = React.useState<Record<string, Rect>>({});
   const [draftAnchors, setDraftAnchors] = React.useState<Record<string, Point2D | null>>({});
+  const [draftKnees, setDraftKnees] = React.useState<Record<string, Point2D | null>>({});
   const [draftLinePoints, setDraftLinePoints] = React.useState<Record<string, number[]>>({});
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingValue, setEditingValue] = React.useState('');
@@ -835,7 +836,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
         return next;
       });
 
-      updateAnnotation(annotation.id, {
+      onCommitAnnotation(annotation.id, {
         data: { knee: finalKnee },
       });
     };
@@ -1305,14 +1306,12 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                 onClick={() => {
                   if (!textSelectionDraft || textSelectionDraft.rects.length === 0) return;
                   const annId = uuidv4();
-                  const newAnn: PdfAnnotation = buildSquigglyFromSelection(
-                    textSelectionDraft.rects[0],
-                    textSelectionDraft.text,
-                    textSelectionDraft.pageNumber,
-                    viewState
+                  const newAnn: PdfAnnotation = buildSquigglyAnnotation(
+                    pageNumber,
+                    textSelectionDraft.rects[0]
                   );
                   newAnn.id = annId;
-                  addAnnotation(newAnn);
+                  onCreateAnnotation(newAnn);
                   clearTextSelectionDraft();
                   onSetSingleSelection(annId);
                 }}
@@ -2245,12 +2244,30 @@ function readAnchor(
   annotation: PdfAnnotation,
   fallback: Point2D | null,
 ): Point2D | null {
+  if (fallback) return fallback;
   const anchor = annotation.data.anchor;
   if (
     anchor &&
     typeof anchor === 'object' &&
     typeof (anchor as { x?: unknown }).x === 'number' &&
     typeof (anchor as { y?: unknown }).y === 'number'
+  ) {
+    return anchor as Point2D;
+  }
+  return null;
+}
+
+function readKnee(
+  annotation: PdfAnnotation,
+  fallback: Point2D | null,
+): Point2D | null {
+  if (fallback) return fallback;
+  const knee = annotation.data.knee;
+  if (
+    knee &&
+    typeof knee === 'object' &&
+    typeof (knee as { x?: unknown }).x === 'number' &&
+    typeof (knee as { y?: unknown }).y === 'number'
   ) {
     return anchor as Point2D;
   }
