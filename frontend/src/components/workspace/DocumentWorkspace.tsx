@@ -242,7 +242,7 @@ export const DocumentWorkspace: React.FC = () => {
             Open a PDF to begin
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">
-            Annotation layer revamp is active in this build.
+            Annotate, organize, and automate your PDF in one place.
           </p>
           <button
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
@@ -1031,6 +1031,11 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
               const isActive = hit.id === activeHitId;
               return (
                 <div
+                  ref={(el) => {
+                    if (isActive && el && index === 0) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                  }}
                   key={`hit-${hit.id}-${index}`}
                   className={`absolute pointer-events-none ${
                     isActive ? 'bg-orange-300/35 border border-orange-500/60' : 'bg-yellow-200/30 border border-yellow-400/35'

@@ -44,6 +44,8 @@ export const ToolbarOrganize: React.FC = () => {
     setPage,
     clearSelectedPages,
   } = useSessionStore();
+
+  const { canUndo, canRedo, peekUndo, peekRedo } = useHistoryStore();
   const addToast = useToastStore((state) => state.addToast);
 
   const activePages = selectedPages.length > 0 ? selectedPages : [viewState.currentPage];

@@ -534,7 +534,7 @@ const PropertiesTab: React.FC<{
         <LabeledTextarea
           label="Text"
           value={typeof annotation.data.text === 'string' ? annotation.data.text : ''}
-          disabled={isLocked}
+          disabled={annotation.data.locked === true}
           onChange={(value) =>
             updateAnnotation(annotation.id, {
               data: { ...annotation.data, text: value },
@@ -747,12 +747,14 @@ const LabeledTextarea: React.FC<{
   label: string;
   value: string;
   onChange: (value: string) => void;
-}> = ({ label, value, onChange }) => (
+  disabled?: boolean;
+}> = ({ label, value, onChange, disabled }) => (
   <LabeledInputShell label={label}>
     <textarea
       className={`${baseInputClass} min-h-[90px] resize-y`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
     />
   </LabeledInputShell>
 );
@@ -761,9 +763,10 @@ const LabeledColorInput: React.FC<{
   label: string;
   value: string;
   onChange: (value: string) => void;
-}> = ({ label, value, onChange }) => (
+  disabled?: boolean;
+}> = ({ label, value, onChange, disabled }) => (
   <LabeledInputShell label={label}>
-    <input type="color" className="h-10 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-2" value={value} onChange={(e) => onChange(e.target.value)} />
+    <input type="color" className="h-10 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-2" value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} />
   </LabeledInputShell>
 );
 
