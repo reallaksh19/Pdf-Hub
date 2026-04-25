@@ -10,8 +10,10 @@ import { useAnnotationStore } from '@/core/annotations/store';
 import type { PdfAnnotation, Rect, AnnotationType, Point2D } from '@/core/annotations/types';
 import { useEditorStore } from '@/core/editor/store';
 import { useSessionStore } from '@/core/session/store';
+import { usePdfStore } from '@/core/session/pdfStore';
 import { useReviewStore } from '@/core/review/store';
 import { useSearchStore } from '@/core/search/store';
+import { SearchIndexer } from '@/core/search/indexer';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 
@@ -73,7 +75,7 @@ export const DocumentWorkspace: React.FC = () => {
   const { activeTool } = useEditorStore();
   const { hideResolved } = useReviewStore();
 
-  const [pdfDoc, setPdfDoc] = React.useState<PDFDocumentProxy | null>(null);
+  const { pdfDoc, setPdfDoc } = usePdfStore();
   const [loading, setLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -127,6 +129,26 @@ export const DocumentWorkspace: React.FC = () => {
 
         previousDoc = doc;
         setPdfDoc(doc);
+
+        const pagesText: Record<number, import('@/core/search/types').PageTextItem[]> = {};
+        for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
+          if (cancelled) break;
+          const page = await doc.getPage(pageNumber);
+          const items = await PdfRendererAdapter.getPageTextItems(page, 1.0);
+          pagesText[pageNumber] = items.map((item) => ({
+            str: item.text,
+            rect: {
+              x: item.x,
+              y: item.y,
+              width: item.width,
+              height: item.height,
+            },
+          }));
+        }
+
+        if (!cancelled && documentKey) {
+          SearchIndexer.setCache(documentKey, pagesText);
+        }
       } catch (err) {
         if (!cancelled) {
           setLoadError(String(err));
@@ -142,8 +164,9 @@ export const DocumentWorkspace: React.FC = () => {
     return () => {
       cancelled = true;
       if (previousDoc) void previousDoc.destroy();
+      setPdfDoc(null);
     };
-  }, [workingBytes]);
+  }, [workingBytes, documentKey, setPdfDoc]);
 
   React.useEffect(() => {
     const loadStored = async () => {
@@ -225,7 +248,7 @@ export const DocumentWorkspace: React.FC = () => {
             Open a PDF to begin
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">
-            Annotation layer revamp is active in this build.
+            Annotate, organize, and automate your PDF in one place.
           </p>
           <button
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
@@ -457,6 +480,15 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const draftRectsRef = React.useRef<Record<string, Rect>>({});
   const draftAnchorsRef = React.useRef<Record<string, Point2D | null>>({});
   const draftLinePointsRef = React.useRef<Record<string, number[]>>({});
+
+  React.useEffect(() => {
+    if (activeHitId) {
+      const el = document.getElementById(`search-hit-${activeHitId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [activeHitId]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -1015,6 +1047,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
               return (
                 <div
                   key={`hit-${hit.id}-${index}`}
+                  id={isActive ? `search-hit-${hit.id}` : undefined}
                   className={`absolute pointer-events-none ${
                     isActive ? 'bg-orange-300/35 border border-orange-500/60' : 'bg-yellow-200/30 border border-yellow-400/35'
                   }`}

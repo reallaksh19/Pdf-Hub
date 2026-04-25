@@ -30,8 +30,19 @@ export async function runMacroRecipeAgainstSession(
     recipe,
   );
 
-  useSessionStore.getState().replaceWorkingCopy(result.workingBytes, result.pageCount);
-  useSessionStore.getState().setSelectedPages(result.selectedPages);
+  if (!options?.dryRun) {
+    const { dispatchCommand } = await import('@/core/commands/dispatch');
+    await dispatchCommand({
+      source: 'macro-runner',
+      command: {
+        type: 'REPLACE_WORKING_COPY',
+        nextBytes: result.workingBytes,
+        nextPageCount: result.pageCount,
+        reason: `Ran macro recipe ${recipe.name}`,
+      },
+    });
+    useSessionStore.getState().setSelectedPages(result.selectedPages);
+  }
 
   if (options?.saveOutputs) {
     for (const output of result.extractedOutputs) {
