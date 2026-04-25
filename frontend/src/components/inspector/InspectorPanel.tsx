@@ -155,8 +155,6 @@ export const InspectorPanel: React.FC = () => {
         {activeAnnotation && inspectorTab === 'style' && (
           <StyleTab
             annotation={activeAnnotation}
-            updateManyAnnotations={updateManyAnnotations}
-            selection={selection}
           />
         )}
 
@@ -562,24 +560,11 @@ const PropertiesTab: React.FC<{
 
 const StyleTab: React.FC<{
   annotation: PdfAnnotation;
-  selection: PdfAnnotation[];
-  updateManyAnnotations: (
-    updates: Array<{ id: string; data: Partial<PdfAnnotation> }>,
-  ) => void;
-}> = ({ annotation, selection, updateManyAnnotations }) => {
+}> = ({ annotation }) => {
+  const { updateStyleForSelection } = useAnnotationStore();
+
   const applyToSelection = (dataPatch: Record<string, unknown>) => {
-    const targets = selection.length > 1 ? selection : [annotation];
-    updateManyAnnotations(
-      targets.map((item) => ({
-        id: item.id,
-        data: {
-          data: {
-            ...item.data,
-            ...dataPatch,
-          },
-        },
-      })),
-    );
+    updateStyleForSelection(dataPatch);
   };
 
   const isTextLike = ['textbox', 'callout', 'sticky-note'].includes(annotation.type);

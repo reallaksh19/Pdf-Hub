@@ -2,6 +2,7 @@ import React from 'react';
 import { Layers, GripVertical } from 'lucide-react';
 import { VList } from 'virtua';
 import { useSessionStore } from '@/core/session/store';
+import { usePdfStore } from '@/core/session/pdfStore';
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import { useSearchStore } from '@/core/search/store';
@@ -50,6 +51,7 @@ const ThumbnailSidebar: React.FC = () => {
     setSelectedPages,
     toggleSelectedPage,
   } = useSessionStore();
+  const { pdfDoc } = usePdfStore();
   const { setSidebarTab } = useEditorStore();
   const { annotations } = useAnnotationStore();
   const { hits } = useSearchStore();
@@ -98,13 +100,12 @@ const ThumbnailSidebar: React.FC = () => {
     let cancelled = false;
 
     const loadThumbnails = async () => {
-      if (!workingBytes) {
+      if (!workingBytes || !pdfDoc) {
         setThumbs([]);
         return;
       }
       setLoading(true);
       try {
-        const doc = await PdfRendererAdapter.loadDocument(workingBytes);
         const result: ThumbItem[] = [];
         const batchSize = 5;
 
@@ -139,7 +140,7 @@ const ThumbnailSidebar: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [workingBytes]);
+  }, [workingBytes, pdfDoc]);
 
   const applySelection = (
     event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,

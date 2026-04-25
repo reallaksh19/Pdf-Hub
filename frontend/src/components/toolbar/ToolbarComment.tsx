@@ -155,6 +155,18 @@ export const ToolbarComment: React.FC = () => {
         </Button>
       </Tooltip>
 
+      <Tooltip content="Redaction">
+        <Button variant={getToolVariant('redaction')} size="icon" onClick={() => handleToolClick('redaction')}>
+          <SquareSquare className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content="Ink">
+        <Button variant={getToolVariant('ink')} size="icon" onClick={() => handleToolClick('ink')}>
+          <PenTool className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
       <Tooltip content="Line">
         <Button variant={getToolVariant('line')} size="icon" onClick={() => handleToolClick('line')}>
           <Minus className="w-4 h-4" />

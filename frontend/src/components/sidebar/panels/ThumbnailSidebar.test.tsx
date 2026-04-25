@@ -69,6 +69,14 @@ describe('ThumbnailSidebar', () => {
       setSelectedPages: mockSetSelectedPages,
       toggleSelectedPage: mockToggleSelectedPage,
     });
+
+    const { usePdfStore } = await import('@/core/session/pdfStore');
+    usePdfStore.setState({
+      pdfDoc: {
+        numPages: 2,
+        getPage: vi.fn().mockResolvedValue({}),
+      } as any,
+    });
     mockedUseEditorStore.mockReturnValue({ setSidebarTab: mockSetSidebarTab });
     mockedUseAnnotationStore.mockReturnValue({ annotations: [] });
     mockedUseSearchStore.mockReturnValue({ hits: [] });

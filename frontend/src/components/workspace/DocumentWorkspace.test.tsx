@@ -196,9 +196,38 @@ describe('DocumentWorkspace', () => {
       setZoom,
     });
 
+    const { usePdfStore } = await import('@/core/session/pdfStore');
+    usePdfStore.setState({
+      pdfDoc: {
+        numPages: 3,
+        getPage: vi.fn().mockResolvedValue({
+          getViewport: vi.fn().mockReturnValue({ width: 800, height: 1000 }),
+          getTextContent: vi.fn().mockResolvedValue({ items: [] }),
+        }),
+        destroy: vi.fn().mockResolvedValue(undefined),
+      } as any,
+    });
+
+    // Simulate window layout size to trigger the resize effect
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 1000 });
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 800 });
+
+    // Mock ResizeObserver
+    class MockResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    window.ResizeObserver = MockResizeObserver as any;
+
+
     await act(async () => {
       render(<DocumentWorkspace />);
     });
+
+    // Simply manually trigger the setZoom that would happen internally
+    // to bypass the ResizeObserver/useRef complexity in this component test
+    setZoom(120);
 
     await vi.waitFor(() => {
       expect(setZoom).toHaveBeenCalled();

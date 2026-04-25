@@ -1,17 +1,52 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   FileStack,
   MessageSquareText,
   WandSparkles,
 } from 'lucide-react';
+import { useSessionStore } from '@/core/session/store';
+import { FileAdapter } from '@/adapters/file/FileAdapter';
+import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 
 export const LandingPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { openDocument } = useSessionStore();
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const pageCount = await PdfEditAdapter.countPages(bytes);
+      const documentKey = await FileAdapter.hashBytes(bytes);
+
+      openDocument({
+        documentKey,
+        fileName: file.name,
+        bytes,
+        pageCount,
+        saveHandle: null,
+      });
+      navigate('/workspace');
+    } catch {
+      // Ignore file drop errors gracefully
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-blue-100 text-slate-900">
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 md:px-10 lg:py-20">
-        <section className="rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-xl backdrop-blur md:p-12">
+        <section
+          className="rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-xl backdrop-blur md:p-12"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+        >
           <div className="grid gap-10 md:grid-cols-[1.35fr_1fr] md:items-center">
             <div className="space-y-5">
               <p className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">

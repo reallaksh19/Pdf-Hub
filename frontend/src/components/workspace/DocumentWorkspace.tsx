@@ -11,8 +11,10 @@ import { useAnnotationStore } from '@/core/annotations/store';
 import type { PdfAnnotation, Rect, AnnotationType, Point2D } from '@/core/annotations/types';
 import { useEditorStore } from '@/core/editor/store';
 import { useSessionStore } from '@/core/session/store';
+import { usePdfStore } from '@/core/session/pdfStore';
 import { useReviewStore } from '@/core/review/store';
 import { useSearchStore } from '@/core/search/store';
+import { SearchIndexer } from '@/core/search/indexer';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 import { SearchIndexer } from '@/core/search/indexer';
@@ -1130,6 +1132,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                 <div
                   id={isActive && index === 0 ? `search-hit-${hit.id}` : undefined}
                   key={`hit-${hit.id}-${index}`}
+                  id={isActive ? `search-hit-${hit.id}` : undefined}
                   className={`absolute pointer-events-none ${
                     isActive ? 'bg-orange-300/35 border border-orange-500/60' : 'bg-yellow-200/30 border border-yellow-400/35'
                   }`}

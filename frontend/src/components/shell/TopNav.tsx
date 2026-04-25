@@ -7,7 +7,7 @@ import { Sun, Moon, Settings, Search, X } from 'lucide-react';
 import { useSearchStore } from '@/core/search/store';
 import { useSessionStore } from '@/core/session/store';
 import { useEditorStore } from '@/core/editor/store';
-import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
+import { SearchIndexer } from '@/core/search/indexer';
 import { error as logError } from '@/core/logger/service';
 import { useToastStore } from '@/core/toast/store';
 
@@ -44,7 +44,7 @@ export const TopNav: React.FC = () => {
   }
 
   const executeSearch = useCallback(async (searchQuery: string) => {
-    if (!workingBytes) return;
+    if (!documentKey) return;
     if (!searchQuery.trim()) {
       clearSearch();
       return;
@@ -52,8 +52,18 @@ export const TopNav: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
-      setHits(results);
+      const cache = SearchIndexer.getCache(documentKey);
+      if (!cache) {
+        setHits([]);
+        return;
+      }
+      const results = SearchIndexer.search(cache, searchQuery, { caseSensitive: false, wholeWord: false, useRegex: false });
+      setHits(results.map((r, i) => ({
+        id: `hit-${i}`,
+        pageNumber: r.pageNumber,
+        snippet: r.text,
+        rects: [r.rect]
+      })));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
@@ -66,7 +76,7 @@ export const TopNav: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  }, [workingBytes, clearSearch, setIsSearching, setHits, setError, addToast]);
+  }, [documentKey, clearSearch, setIsSearching, setHits, setError, addToast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -123,7 +133,9 @@ export const TopNav: React.FC = () => {
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
           <div className="w-6 h-6 bg-blue-600 rounded-sm"></div>
-          <span className="font-bold text-lg hidden sm:inline-block">DocCraft</span>
+          <span className="font-bold text-lg hidden sm:inline-block">
+            {fileName ? (isDirty ? `• ${fileName}` : fileName) : 'DocCraft'}
+          </span>
           <Badge data-testid="mode-badge" variant="success" className="ml-2">
             STATIC
           </Badge>

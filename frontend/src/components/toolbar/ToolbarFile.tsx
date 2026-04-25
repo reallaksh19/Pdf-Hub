@@ -18,6 +18,7 @@ export const ToolbarFile: React.FC = () => {
     setSaveHandle,
     isDirty,
     setDirty,
+    isDirty,
     recordSaveExportAction,
   } = useSessionStore();
 
@@ -103,6 +104,35 @@ export const ToolbarFile: React.FC = () => {
     }
   };
 
+  const handleExportReview = async () => {
+    if (!workingBytes || !fileName) {
+      return;
+    }
+    try {
+      const exported = await PdfEditAdapter.exportWithAnnotations(workingBytes, annotations);
+      const exportName = fileName.replace(/\.pdf$/i, '') + '-review.pdf';
+      await FileAdapter.savePdfBytes(exported, exportName, null);
+      recordSaveExportAction(
+        { type: 'EXPORT_REVIEW_SNAPSHOT' },
+        'success',
+        `Exported review ${exportName}`,
+      );
+      addToast({
+        type: 'success',
+        title: 'Review Exported',
+        message: `Exported review to ${exportName}`,
+      });
+    } catch (err) {
+      logError('session', 'Failed to export review PDF', { error: String(err), fileName });
+      recordSaveExportAction({ type: 'EXPORT_REVIEW_SNAPSHOT' }, 'failure', String(err));
+      addToast({
+        type: 'error',
+        title: 'Export Failed',
+        message: 'Failed to export the review document.',
+      });
+    }
+  };
+
   const handleExport = async () => {
     if (!workingBytes || !fileName) {
       return;
@@ -159,6 +189,12 @@ export const ToolbarFile: React.FC = () => {
 
       <Tooltip content="Export flattened PDF">
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleExport} disabled={!workingBytes}>
+          <FileOutput className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content="Export Review">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleExportReview} disabled={!workingBytes}>
           <FileOutput className="w-4 h-4" />
         </Button>
       </Tooltip>

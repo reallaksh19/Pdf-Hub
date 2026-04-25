@@ -503,6 +503,7 @@ export class PdfEditAdapter {
           borderWidth: strokeWidth,
           borderColor,
           color: fillColor,
+          opacity: 0.8,
         });
         continue;
       }
