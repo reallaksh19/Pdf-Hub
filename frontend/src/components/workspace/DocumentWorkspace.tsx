@@ -2269,9 +2269,9 @@ function readKnee(
     typeof (knee as { x?: unknown }).x === 'number' &&
     typeof (knee as { y?: unknown }).y === 'number'
   ) {
-    return anchor as Point2D;
+    return knee as Point2D;
   }
-  return fallback;
+  return null;
 }
 
 function readZIndex(annotation: PdfAnnotation): number {
