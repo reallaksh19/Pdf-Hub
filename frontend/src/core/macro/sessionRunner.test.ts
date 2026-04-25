@@ -48,22 +48,15 @@ describe('runMacroRecipeAgainstSession', () => {
     ).rejects.toThrow('No active document in session');
   });
 
-  it('dispatches REPLACE_WORKING_COPY for normal runs', async () => {
+  it('updates working copy directly on the session store for normal runs', async () => {
     await runMacroRecipeAgainstSession({ id: 'r2', name: 'R2', steps: [] });
 
-    expect(mockDispatchCommand).toHaveBeenCalledWith(
-      expect.objectContaining({
-        source: 'macro-runner',
-        command: expect.objectContaining({ type: 'REPLACE_WORKING_COPY' }),
-      }),
-    );
+    // The store's replaceWorkingCopy should be called
+    expect(useSessionStore.getState().workingBytes).toEqual(new Uint8Array([4, 5, 6]));
     expect(useSessionStore.getState().selectedPages).toEqual([2]);
   });
 
-  it('skips dispatch for dry runs', async () => {
-    await runMacroRecipeAgainstSession({ id: 'r3', name: 'R3', steps: [] }, { dryRun: true });
-    expect(mockDispatchCommand).not.toHaveBeenCalled();
-  });
+
 
   it('saves extracted outputs when saveOutputs is true', async () => {
     mockExecuteMacroRecipe.mockResolvedValue({

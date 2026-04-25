@@ -544,6 +544,109 @@ export class PdfEditAdapter {
         continue;
       }
 
+      if (annotation.type === 'redaction') {
+        page.drawRectangle({
+          x,
+          y,
+          width: annotation.rect.width,
+          height: annotation.rect.height,
+          color: rgb(0, 0, 0),
+          borderWidth: 2,
+          borderColor: rgb(0, 0, 0),
+        });
+        continue;
+      }
+
+      if (annotation.type === 'squiggly') {
+        const { width } = annotation.rect;
+        const amplitude = 2;
+        const frequency = 4;
+        let d = `M 0 0`;
+        for (let i = 0; i < width; i += frequency) {
+          d += ` Q ${i + frequency / 2} ${amplitude} ${i + frequency} 0`;
+          amplitude = -amplitude;
+        }
+
+        page.drawSvgPath(d, {
+          x: x,
+          y: page.getHeight() - annotation.rect.y - annotation.rect.height,
+          borderColor: borderColor ?? rgb(1, 0, 0),
+          borderWidth: 2,
+        });
+        continue;
+      }
+
+      if (annotation.type === 'ink') {
+        const paths = annotation.data.paths as number[][] | undefined;
+        if (paths && Array.isArray(paths)) {
+          paths.forEach((path) => {
+            if (!Array.isArray(path) || path.length < 4) return;
+            for (let i = 0; i < path.length - 2; i += 2) {
+              const x1 = path[i];
+              const y1 = page.getHeight() - path[i+1];
+              const x2 = path[i+2];
+              const y2 = page.getHeight() - path[i+3];
+              page.drawLine({
+                start: { x: x1, y: y1 },
+                end: { x: x2, y: y2 },
+                thickness: strokeWidth,
+                color: borderColor,
+              });
+            }
+          });
+        }
+        continue;
+      }
+
+      if (annotation.type === 'shape-cloud') {
+        const { width, height } = annotation.rect;
+        const amplitude = 6;
+        const bumps = Math.max(3, Math.round(width / 18));
+        const step = width / bumps;
+        let d = `M 0 ${height / 2} `;
+
+        for (let i = 0; i < bumps; i++) {
+          const cx = i * step + step / 2;
+          const cy = -amplitude;
+          const ex = (i + 1) * step;
+          d += `Q ${cx} ${cy} ${ex} 0 `;
+        }
+        const rightBumps = Math.max(2, Math.round(height / 18));
+        const rStep = height / rightBumps;
+        for (let i = 0; i < rightBumps; i++) {
+          const cx = width + amplitude;
+          const cy = i * rStep + rStep / 2;
+          const ey = (i + 1) * rStep;
+          d += `Q ${cx} ${cy} ${width} ${ey} `;
+        }
+        d += 'Z';
+
+        // pdf-lib drawSvgPath origin is tricky, we can just position it at (x, y + height) because PDF origin is bottom-left, but drawSvgPath maps (0,0) to that position, and SVG y goes down while PDF y goes up.
+        // Actually, drawSvgPath uses a coordinate system where Y goes down.
+        // So drawing at x, y_top is correct
+
+        page.drawSvgPath(d, {
+          x: x,
+          y: page.getHeight() - annotation.rect.y,
+          borderColor: borderColor,
+          borderWidth: strokeWidth,
+          color: fillColor,
+        });
+        continue;
+      }
+
+      if (annotation.type === 'shape-rect') {
+        page.drawRectangle({
+          x, y,
+          width: annotation.rect.width,
+          height: annotation.rect.height,
+          borderWidth: strokeWidth,
+          borderColor,
+          color: fillColor,
+        });
+        continue;
+      }
+
       if (annotation.type === 'callout') {
         const anchor =
           annotation.data.anchor &&
@@ -553,18 +656,43 @@ export class PdfEditAdapter {
             ? (annotation.data.anchor as { x: number; y: number })
             : null;
 
-        if (anchor) {
-          const x1 = anchor.x;
-          const y1 = page.getHeight() - anchor.y;
-          const x2 = x;
-          const y2 = y + annotation.rect.height / 2;
+        const knee =
+          annotation.data.knee &&
+          typeof annotation.data.knee === 'object' &&
+          typeof (annotation.data.knee as { x?: unknown }).x === 'number' &&
+          typeof (annotation.data.knee as { y?: unknown }).y === 'number'
+            ? (annotation.data.knee as { x: number; y: number })
+            : null;
 
-          page.drawLine({
-            start: { x: x1, y: y1 },
-            end: { x: x2, y: y2 },
-            thickness: 2,
-            color: borderColor,
-          });
+        if (anchor) {
+          const startX = anchor.x;
+          const startY = page.getHeight() - anchor.y;
+          const endX = x;
+          const endY = y + annotation.rect.height / 2;
+
+          if (knee) {
+            const kneeX = knee.x;
+            const kneeY = page.getHeight() - knee.y;
+            page.drawLine({
+              start: { x: startX, y: startY },
+              end: { x: kneeX, y: kneeY },
+              thickness: 2,
+              color: borderColor,
+            });
+            page.drawLine({
+              start: { x: kneeX, y: kneeY },
+              end: { x: endX, y: endY },
+              thickness: 2,
+              color: borderColor,
+            });
+          } else {
+            page.drawLine({
+              start: { x: startX, y: startY },
+              end: { x: endX, y: endY },
+              thickness: 2,
+              color: borderColor,
+            });
+          }
         }
 
         page.drawRectangle({
@@ -640,4 +768,3 @@ export class PdfEditAdapter {
     return await pdfDoc.save();
   }
 }
-
