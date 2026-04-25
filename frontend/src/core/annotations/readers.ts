@@ -14,7 +14,7 @@ export function readStrokeColor(annotation: PdfAnnotation, fallback = '#60a5fa')
   if (typeof annotation.data.strokeColor === 'string') return annotation.data.strokeColor;
   if (typeof annotation.data.borderColor === 'string') return annotation.data.borderColor;
 
-  if (annotation.type === 'rectangle' || annotation.type === 'ellipse') return '#3b82f6';
+  if (annotation.type === 'shape' && (annotation.data.shapeType === 'rectangle' || annotation.data.shapeType === 'ellipse')) return '#3b82f6';
   if (annotation.type === 'stamp') return '#ef4444';
   return fallback;
 }
@@ -23,7 +23,7 @@ export function readStrokeWidth(annotation: PdfAnnotation, fallback = 1): number
   if (typeof annotation.data.strokeWidth === 'number') return annotation.data.strokeWidth;
   if (typeof annotation.data.borderWidth === 'number') return annotation.data.borderWidth;
 
-  if (annotation.type === 'rectangle' || annotation.type === 'ellipse') return 2;
+  if (annotation.type === 'shape' && (annotation.data.shapeType === 'rectangle' || annotation.data.shapeType === 'ellipse')) return 2;
   if (annotation.type === 'stamp') return 3;
   return fallback;
 }

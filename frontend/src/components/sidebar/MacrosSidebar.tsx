@@ -16,7 +16,9 @@ import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { useSessionStore } from '@/core/session/store';
 import { error as logError } from '@/core/logger/service';
 import { BUILTIN_MACROS } from '@/core/macro/builtins';
+import { GENERATION_MACROS } from '@/core/macro/generationBuiltins';
 import { runMacroRecipeAgainstSession } from '@/core/macro/sessionRunner';
+import { ImageIcon } from 'lucide-react';
 import { validateRecipeBeforeRun, type PreflightReport } from '@/core/macro/validation/validator';
 import { usePresetsStore } from '@/core/macro/store/presets';
 import type {
@@ -56,6 +58,7 @@ interface OutputQueueItem extends MacroOutputFile {
 }
 
 const BUILTIN_RECIPES: MacroRecipe[] = Object.values(BUILTIN_MACROS);
+const GENERATION_RECIPES: MacroRecipe[] = Object.values(GENERATION_MACROS);
 
 const PLACEHOLDER_STEPS: Array<MacroStep['op']> = [
   'select_pages',
@@ -88,6 +91,11 @@ export const MacrosSidebar: React.FC = () => {
   const [outputQueue, setOutputQueue] = React.useState<OutputQueueItem[]>([]);
   const [preflightReport, setPreflightReport] = React.useState<PreflightReport | null>(null);
   const [isDryRunning, setIsDryRunning] = React.useState(false);
+  const [brandImageDataUrl, setBrandImageDataUrl] = React.useState<string>('');
+  const [generationTitle, setGenerationTitle] = React.useState<string>('Untitled Report');
+  const [selectedGenerationId, setSelectedGenerationId] = React.useState<string>('professional_report_full');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const overrides = React.useMemo(
     () =>
       selectedRecipe
@@ -277,18 +285,130 @@ export const MacrosSidebar: React.FC = () => {
     setOutputQueue([]);
   };
 
-  if (!workingBytes) {
-    return (
-      <div className="p-4">
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 text-sm text-slate-500 dark:text-slate-400">
-          Open a PDF to run macros.
-        </div>
-      </div>
-    );
-  }
+  const handleGenerateDocument = async () => {
+    const generationRecipe = GENERATION_RECIPES.find((r) => r.id === selectedGenerationId);
+    if (!generationRecipe) return;
+
+    setIsRunning(true);
+    setRunLogs([]);
+    setRunError(null);
+
+    try {
+      const finalRecipe = {
+        ...generationRecipe,
+        steps: generationRecipe.steps.map(step => {
+          if (step.op === 'add_image_header_page') {
+            return {
+              ...step,
+              imageSrc: brandImageDataUrl || step.imageSrc,
+              title: generationTitle || step.title,
+            };
+          }
+          return step;
+        })
+      };
+
+      const result = await runMacroRecipeAgainstSession(
+        finalRecipe,
+      );
+
+      setRunLogs(result.logs);
+      useSessionStore.getState().replaceWorkingCopy(result.workingBytes, result.pageCount);
+    } catch (err: unknown) {
+      logError('macro', err instanceof Error ? err.message : 'Unknown error occurred');
+      setRunError(err instanceof Error ? err.message : 'Unknown error occurred');
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
   return (
     <div className="p-3 space-y-4">
+      <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <Sparkles className="w-4 h-4" />
+          Generate Document
+        </div>
+
+        <div className="flex gap-2 items-center">
+          <select
+            id="generation-select"
+            className="block w-full text-xs rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
+            value={selectedGenerationId}
+            onChange={(e) => setSelectedGenerationId(e.target.value)}
+            disabled={isRunning}
+          >
+            {GENERATION_RECIPES.map((recipe) => (
+              <option key={recipe.id} value={recipe.id}>
+                {recipe.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-3 pt-2">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              Title
+            </span>
+            <input
+              type="text"
+              className="w-full text-xs rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              value={generationTitle}
+              onChange={(e) => setGenerationTitle(e.target.value)}
+              placeholder="Report Title"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              Brand / Header Image
+            </span>
+            <div
+              className="w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors relative overflow-hidden"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {brandImageDataUrl ? (
+                <img src={brandImageDataUrl} className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-center text-slate-400 text-xs">
+                  <ImageIcon className="w-6 h-6 mx-auto mb-1" />
+                  Click to pick header image
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setBrandImageDataUrl(reader.result as string);
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
+          </label>
+        </div>
+
+        <Button
+          onClick={handleGenerateDocument}
+          disabled={isRunning}
+          className="w-full mt-2"
+        >
+          {isRunning ? <RotateCw className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
+          Generate PDF
+        </Button>
+      </section>
+
+      {!workingBytes ? (
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 text-sm text-slate-500 dark:text-slate-400">
+          Open a PDF to enhance document.
+        </div>
+      ) : (
+        <>
       <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
           <Sparkles className="w-4 h-4" />
@@ -681,7 +801,7 @@ export const MacrosSidebar: React.FC = () => {
           )}
 
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => void runSelectedMacro()} disabled={isRunning || !selectedRecipe || (preflightReport && !preflightReport.isValid)}>
+            <Button size="sm" onClick={() => void runSelectedMacro()} disabled={isRunning || !selectedRecipe || (!!preflightReport && !preflightReport.isValid)}>
               {isRunning ? (
                 <RotateCw className="w-4 h-4 mr-1 animate-spin" />
               ) : (
@@ -801,6 +921,8 @@ export const MacrosSidebar: React.FC = () => {
           </table>
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 };

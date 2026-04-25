@@ -368,6 +368,55 @@ export class PdfEditAdapter {
     return await pdfDoc.save();
   }
 
+  static async injectRichText(
+    baseBytes: Uint8Array,
+    options: DrawTextOptions & {
+      width?: number;
+      height?: number;
+      textAlign?: 'left' | 'center' | 'right' | 'justify';
+    },
+  ): Promise<Uint8Array> {
+    const pdfDoc = await PDFDocument.load(baseBytes);
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const totalPages = pdfDoc.getPageCount();
+
+    for (const pageIndex of options.pages) {
+      const page = pdfDoc.getPage(pageIndex);
+      const width = page.getWidth();
+
+      const text = resolveHeaderFooterTokens(options.text, {
+        page: pageIndex + 1,
+        pages: totalPages,
+        file: options.fileName,
+        date: options.now.toLocaleDateString(),
+        enablePageNumberToken: options.enablePageNumberToken,
+        enableFileNameToken: options.enableFileNameToken,
+        enableDateToken: options.enableDateToken,
+      });
+
+      // Basic fallback since pdf-lib does not support real rich text
+      const textWidth = font.widthOfTextAtSize(text, options.fontSize);
+      const x =
+        options.textAlign === 'center'
+          ? (width - textWidth) / 2
+          : options.textAlign === 'right'
+          ? width - options.x - textWidth
+          : options.x;
+
+      page.drawText(text, {
+        x,
+        y: options.y,
+        font,
+        size: options.fontSize,
+        color: hexToRgb(options.color),
+        opacity: options.opacity,
+        maxWidth: options.width,
+      });
+    }
+
+    return await pdfDoc.save();
+  }
+
   static async drawTextOnPages(
     baseBytes: Uint8Array,
     options: DrawTextOptions,
@@ -495,7 +544,7 @@ export class PdfEditAdapter {
         continue;
       }
 
-      if (annotation.type === 'rectangle') {
+      if (annotation.type === 'shape' && annotation.data.shapeType === 'rectangle') {
         page.drawRectangle({
           x, y,
           width: annotation.rect.width,
@@ -507,7 +556,7 @@ export class PdfEditAdapter {
         continue;
       }
 
-      if (annotation.type === 'ellipse') {
+      if (annotation.type === 'shape' && annotation.data.shapeType === 'ellipse') {
         page.drawEllipse({
           x: x + annotation.rect.width / 2,
           y: y + annotation.rect.height / 2,
