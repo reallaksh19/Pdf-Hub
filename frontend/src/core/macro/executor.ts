@@ -338,6 +338,71 @@ export async function executeMacroRecipe(
         break;
       }
 
+      case 'add_content_page': {
+        const { renderPageToImageBytes } = await import('./layout/pageRenderer');
+
+        // Render the layout definition to a PNG
+        const imageBytes = await renderPageToImageBytes({
+          size: step.size ?? 'a4',
+          background: step.background,
+          blocks: step.blocks,
+        });
+
+        // Insert a blank page at the target position
+        const atIndex = await resolveInsertIndex(step.position, ctx.currentPage, pageCount);
+        const size = step.size === 'letter' ? { width: 612, height: 792 } : { width: 595, height: 842 };
+
+        workingBytes = await PdfEditAdapter.insertBlankPage(workingBytes, atIndex, size);
+        pageCount = await PdfEditAdapter.countPages(workingBytes);
+
+        // Embed the rendered image as full-page content
+        workingBytes = await PdfEditAdapter.insertImage(workingBytes, {
+          pages: [atIndex],
+          imageBytes,
+          mimeType: 'image/png',
+          x: 0,
+          y: 0,
+          width: size.width,
+          height: size.height,
+        });
+
+        logs.push(`Generated content page at index ${atIndex + 1}`);
+        break;
+      }
+
+      case 'add_image_header_page': {
+        const { renderPageToImageBytes } = await import('./layout/pageRenderer');
+
+        const imageBytes = await renderPageToImageBytes({
+          size: step.size ?? 'a4',
+          blocks: [
+            { type: 'image-header', src: step.imageSrc, height: step.headerHeight ?? 200 },
+            { type: 'heading', text: step.title, level: 1 },
+            ...(step.subtitle ? [{ type: 'heading' as const, text: step.subtitle, level: 3, color: '#64748b' }] : []),
+            { type: 'divider' },
+            ...(step.bodyMarkdown ? [{ type: 'rich-text' as const, markdown: step.bodyMarkdown }] : []),
+          ],
+        });
+
+        const atIndex = await resolveInsertIndex(step.position, ctx.currentPage, pageCount);
+        const size = step.size === 'letter' ? { width: 612, height: 792 } : { width: 595, height: 842 };
+
+        workingBytes = await PdfEditAdapter.insertBlankPage(workingBytes, atIndex, size);
+        pageCount = await PdfEditAdapter.countPages(workingBytes);
+        workingBytes = await PdfEditAdapter.insertImage(workingBytes, {
+          pages: [atIndex],
+          imageBytes,
+          mimeType: 'image/png',
+          x: 0,
+          y: 0,
+          width: size.width,
+          height: size.height,
+        });
+
+        logs.push(`Generated branded header page: "${step.title}" at index ${atIndex + 1}`);
+        break;
+      }
+
       case 'header_footer_text': {
         const pages = resolvePageSelector(step.selector, pageCount, {
           currentPage: ctx.currentPage,

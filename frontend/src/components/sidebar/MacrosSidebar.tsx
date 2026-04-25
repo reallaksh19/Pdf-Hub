@@ -19,6 +19,8 @@ import { BUILTIN_MACROS } from '@/core/macro/builtins';
 import { runMacroRecipeAgainstSession } from '@/core/macro/sessionRunner';
 import { validateRecipeBeforeRun, type PreflightReport } from '@/core/macro/validation/validator';
 import { usePresetsStore } from '@/core/macro/store/presets';
+import { GENERATION_MACROS } from '@/core/macro/generationBuiltins';
+import { ImageIcon } from 'lucide-react';
 import type {
   MacroOutputFile,
   MacroRecipe,
@@ -168,6 +170,48 @@ export const MacrosSidebar: React.FC = () => {
     });
   };
 
+  const runGenerationMacro = async () => {
+    const recipeTemplate = GENERATION_MACROS[selectedGenerationId];
+    if (!recipeTemplate) return;
+
+    const recipe: MacroRecipe = JSON.parse(JSON.stringify(recipeTemplate));
+
+    // Replace placeholders
+    recipe.steps.forEach((step) => {
+      if (step.op === 'add_image_header_page') {
+        if (brandImageDataUrl) {
+          step.imageSrc = brandImageDataUrl;
+        }
+        step.title = step.title.replace('{title}', generationTitle);
+        step.subtitle = step.subtitle?.replace('{date}', new Date().toLocaleDateString());
+      } else if (step.op === 'add_content_page') {
+        step.blocks?.forEach((block) => {
+          if (block.type === 'heading') {
+             block.text = block.text.replace('{title}', generationTitle).replace('{date}', new Date().toLocaleDateString());
+          }
+          if (block.type === 'rich-text') {
+             block.markdown = block.markdown.replace('{title}', generationTitle).replace('{date}', new Date().toLocaleDateString());
+          }
+        });
+      }
+    });
+
+    setIsRunning(true);
+    setRunError(null);
+    try {
+      const result = await runMacroRecipeAgainstSession(recipe, { saveOutputs: false });
+      setRunLogs(result.logs);
+      if (result.extractedOutputs.length > 0) {
+        setOutputQueue(prev => [...prev, ...result.extractedOutputs.map(o => ({ ...o, id: Math.random().toString(36).slice(2) }))]);
+      }
+    } catch (e) {
+      logError(e, 'Failed to generate document');
+      setRunError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
   const runSelectedMacro = async () => {
     if (!workingBytes || !selectedRecipe || !fileName) {
       return;
@@ -277,18 +321,98 @@ export const MacrosSidebar: React.FC = () => {
     setOutputQueue([]);
   };
 
-  if (!workingBytes) {
-    return (
-      <div className="p-4">
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 text-sm text-slate-500 dark:text-slate-400">
-          Open a PDF to run macros.
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-3 space-y-4">
+      <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <Sparkles className="w-4 h-4" />
+          Generate Document
+        </div>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Recipe
+          </span>
+          <select
+            className="w-full h-8 px-2 text-xs rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+            value={selectedGenerationId}
+            onChange={(e) => setSelectedGenerationId(e.target.value)}
+          >
+            {Object.values(GENERATION_MACROS).map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Brand / Header Image
+          </span>
+          <div
+            className="w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors relative overflow-hidden"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {brandImageDataUrl ? (
+              <img src={brandImageDataUrl} className="w-full h-full object-cover" alt="Brand" />
+            ) : (
+              <div className="text-center text-slate-400 text-xs">
+                <ImageIcon className="w-6 h-6 mx-auto mb-1" />
+                Click to pick header image
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => setBrandImageDataUrl(reader.result as string);
+                reader.readAsDataURL(file);
+              }}
+            />
+          </div>
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Report Title
+          </span>
+          <input
+            type="text"
+            className="w-full h-8 px-2 text-xs rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+            value={generationTitle}
+            onChange={(e) => setGenerationTitle(e.target.value)}
+          />
+        </label>
+
+        <Button
+          onClick={runGenerationMacro}
+          disabled={isRunning}
+          className="w-full"
+          size="sm"
+        >
+          {isRunning ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Play className="w-4 h-4 mr-2" />
+          )}
+          Generate PDF
+        </Button>
+      </section>
+
+      {!workingBytes && (
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 text-sm text-slate-500 dark:text-slate-400">
+          Open a PDF to run enhancement macros.
+        </div>
+      )}
+
+      {workingBytes && (
+        <>
       <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
           <Sparkles className="w-4 h-4" />
@@ -801,6 +925,8 @@ export const MacrosSidebar: React.FC = () => {
           </table>
         </div>
       </section>
+      </>
+      )}
     </div>
   );
 };
