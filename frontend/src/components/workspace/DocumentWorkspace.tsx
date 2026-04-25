@@ -1302,7 +1302,20 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
               </button>
               <button
                 className="text-xs hover:text-red-300"
-                onClick={createSquigglyFromSelection}
+                onClick={() => {
+                  if (!textSelectionDraft || textSelectionDraft.rects.length === 0) return;
+                  const annId = uuidv4();
+                  const newAnn: PdfAnnotation = buildSquigglyFromSelection(
+                    textSelectionDraft.rects[0],
+                    textSelectionDraft.text,
+                    textSelectionDraft.pageNumber,
+                    viewState
+                  );
+                  newAnn.id = annId;
+                  addAnnotation(newAnn);
+                  clearTextSelectionDraft();
+                  onSetSingleSelection(annId);
+                }}
               >
                 Squiggly
               </button>
