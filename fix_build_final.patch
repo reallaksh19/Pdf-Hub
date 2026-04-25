@@ -1,0 +1,95 @@
+--- frontend/src/adapters/pdf-edit/PdfEditAdapter.ts
++++ frontend/src/adapters/pdf-edit/PdfEditAdapter.ts
+@@ -495,25 +495,25 @@
+         continue;
+       }
+
+-      if (annotation.type === 'rectangle' || annotation.type === 'shape-rect') {
++      if (annotation.type === 'shape-rect') {
+         page.drawRectangle({
+           x, y,
+           width: annotation.rect.width,
+           height: annotation.rect.height,
+           borderWidth: strokeWidth,
+           borderColor,
+           color: fillColor,
+         });
+         continue;
+       }
+
+-      if (annotation.type === 'ellipse' || annotation.type === 'shape-ellipse') {
++      if (annotation.type === 'shape-ellipse') {
+         page.drawEllipse({
+           x: x + annotation.rect.width / 2,
+           y: y + annotation.rect.height / 2,
+           xScale: annotation.rect.width / 2,
+           yScale: annotation.rect.height / 2,
+           borderWidth: strokeWidth,
+           borderColor,
+           color: fillColor,
+         });
+--- frontend/src/components/sidebar/MacrosSidebar.tsx
++++ frontend/src/components/sidebar/MacrosSidebar.tsx
+@@ -309,7 +309,6 @@
+     });
+
+     setIsRunning(true);
+-    setPreflight(null);
+     try {
+       await runMacroRecipeAgainstSession(finalRecipe, {
+         saveOutputs: false,
+--- frontend/src/components/toolbar/ToolbarComment.tsx
++++ frontend/src/components/toolbar/ToolbarComment.tsx
+@@ -20,8 +20,6 @@
+   SquareSquare,
+   Activity,
+   AlignLeft,
+-  AlignJustify,
+   AlignHorizontalDistributeCenter,
+   AlignVerticalDistributeCenter,
+   Copy,
+@@ -30,8 +28,6 @@
+   Trash2,
+   Lock,
+-  Unlock,
+ } from 'lucide-react';
+ import { useEditorStore } from '@/core/editor/store';
+ import { useAnnotationStore } from '@/core/annotations/store';
+@@ -52,7 +48,6 @@
+     distributeSelection,
+     deleteSelection,
+     toggleLockSelection,
+-    setReviewStatusForSelection,
+   } = useAnnotationStore();
+--- frontend/src/components/toolbar/ToolbarOrganize.tsx
++++ frontend/src/components/toolbar/ToolbarOrganize.tsx
+@@ -45,7 +45,7 @@
+     clearSelectedPages,
+   } = useSessionStore();
+   const addToast = useToastStore((state) => state.addToast);
+-  const { undoStack, redoStack, canUndo, canRedo, peekUndo, peekRedo } = useHistoryStore();
++  const { canUndo, canRedo, peekUndo, peekRedo } = useHistoryStore();
+--- frontend/src/components/workspace/DocumentWorkspace.tsx
++++ frontend/src/components/workspace/DocumentWorkspace.tsx
+@@ -107,7 +107,6 @@
+   React.useEffect(() => {
+     let cancelled = false;
+-    let previousDoc: PDFDocumentProxy | null = null;
+
+     const load = async () => {
+       if (!workingBytes) {
+@@ -124,7 +123,6 @@
+           return;
+         }
+
+-        previousDoc = doc;
+         setPdfDoc(doc);
+--- frontend/src/core/macro/executor.ts
++++ frontend/src/core/macro/executor.ts
+@@ -386,7 +386,6 @@
+           color: step.color ?? '#0f172a',
+           opacity: step.opacity ?? 1,
+-          textAlign: step.textAlign ?? 'left',
+           fileName: ctx.fileName,
+           now: ctx.now,
+           enablePageNumberToken: step.pageNumberToken ?? true,

@@ -14,23 +14,23 @@ describe('SearchIndexer', () => {
   };
 
   it('finds case-insensitive matches by default', () => {
-    const hits = SearchIndexer.search(dummyData, 'hello', {});
+    const hits = SearchIndexer.search(dummyData, 'hello', { caseSensitive: false, wholeWord: false, useRegex: false });
     expect(hits).toHaveLength(2);
     expect(hits[0].pageNumber).toBe(1);
     expect(hits[1].pageNumber).toBe(2);
   });
 
   it('respects case-sensitive flag', () => {
-    const hits = SearchIndexer.search(dummyData, 'HELLO', { caseSensitive: true });
+    const hits = SearchIndexer.search(dummyData, 'HELLO', { caseSensitive: true, wholeWord: false, useRegex: false });
     expect(hits).toHaveLength(1);
     expect(hits[0].pageNumber).toBe(2);
   });
 
   it('respects whole word flag', () => {
-    const hits = SearchIndexer.search(dummyData, 'test', { wholeWord: true });
+    const hits = SearchIndexer.search(dummyData, 'test', { wholeWord: true, caseSensitive: false, useRegex: false });
     expect(hits).toHaveLength(1);
     
-    const hits2 = SearchIndexer.search(dummyData, 'tes', { wholeWord: true });
+    const hits2 = SearchIndexer.search(dummyData, 'tes', { wholeWord: true, caseSensitive: false, useRegex: false });
     expect(hits2).toHaveLength(0);
   });
 
@@ -40,7 +40,7 @@ describe('SearchIndexer', () => {
     // Wait, the indexer defaults to 'gi' if not caseSensitive.
     // So 'H[a-z]+o' in 'gi' matches 'Hello' and 'HELLO'.
     // Let's pass caseSensitive: true to strictly match 'H[a-z]+o' against 'Hello'
-    const hits = SearchIndexer.search(dummyData, 'H[a-z]+o', { useRegex: true, caseSensitive: true });
+    const hits = SearchIndexer.search(dummyData, 'H[a-z]+o', { useRegex: true, caseSensitive: true, wholeWord: false });
     expect(hits).toHaveLength(1);
     expect(hits[0].text).toBe('Hello');
   });

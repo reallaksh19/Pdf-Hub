@@ -3,6 +3,7 @@ import { UploadCloud, Lock } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { VList } from 'virtua';
+import { MessageSquare, X } from 'lucide-react';
 
 import { PdfRendererAdapter, type TextLayerItem } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 import { loadAnnotations, saveAnnotations } from '@/core/annotations/persistence';
@@ -14,6 +15,7 @@ import { useReviewStore } from '@/core/review/store';
 import { useSearchStore } from '@/core/search/store';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
+import { SearchIndexer } from '@/core/search/indexer';
 
 type TransformState =
   | {
@@ -106,7 +108,6 @@ export const DocumentWorkspace: React.FC = () => {
 
   React.useEffect(() => {
     let cancelled = false;
-    let previousDoc: PDFDocumentProxy | null = null;
 
     const load = async () => {
       if (!workingBytes) {
@@ -121,12 +122,26 @@ export const DocumentWorkspace: React.FC = () => {
       try {
         const doc = await PdfRendererAdapter.loadDocument(workingBytes);
         if (cancelled) {
-          await doc.destroy();
           return;
         }
 
-        previousDoc = doc;
         setPdfDoc(doc);
+
+        if (documentKey && !SearchIndexer.getCache(documentKey)) {
+          // Cache text indexing for regex/word search
+          const pagesText: Record<number, import('@/core/search/types').PageTextItem[]> = {};
+          for (let i = 1; i <= doc.numPages; i++) {
+            const pageProxy = await doc.getPage(i);
+            const textItems = await PdfRendererAdapter.getPageTextItems(pageProxy, 1.0);
+            pagesText[i] = textItems.map(item => ({
+              str: item.text,
+              rect: { x: item.x, y: item.y, width: item.width, height: item.height }
+            }));
+            pageProxy.cleanup();
+          }
+          SearchIndexer.setCache(documentKey, pagesText);
+        }
+
       } catch (err) {
         if (!cancelled) {
           setLoadError(String(err));
@@ -141,7 +156,6 @@ export const DocumentWorkspace: React.FC = () => {
 
     return () => {
       cancelled = true;
-      if (previousDoc) void previousDoc.destroy();
     };
   }, [workingBytes]);
 
@@ -225,7 +239,7 @@ export const DocumentWorkspace: React.FC = () => {
             Open a PDF to begin
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">
-            Annotation layer revamp is active in this build.
+            Annotate, organize, and automate your PDF in one place.
           </p>
           <button
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
@@ -434,11 +448,18 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const { hits, activeHitId } = useSearchStore();
   const isSelectTool = activeTool === 'select';
   const isTextMarkTool =
-    activeTool === 'highlight' || activeTool === 'underline' || activeTool === 'strikeout';
+    activeTool === 'highlight' || activeTool === 'underline' || activeTool === 'strikeout' || activeTool === 'squiggly';
   const isNoteTool = activeTool === 'comment' || activeTool === 'callout';
   const isPlacementOnlyTool =
     activeTool === 'textbox' ||
-    activeTool === 'shape' ||
+    activeTool === 'shape-rect' ||
+    activeTool === 'shape-ellipse' ||
+    activeTool === 'shape-polygon' ||
+    activeTool === 'shape-cloud' ||
+    activeTool === 'redaction' ||
+    activeTool === 'squiggly' ||
+    activeTool === 'ink' ||
+    activeTool === 'sticky-note' ||
     activeTool === 'line' ||
     activeTool === 'arrow' ||
     activeTool === 'stamp';
@@ -497,6 +518,15 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   React.useEffect(() => {
     draftLinePointsRef.current = draftLinePoints;
   }, [draftLinePoints]);
+
+  React.useEffect(() => {
+    if (activeHitId) {
+      const activeHitElement = document.getElementById(`search-hit-${activeHitId}`);
+      if (activeHitElement) {
+        activeHitElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [activeHitId]);
 
   const pageWidth = size.width / scale;
   const pageHeight = size.height / scale;
@@ -887,6 +917,15 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     clearTextSelectionDraft();
   };
 
+  const createSquigglyFromSelection = () => {
+    if (!textSelectionDraft) return;
+    const items = textSelectionDraft.rects.map((rect) =>
+      buildSquigglyAnnotation(pageNumber, rect),
+    );
+    onCreateManyAnnotations(items);
+    clearTextSelectionDraft();
+  };
+
   const createNoteFromSelection = (type: 'comment' | 'callout' = 'comment') => {
     if (!textSelectionDraft) return;
     const item = buildCalloutFromSelection(
@@ -911,7 +950,60 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     marqueeRef.current = marquee;
   }, [marquee]);
 
+  const [inkPaths, setInkPaths] = React.useState<number[][]>([]);
+  const currentPathRef = React.useRef<number[]>([]);
+
   const startMarquee = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (activeTool === 'ink') {
+      const hostRect = event.currentTarget.getBoundingClientRect();
+      const x = (event.clientX - hostRect.left) / scale;
+      const y = (event.clientY - hostRect.top) / scale;
+      currentPathRef.current = [x, y];
+
+      const onMove = (moveEvent: MouseEvent) => {
+        if (!moveEvent.buttons) return;
+        const moveX = (moveEvent.clientX - hostRect.left) / scale;
+        const moveY = (moveEvent.clientY - hostRect.top) / scale;
+        currentPathRef.current = [...currentPathRef.current, moveX, moveY];
+        setInkPaths(prev => {
+          const newPaths = [...prev];
+          newPaths[newPaths.length - 1] = currentPathRef.current;
+          return newPaths;
+        });
+      };
+
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+        if (currentPathRef.current.length < 4) return;
+
+        const path = currentPathRef.current;
+        const xs = path.filter((_, i) => i % 2 === 0);
+        const ys = path.filter((_, i) => i % 2 === 1);
+        const minX = Math.min(...xs);
+        const minY = Math.min(...ys);
+        const rect = {
+          x: minX,
+          y: minY,
+          width: Math.max(...xs) - minX || 4,
+          height: Math.max(...ys) - minY || 4,
+        };
+
+        const item = buildAnnotation('ink', pageNumber, rect.x, rect.y);
+        item.rect = rect;
+        item.data.paths = [path];
+        onCreateAnnotation(item);
+
+        setInkPaths([]);
+        currentPathRef.current = [];
+      };
+
+      setInkPaths(prev => [...prev, currentPathRef.current]);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      return;
+    }
+
     if (activeTool !== 'select') return;
     if (event.target !== event.currentTarget) return;
 
@@ -971,10 +1063,17 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       activeTool === 'comment' ||
       activeTool === 'stamp' ||
       activeTool === 'highlight' ||
-      activeTool === 'shape' ||
+      activeTool === 'shape-rect' ||
+      activeTool === 'shape-ellipse' ||
+      activeTool === 'shape-polygon' ||
+      activeTool === 'shape-cloud' ||
+      activeTool === 'squiggly' ||
+      activeTool === 'redaction' ||
+      activeTool === 'sticky-note' ||
       activeTool === 'line' ||
       activeTool === 'arrow' ||
-      activeTool === 'callout'
+      activeTool === 'callout' ||
+      activeTool === 'ink'
     ) {
       clearTextSelectionDraft();
       onCreateAnnotation(buildAnnotation(activeTool as AnnotationType, pageNumber, x, y));
@@ -1001,12 +1100,27 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       <div
         className="absolute inset-0"
         style={{
-          pointerEvents: isSelectTool || isTextMarkTool || isNoteTool ? 'auto' : 'none',
+          pointerEvents: isSelectTool || isTextMarkTool || isNoteTool || activeTool === 'ink' ? 'auto' : 'none',
           userSelect: isSelectTool || isTextMarkTool || isNoteTool ? 'text' : 'none',
         }}
         onMouseDown={startMarquee}
         onMouseUp={handleTextSelectionMouseUp}
       >
+        {activeTool === 'ink' && inkPaths.length > 0 && (
+          <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%">
+            {inkPaths.map((path, index) => (
+              <path
+                key={`ink-draft-${index}`}
+                d={inkPathToSvgD(path, scale)}
+                stroke="#111827"
+                strokeWidth={2}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ))}
+          </svg>
+        )}
         {hits
           .filter((hit) => hit.pageNumber === pageNumber)
           .map((hit) =>
@@ -1014,6 +1128,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
               const isActive = hit.id === activeHitId;
               return (
                 <div
+                  id={isActive && index === 0 ? `search-hit-${hit.id}` : undefined}
                   key={`hit-${hit.id}-${index}`}
                   className={`absolute pointer-events-none ${
                     isActive ? 'bg-orange-300/35 border border-orange-500/60' : 'bg-yellow-200/30 border border-yellow-400/35'
@@ -1089,6 +1204,12 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                 onClick={createStrikeoutFromSelection}
               >
                 Strikeout
+              </button>
+              <button
+                className="text-xs hover:text-red-300"
+                onClick={createSquigglyFromSelection}
+              >
+                Squiggly
               </button>
               <button
                 className="text-xs hover:text-blue-300"
@@ -1178,6 +1299,77 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                   setEditingValue(readText(annotation));
                 }}
                 onCommitText={(value) => commitTextEdit(annotation, value)}
+              />
+            );
+          }
+
+          if (annotation.type === 'sticky-note') {
+            return (
+              <StickyNoteNode
+                key={annotation.id}
+                annotation={annotation}
+                rect={rect}
+                selected={selected}
+                scale={scale}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
+                }}
+                onTransform={(event, mode) => startTransform(event, annotation, mode)}
+                onDoubleClick={() => {
+                  onCommitAnnotation(annotation.id, {
+                    data: { ...annotation.data, isCollapsed: annotation.data.isCollapsed === false }
+                  });
+                }}
+              />
+            );
+          }
+
+          if (annotation.type === 'ink') {
+            return (
+              <InkNode
+                key={annotation.id}
+                annotation={annotation}
+                rect={rect}
+                selected={selected}
+                scale={scale}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
+                }}
+                onTransform={(event, mode) => startTransform(event, annotation, mode)}
+              />
+            );
+          }
+
+          if (annotation.type === 'redaction') {
+            return (
+              <RedactionNode
+                key={annotation.id}
+                annotation={annotation}
+                rect={rect}
+                selected={selected}
+                scale={scale}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
+                }}
+                onTransform={(event, mode) => startTransform(event, annotation, mode)}
               />
             );
           }
@@ -1322,6 +1514,55 @@ const BoxNode: React.FC<{
         </div>
       )}
 
+      {annotation.type === 'shape-cloud' && (
+        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <path
+            d={cloudPath({ x: 0, y: 0, width: rect.width, height: rect.height }, scale)}
+            fill={typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : 'transparent'}
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#3b82f6'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          />
+        </svg>
+      )}
+
+      {annotation.type === 'squiggly' && (
+        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <path
+            d={squigglyPath({ x: 0, y: 0, width: rect.width, height: rect.height }, scale)}
+            fill="none"
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#ef4444'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          />
+        </svg>
+      )}
+
+      {annotation.type === 'shape-ellipse' && (
+        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <ellipse
+            cx={(rect.width / 2) * scale}
+            cy={(rect.height / 2) * scale}
+            rx={(rect.width / 2) * scale}
+            ry={(rect.height / 2) * scale}
+            fill={typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : 'transparent'}
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#3b82f6'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          />
+        </svg>
+      )}
+
+      {annotation.type === 'shape-polygon' && Array.isArray(annotation.data.points) && (
+        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <polygon
+            points={annotation.data.points.reduce((acc: string, curr: number, idx: number) => {
+              return acc + (idx % 2 === 0 ? `${(curr - rect.x) * scale},` : `${(curr - rect.y) * scale} `);
+            }, '').trim()}
+            fill={typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : 'transparent'}
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#3b82f6'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          />
+        </svg>
+      )}
+
       {selected && annotation.data.locked !== true && (
         <div
           className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize"
@@ -1334,6 +1575,184 @@ const BoxNode: React.FC<{
     </div>
   );
 };
+
+const StickyNoteNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  selected: boolean;
+  scale: number;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+  onDoubleClick: () => void;
+}> = ({ annotation, rect, selected, scale, onSelect, onTransform, onDoubleClick }) => {
+  const collapsed = annotation.data.isCollapsed !== false;
+
+  if (collapsed) {
+    return (
+      <div
+        className={`absolute pointer-events-auto cursor-pointer group`}
+        style={{ left: rect.x * scale, top: rect.y * scale }}
+        onClick={onSelect}
+        onDoubleClick={(event) => {
+          event.stopPropagation();
+          onDoubleClick();
+        }}
+        onMouseDown={(event) => {
+          if (annotation.data.locked === true) return;
+          onTransform(event, 'move');
+        }}
+      >
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 ${
+          selected ? 'ring-2 ring-blue-500' : ''
+        }`} style={{ background: typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : '#fde047' }}>
+          <MessageSquare className="w-4 h-4 text-slate-700" />
+        </div>
+        <div className="absolute left-8 top-0 hidden group-hover:block z-50 w-48 p-2 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-slate-200 text-xs text-slate-700 dark:text-slate-200 pointer-events-none">
+          <div className="font-semibold mb-0.5">{typeof annotation.data.author === 'string' ? annotation.data.author : 'Note'}</div>
+          {typeof annotation.data.text === 'string' ? annotation.data.text.slice(0, 80) : ''}
+          {(typeof annotation.data.text === 'string' && annotation.data.text.length > 80) ? '…' : ''}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="absolute pointer-events-auto overflow-hidden rounded-xl shadow-xl flex flex-col"
+      style={{
+        left: rect.x * scale, top: rect.y * scale,
+        width: rect.width * scale, height: rect.height * scale,
+        background: typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : '#fef9c3',
+        border: `1.5px solid ${typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#fde047'}`,
+      }}
+      onClick={onSelect}
+      onMouseDown={(event) => {
+        if (annotation.data.locked === true) return;
+        onTransform(event, 'move');
+      }}
+    >
+      <div className="flex items-center justify-between px-2 py-1 bg-black/10 shrink-0">
+        <span className="text-[10px] font-semibold text-slate-800">{typeof annotation.data.author === 'string' ? annotation.data.author : 'Note'}</span>
+        <button onClick={(e) => { e.stopPropagation(); onDoubleClick(); }}><X className="w-3 h-3 text-slate-700" /></button>
+      </div>
+      <div className="p-2 text-xs flex-1 overflow-hidden text-slate-900">
+        {typeof annotation.data.text === 'string' ? annotation.data.text : ''}
+      </div>
+      {selected && annotation.data.locked !== true && (
+        <div
+          className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+            onTransform(event, 'resize');
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const RedactionNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  selected: boolean;
+  scale: number;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+}> = ({ annotation, rect, selected, scale, onSelect, onTransform }) => (
+  <div
+    className="absolute pointer-events-auto flex items-center justify-center overflow-hidden"
+    style={{
+      left: rect.x * scale, top: rect.y * scale,
+      width: rect.width * scale, height: rect.height * scale,
+      background: selected ? '#1e293b' : '#000000',
+      border: selected ? '2px solid #3b82f6' : '2px solid #000',
+    }}
+    onClick={onSelect}
+    onMouseDown={(event) => {
+      if (annotation.data.locked === true) return;
+      onTransform(event, 'move');
+    }}
+  >
+    <span style={{
+      color: '#ffffff', fontSize: `${Math.max(9, Math.min(16, rect.height * scale * 0.4))}px`, fontWeight: 700,
+      letterSpacing: '0.15em', opacity: 0.5, userSelect: 'none'
+    }}>
+      REDACTED
+    </span>
+    {selected && annotation.data.locked !== true && (
+      <div
+        className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize"
+        onMouseDown={(event) => {
+          event.stopPropagation();
+          onTransform(event, 'resize');
+        }}
+      />
+    )}
+  </div>
+);
+
+const InkNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  selected: boolean;
+  scale: number;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+}> = ({ annotation, rect, selected, scale, onSelect, onTransform }) => {
+  const paths = Array.isArray(annotation.data.paths) ? annotation.data.paths : [];
+  const color = typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#111827';
+  const strokeWidth = typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2;
+
+  return (
+    <div
+      className="absolute pointer-events-auto"
+      style={{
+        left: rect.x * scale, top: rect.y * scale,
+        width: rect.width * scale, height: rect.height * scale,
+      }}
+      onClick={onSelect}
+      onMouseDown={(event) => {
+        if (annotation.data.locked === true) return;
+        onTransform(event, 'move');
+      }}
+    >
+      <svg width="100%" height="100%" className="overflow-visible">
+        {paths.map((path: number[], index: number) => {
+          // Normalize points relative to rect.x and rect.y
+          const normalizedPath = [];
+          for (let i = 0; i < path.length; i += 2) {
+            normalizedPath.push(path[i] - rect.x);
+            normalizedPath.push(path[i+1] - rect.y);
+          }
+          return (
+            <path
+              key={index}
+              d={inkPathToSvgD(normalizedPath, scale)}
+              stroke={color}
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          );
+        })}
+      </svg>
+      {selected && (
+        <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none" />
+      )}
+      {selected && annotation.data.locked !== true && (
+        <div
+          className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize pointer-events-auto"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+            onTransform(event, 'resize');
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
 
 const CalloutNode: React.FC<{
   annotation: PdfAnnotation;
@@ -1367,21 +1786,34 @@ const CalloutNode: React.FC<{
   onCommitText,
 }) => {
   const style = annotationVisualStyle(annotation, selected);
-  const line = computeCalloutLeader(anchor, rect);
+  const knee = typeof annotation.data.knee === 'object' && annotation.data.knee !== null
+    ? (annotation.data.knee as Point2D)
+    : undefined;
+  const pathD = computeCalloutLeader3pt(anchor, knee, rect, scale);
+  const arrowHead = annotation.data.arrowHead;
 
   return (
     <>
       <svg
         className="absolute inset-0 pointer-events-none"
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', overflow: 'visible' }}
       >
-        <line
-          x1={line.x1 * scale}
-          y1={line.y1 * scale}
-          x2={line.x2 * scale}
-          y2={line.y2 * scale}
+        <defs>
+          <marker id={`arrow-filled-${annotation.id}`} markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#334155'} />
+          </marker>
+          <marker id={`arrow-open-${annotation.id}`} markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#334155'} strokeWidth="1.5" />
+          </marker>
+        </defs>
+        <path
+          d={pathD}
           stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#334155'}
-          strokeWidth={2}
+          strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          markerStart={arrowHead === 'filled' ? `url(#arrow-filled-${annotation.id})` : arrowHead === 'open' ? `url(#arrow-open-${annotation.id})` : undefined}
         />
         {selected && (
           <circle
@@ -1514,20 +1946,42 @@ const LineLikeNode: React.FC<{
       }}
     >
       <svg width="100%" height="100%" className={selected ? 'overflow-visible' : ''}>
+        <defs>
+          <marker id={`line-arrow-filled-${annotation.id}`} markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
+          </marker>
+          <marker id={`line-arrow-open-${annotation.id}`} markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke={color} strokeWidth="1.5" />
+          </marker>
+          <marker id={`line-circle-${annotation.id}`} markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <circle cx="4" cy="4" r="3" fill={color} />
+          </marker>
+          <marker id={`line-square-${annotation.id}`} markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <rect x="1" y="1" width="6" height="6" fill={color} />
+          </marker>
+        </defs>
+
         <line
           x1={points[0] * scale}
           y1={points[1] * scale}
           x2={points[2] * scale}
           y2={points[3] * scale}
           stroke={color}
-          strokeWidth={2}
+          strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          strokeDasharray={annotation.data.borderStyle === 'dashed' ? '6,6' : annotation.data.borderStyle === 'dotted' ? '2,4' : 'none'}
+          strokeLinecap="round"
+          markerStart={
+            annotation.data.lineStartCap === 'arrow' ? `url(#line-arrow-filled-${annotation.id})` :
+            annotation.data.lineStartCap === 'circle' ? `url(#line-circle-${annotation.id})` :
+            annotation.data.lineStartCap === 'square' ? `url(#line-square-${annotation.id})` : undefined
+          }
+          markerEnd={
+            annotation.type === 'arrow' && annotation.data.lineEndCap !== 'none' && annotation.data.lineEndCap !== 'circle' && annotation.data.lineEndCap !== 'square' ? `url(#line-arrow-filled-${annotation.id})` :
+            annotation.data.lineEndCap === 'arrow' ? `url(#line-arrow-filled-${annotation.id})` :
+            annotation.data.lineEndCap === 'circle' ? `url(#line-circle-${annotation.id})` :
+            annotation.data.lineEndCap === 'square' ? `url(#line-square-${annotation.id})` : undefined
+          }
         />
-        {annotation.type === 'arrow' && (
-          <polygon
-            points={arrowHeadPolygon(points, scale)}
-            fill={color}
-          />
-        )}
       </svg>
 
       {selected && annotation.data.locked !== true && (
@@ -1570,15 +2024,42 @@ function buildAnnotation(
         },
       };
 
-    case 'shape':
+    case 'shape-rect':
+    case 'shape-ellipse':
+    case 'shape-polygon':
+    case 'shape-cloud':
       return {
         ...common,
-        type: 'shape',
+        type: tool,
         rect: { x, y, width: 180, height: 60 },
         data: {
           backgroundColor: 'transparent',
           borderColor: '#3b82f6',
           borderWidth: 2,
+          ...(tool === 'shape-polygon' ? { points: [x + 90, y, x + 180, y + 60, x, y + 60] } : {})
+        },
+      };
+
+    case 'redaction':
+      return {
+        ...common,
+        type: 'redaction',
+        rect: { x, y, width: 180, height: 26 },
+        data: {
+          backgroundColor: '#000000',
+          borderColor: '#000000',
+          borderWidth: 2,
+        },
+      };
+
+    case 'squiggly':
+      return {
+        ...common,
+        type: 'squiggly',
+        rect: { x, y, width: 180, height: 16 },
+        data: {
+          borderColor: '#ef4444',
+          borderWidth: 1.5,
         },
       };
 
@@ -1652,6 +2133,32 @@ function buildAnnotation(
         },
       };
 
+    case 'ink':
+      return {
+        ...common,
+        type: 'ink',
+        rect: { x, y, width: 40, height: 40 },
+        data: {
+          borderColor: '#111827',
+          borderWidth: 2,
+          paths: [],
+        },
+      };
+
+    case 'sticky-note':
+      return {
+        ...common,
+        type: 'sticky-note',
+        rect: { x, y, width: 28, height: 28 }, // Collapsed size
+        data: {
+          text: 'New note',
+          author: 'Current User',
+          backgroundColor: '#fde047',
+          borderColor: '#facc15',
+          isCollapsed: false,
+        },
+      };
+
     default:
       return {
         ...common,
@@ -1680,6 +2187,22 @@ function buildHighlightAnnotation(pageNumber: number, rect: Rect): PdfAnnotation
       backgroundColor: '#fde047',
       borderColor: '#facc15',
       opacity: 0.38,
+    },
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function buildSquigglyAnnotation(pageNumber: number, rect: Rect): PdfAnnotation {
+  const now = Date.now();
+  return {
+    id: uuidv4(),
+    type: 'squiggly',
+    pageNumber,
+    rect,
+    data: {
+      borderColor: '#ef4444',
+      borderWidth: 1.5,
     },
     createdAt: now,
     updatedAt: now,
@@ -1762,7 +2285,7 @@ function buildCalloutFromSelection(
 }
 
 function isTextLike(type: AnnotationType): boolean {
-  return type === 'textbox' || type === 'comment' || type === 'stamp' || type === 'callout';
+  return type === 'textbox' || type === 'comment' || type === 'stamp' || type === 'callout' || type === 'sticky-note';
 }
 
 function readText(annotation: PdfAnnotation): string {
@@ -1806,16 +2329,18 @@ function readZIndex(annotation: PdfAnnotation): number {
 }
 
 function renderVisibleContent(annotation: PdfAnnotation): React.ReactNode {
-  if (annotation.type === 'highlight') return null;
-  if (annotation.type === 'shape') return null;
-  if (annotation.type === 'line' || annotation.type === 'arrow') return null;
+  const t = annotation.type;
+  if (t === 'highlight' || t === 'underline' || t === 'strikeout' || t === 'squiggly') return null;
+  if (t.startsWith('shape-')) return null;
+  if (t === 'line' || t === 'arrow' || t === 'ink' || t === 'redaction') return null;
 
   const text = readText(annotation);
   if (text.trim().length > 0) return text;
 
-  if (annotation.type === 'comment') return 'Note';
-  if (annotation.type === 'callout') return 'Callout';
-  if (annotation.type === 'textbox') return 'Text';
+  if (t === 'comment') return 'Note';
+  if (t === 'callout') return 'Callout';
+  if (t === 'textbox') return 'Text';
+  if (t === 'sticky-note') return 'Note';
   return null;
 }
 
@@ -1837,7 +2362,7 @@ function annotationVisualStyle(
   const borderColor =
     typeof annotation.data.borderColor === 'string'
       ? annotation.data.borderColor
-      : annotation.type === 'shape'
+      : annotation.type.startsWith('shape')
       ? '#3b82f6'
       : annotation.type === 'stamp'
       ? '#ef4444'
@@ -1853,7 +2378,7 @@ function annotationVisualStyle(
   const borderWidth =
     typeof annotation.data.borderWidth === 'number'
       ? annotation.data.borderWidth
-      : annotation.type === 'shape'
+      : annotation.type.startsWith('shape')
       ? 2
       : 1;
 
@@ -1882,27 +2407,96 @@ function autoSizeRectForText(text: string, fontSize: number, rect: Rect): Rect {
   return { ...rect, width, height };
 }
 
-function computeCalloutLeader(anchor: Point2D, rect: Rect) {
-  const left = rect.x;
-  const right = rect.x + rect.width;
-  const top = rect.y;
-  const bottom = rect.y + rect.height;
-  const cx = clamp(anchor.x, left, right);
-  const cy = clamp(anchor.y, top, bottom);
+function computeCalloutLeader3pt(
+  anchor: Point2D,
+  knee: Point2D | undefined,
+  rect: Rect,
+  scale: number,
+) {
+  const ref = knee ?? anchor;
 
-  const distances = [
-    { x: left, y: cy, d: Math.abs(anchor.x - left) },
-    { x: right, y: cy, d: Math.abs(anchor.x - right) },
-    { x: cx, y: top, d: Math.abs(anchor.y - top) },
-    { x: cx, y: bottom, d: Math.abs(anchor.y - bottom) },
-  ].sort((a, b) => a.d - b.d);
+  const dists = [
+    { x: rect.x, y: clamp(ref.y, rect.y, rect.y + rect.height) },
+    { x: rect.x + rect.width, y: clamp(ref.y, rect.y, rect.y + rect.height) },
+    { x: clamp(ref.x, rect.x, rect.x + rect.width), y: rect.y },
+    { x: clamp(ref.x, rect.x, rect.x + rect.width), y: rect.y + rect.height },
+  ].sort((a, b) =>
+    Math.hypot(a.x - ref.x, a.y - ref.y) - Math.hypot(b.x - ref.x, b.y - ref.y)
+  );
+  const exit = dists[0];
 
-  return {
-    x1: anchor.x,
-    y1: anchor.y,
-    x2: distances[0].x,
-    y2: distances[0].y,
-  };
+  const points = knee ? [anchor, knee, exit] : [anchor, exit];
+
+  return points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x * scale} ${p.y * scale}`)
+    .join(' ');
+}
+
+function inkPathToSvgD(points: number[], scale: number): string {
+  if (points.length < 4) return '';
+  const pairs: string[] = [];
+  for (let i = 0; i < points.length; i += 2) {
+    const x = points[i] * scale;
+    const y = points[i + 1] * scale;
+    pairs.push(i === 0 ? `M${x},${y}` : `L${x},${y}`);
+  }
+  return pairs.join(' ');
+}
+
+function cloudPath(rect: Rect, scale: number, amplitude = 6): string {
+  const { x, y, width, height } = rect;
+  const bumps = Math.max(3, Math.round(width / 18));
+  const step = (width * scale) / bumps;
+  let d = `M ${x * scale} ${(y + height / 2) * scale} `;
+
+  for (let i = 0; i < bumps; i++) {
+    const cx = (x * scale) + i * step + step / 2;
+    const cy = (y * scale) - amplitude;
+    const ex = (x * scale) + (i + 1) * step;
+    d += `Q ${cx} ${cy} ${ex} ${y * scale} `;
+  }
+
+  const rightBumps = Math.max(2, Math.round(height / 18));
+  const rStep = (height * scale) / rightBumps;
+  for (let i = 0; i < rightBumps; i++) {
+    const cx = ((x + width) * scale) + amplitude;
+    const cy = (y * scale) + i * rStep + rStep / 2;
+    const ey = (y * scale) + (i + 1) * rStep;
+    d += `Q ${cx} ${cy} ${(x + width) * scale} ${ey} `;
+  }
+
+  for (let i = bumps - 1; i >= 0; i--) {
+    const cx = (x * scale) + i * step + step / 2;
+    const cy = ((y + height) * scale) + amplitude;
+    const ex = (x * scale) + i * step;
+    d += `Q ${cx} ${cy} ${ex} ${(y + height) * scale} `;
+  }
+
+  for (let i = rightBumps - 1; i >= 0; i--) {
+    const cx = (x * scale) - amplitude;
+    const cy = (y * scale) + i * rStep + rStep / 2;
+    const ey = (y * scale) + i * rStep;
+    d += `Q ${cx} ${cy} ${x * scale} ${ey} `;
+  }
+
+  d += 'Z';
+  return d;
+}
+
+function squigglyPath(rect: Rect, scale: number, amplitude = 2): string {
+  const { x, y, width, height } = rect;
+  const bumps = Math.max(3, Math.round(width / 8));
+  const step = (width * scale) / bumps;
+  let d = `M ${x * scale} ${(y + height) * scale} `;
+
+  for (let i = 0; i < bumps; i++) {
+    const cx = (x * scale) + i * step + step / 2;
+    const cy = (y + height) * scale + (i % 2 === 0 ? amplitude : -amplitude);
+    const ex = (x * scale) + (i + 1) * step;
+    d += `Q ${cx} ${cy} ${ex} ${(y + height) * scale} `;
+  }
+
+  return d;
 }
 
 function readPoints(
@@ -1936,16 +2530,6 @@ function resizeLineLikeRect(
   return { rect: newRect, points: nextPoints };
 }
 
-function arrowHeadPolygon(points: number[], scale: number): string {
-  const [x1, y1, x2, y2] = points.map((value) => value * scale);
-  const angle = Math.atan2(y2 - y1, x2 - x1);
-  const size = 10;
-  const leftX = x2 - size * Math.cos(angle - Math.PI / 6);
-  const leftY = y2 - size * Math.sin(angle - Math.PI / 6);
-  const rightX = x2 - size * Math.cos(angle + Math.PI / 6);
-  const rightY = y2 - size * Math.sin(angle + Math.PI / 6);
-  return `${x2},${y2} ${leftX},${leftY} ${rightX},${rightY}`;
-}
 
 function domRectToPageRect(domRect: DOMRect, pageRect: DOMRect, scale: number): Rect {
   return {

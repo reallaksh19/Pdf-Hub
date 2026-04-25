@@ -30,6 +30,24 @@ vi.mock('@/adapters/file/FileAdapter', () => ({
   }
 }));
 
+vi.mock('@/adapters/pdf-renderer/PdfRendererAdapter', () => ({
+  PdfRendererAdapter: {
+    loadDocument: vi.fn().mockResolvedValue({
+      numPages: 5,
+      destroy: vi.fn(),
+      getPage: vi.fn().mockResolvedValue({
+        getViewport: vi.fn().mockReturnValue({ width: 1000, height: 1500 }),
+        render: vi.fn().mockReturnValue({ promise: Promise.resolve() }),
+        getTextContent: vi.fn().mockResolvedValue({ items: [] }),
+        cleanup: vi.fn(),
+      }),
+    }),
+    renderPage: vi.fn(),
+    getPageTextItems: vi.fn().mockResolvedValue([]),
+    getThumbnail: vi.fn(),
+  }
+}));
+
 // We need to mock the pdfjs-dist getDocument to return a dummy PDF object
 vi.mock('pdfjs-dist', () => ({
   getDocument: vi.fn(() => ({
@@ -96,6 +114,9 @@ describe('DocumentWorkspace', () => {
 
   it('viewMode changes layout to single', async () => {
     useSessionStore.setState({
+      workingBytes: new Uint8Array([1, 2, 3]),
+      documentKey: 'test-doc',
+      pageCount: 2,
       viewState: {
         currentPage: 2,
         zoom: 100,
@@ -113,6 +134,9 @@ describe('DocumentWorkspace', () => {
 
   it('viewMode changes layout to two-page', async () => {
     useSessionStore.setState({
+      workingBytes: new Uint8Array([1, 2, 3]),
+      documentKey: 'test-doc',
+      pageCount: 2,
       viewState: {
         currentPage: 2,
         zoom: 100,
@@ -129,6 +153,16 @@ describe('DocumentWorkspace', () => {
   });
 
   it('hand tool pans', async () => {
+    useSessionStore.setState({
+      workingBytes: new Uint8Array([1, 2, 3]),
+      documentKey: 'test-doc',
+      viewState: {
+        currentPage: 1,
+        zoom: 100,
+        fitMode: 'manual',
+        viewMode: 'continuous',
+      },
+    });
     useEditorStore.setState({ activeTool: 'hand' });
 
     let containerElement: HTMLElement;
@@ -151,6 +185,8 @@ describe('DocumentWorkspace', () => {
   it('fitMode changes zoom behavior', async () => {
     const setZoom = vi.fn();
     useSessionStore.setState({
+      workingBytes: new Uint8Array([1, 2, 3]),
+      documentKey: 'test-doc',
       viewState: {
         currentPage: 1,
         zoom: 100,

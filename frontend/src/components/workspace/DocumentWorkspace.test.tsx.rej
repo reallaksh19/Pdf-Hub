@@ -1,0 +1,11 @@
+--- frontend/src/components/workspace/DocumentWorkspace.test.tsx
++++ frontend/src/components/workspace/DocumentWorkspace.test.tsx
+@@ -48,6 +48,8 @@
+     useSessionStore.setState({
+       workingBytes: new Uint8Array([1, 2, 3]),
+       pageCount: 3,
++      documentKey: 'test',
++      fileName: 'test.pdf',
+       viewState: {
+         currentPage: 1,
+         zoom: 100,

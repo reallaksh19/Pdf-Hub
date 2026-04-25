@@ -1,0 +1,167 @@
+--- frontend/src/components/inspector/InspectorPanel.tsx
++++ frontend/src/components/inspector/InspectorPanel.tsx
+@@ -588,6 +588,96 @@
+
+   return (
+     <div className="p-4 space-y-4">
+-      <SectionTitle title="Appearance" />
+-
+-      <TwoColumnRow>
+-        <LabeledColorInput
+-          label="Background"
+-          value={readColor(annotation.data.backgroundColor, '#ffffff')}
+-          onChange={(value) => applyToSelection({ backgroundColor: value })}
+-        />
+-        <LabeledColorInput
+-          label="Border"
+-          value={readColor(annotation.data.borderColor, '#60a5fa')}
+-          onChange={(value) => applyToSelection({ borderColor: value })}
+-        />
+-      </TwoColumnRow>
+-
+-      <TwoColumnRow>
+-        <LabeledColorInput
+-          label="Text"
+-          value={readColor(annotation.data.textColor, '#0f172a')}
+-          onChange={(value) => applyToSelection({ textColor: value })}
+-        />
+-        <LabeledNumberInput
+-          label="Border Width"
+-          value={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 1}
+-          onChange={(value) => {
+-            const next = Number(value);
+-            if (Number.isNaN(next)) {
+-              return;
+-            }
+-            applyToSelection({ borderWidth: next });
+-          }}
+-        />
+-      </TwoColumnRow>
+-
+-      {isTextLike(annotation.type) && (
+-        <>
+-          <TwoColumnRow>
+-            <LabeledNumberInput
+-              label="Font Size"
+-              value={typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12}
+-              onChange={(value) => {
+-                const next = Number(value);
+-                if (Number.isNaN(next)) {
+-                  return;
+-                }
+-                applyToSelection({ fontSize: next });
+-              }}
+-            />
+-
+-            <LabeledSelect
+-              label="Weight"
+-              value={typeof annotation.data.fontWeight === 'string' ? annotation.data.fontWeight : 'normal'}
+-              onChange={(value) => applyToSelection({ fontWeight: value })}
+-              options={[
+-                { label: 'Normal', value: 'normal' },
+-                { label: 'Bold', value: 'bold' },
+-              ]}
+-            />
+-          </TwoColumnRow>
+-        </>
+-      )}
++      <Section title="Appearance">
++        <TwoColumnRow>
++          <LabeledColorInput
++            label="Background"
++            value={readColor(annotation.data.backgroundColor, '#ffffff')}
++            onChange={(value) => applyToSelection({ backgroundColor: value })}
++          />
++          <LabeledColorInput
++            label="Border"
++            value={readColor(annotation.data.borderColor, '#60a5fa')}
++            onChange={(value) => applyToSelection({ borderColor: value })}
++          />
++        </TwoColumnRow>
++
++        <div className="my-2">
++          <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Border Style</span>
++          <BorderStylePicker
++            value={typeof annotation.data.borderStyle === 'string' ? annotation.data.borderStyle : 'solid'}
++            onChange={(val) => applyToSelection({ borderStyle: val })}
++          />
++        </div>
++
++        <TwoColumnRow>
++          <LabeledNumberInput
++            label="Border Width"
++            value={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 1}
++            onChange={(value) => {
++              const next = Number(value);
++              if (!Number.isNaN(next)) applyToSelection({ borderWidth: next });
++            }}
++          />
++          <LabeledNumberInput
++            label="Opacity"
++            value={typeof annotation.data.opacity === 'number' ? annotation.data.opacity : 1}
++            onChange={(value) => {
++              const next = Number(value);
++              if (!Number.isNaN(next)) applyToSelection({ opacity: next });
++            }}
++          />
++        </TwoColumnRow>
++      </Section>
++
++      {isTextLike && (
++        <Section title="Typography">
++          <TwoColumnRow>
++            <LabeledColorInput
++              label="Text Color"
++              value={readColor(annotation.data.textColor, '#0f172a')}
++              onChange={(value) => applyToSelection({ textColor: value })}
++            />
++            <LabeledNumberInput
++              label="Font Size"
++              value={typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12}
++              onChange={(value) => {
++                const next = Number(value);
++                if (!Number.isNaN(next)) applyToSelection({ fontSize: next });
++              }}
++            />
++          </TwoColumnRow>
++        </Section>
++      )}
++
++      {isCallout && (
++        <Section title="Leader">
++          <div className="space-y-3">
++            <LabeledSelect
++              label="Style"
++              value={typeof annotation.data.leaderStyle === 'string' ? annotation.data.leaderStyle : 'elbow'}
++              onChange={(val) => applyToSelection({ leaderStyle: val })}
++              options={[{ label: 'Elbow (3-pt)', value: 'elbow' }, { label: 'Straight (2-pt)', value: 'straight' }]}
++            />
++            <LabeledSelect
++              label="Arrowhead"
++              value={typeof annotation.data.arrowHead === 'string' ? annotation.data.arrowHead : 'open'}
++              onChange={(val) => applyToSelection({ arrowHead: val })}
++              options={[{ label: 'Open', value: 'open' }, { label: 'Filled', value: 'filled' }, { label: 'None', value: 'none' }]}
++            />
++          </div>
++        </Section>
++      )}
++
++      {isLineLike && (
++        <Section title="Line Ends">
++          <div className="space-y-3">
++            <LineCapPicker
++              label="Start"
++              value={typeof annotation.data.lineStartCap === 'string' ? (annotation.data.lineStartCap as any) : 'none'}
++              onChange={(v) => applyToSelection({ lineStartCap: v })}
++            />
++            <LineCapPicker
++              label="End"
++              value={typeof annotation.data.lineEndCap === 'string' ? (annotation.data.lineEndCap as any) : 'arrow'}
++              onChange={(v) => applyToSelection({ lineEndCap: v })}
++            />
++          </div>
++        </Section>
++      )}
++
++      <Section title="Quick Presets" defaultOpen={false}>
++        <div className="grid grid-cols-4 gap-2">

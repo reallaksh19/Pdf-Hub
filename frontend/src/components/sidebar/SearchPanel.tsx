@@ -3,12 +3,14 @@ import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useSearchStore } from '@/core/search/store';
 import { useSessionStore } from '@/core/session/store';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
+import { SearchIndexer } from '@/core/search/indexer';
+import type { SearchOptions } from '@/core/search/types';
 import { Button } from '@/components/ui/Button';
 import { error as logError } from '@/core/logger/service';
 import { useToastStore } from '@/core/toast/store';
 
 export const SearchPanel: React.FC = () => {
-  const { workingBytes, setPage } = useSessionStore();
+  const { documentKey, workingBytes, setPage } = useSessionStore();
   const {
     query,
     setQuery,
@@ -27,6 +29,11 @@ export const SearchPanel: React.FC = () => {
   const addToast = useToastStore((state) => state.addToast);
 
   const [localQuery, setLocalQuery] = useState(query);
+  const [searchOptions, setSearchOptions] = useState<SearchOptions>({
+    caseSensitive: false,
+    wholeWord: false,
+    useRegex: false,
+  });
 
   const [prevQuery, setPrevQuery] = useState(query);
   if (query !== prevQuery) {
@@ -34,8 +41,8 @@ export const SearchPanel: React.FC = () => {
     setLocalQuery(query);
   }
 
-  const executeSearch = useCallback(async (searchQuery: string) => {
-    if (!workingBytes) return;
+  const executeSearch = useCallback(async (searchQuery: string, options: SearchOptions = searchOptions) => {
+    if (!workingBytes || !documentKey) return;
     if (!searchQuery.trim()) {
       clearSearch();
       return;
@@ -43,8 +50,21 @@ export const SearchPanel: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
-      setHits(results);
+      const cache = SearchIndexer.getCache(documentKey);
+      if (cache) {
+        const results = SearchIndexer.search(cache, searchQuery, options);
+        // Map BBoxHit to SearchHit
+        setHits(results.map((r, i) => ({
+          id: `hit-${i}`,
+          pageNumber: r.pageNumber,
+          snippet: r.text,
+          rects: [r.rect],
+        })));
+      } else {
+        // Fallback or handle initial load
+        const results = await PdfRendererAdapter.searchDocumentText(workingBytes, searchQuery);
+        setHits(results);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
@@ -57,7 +77,7 @@ export const SearchPanel: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  }, [workingBytes, clearSearch, setIsSearching, setHits, setError, addToast]);
+  }, [workingBytes, documentKey, searchOptions, clearSearch, setIsSearching, setHits, setError, addToast]);
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalQuery(e.target.value);
@@ -83,6 +103,17 @@ export const SearchPanel: React.FC = () => {
   const handleHitClick = (hitId: string, pageNumber: number) => {
     setActiveHit(hitId);
     setPage(pageNumber);
+  };
+
+  const toggleOption = (key: keyof SearchOptions) => {
+    setSearchOptions((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      if (localQuery) {
+        setQuery(localQuery);
+        executeSearch(localQuery, next);
+      }
+      return next;
+    });
   };
 
   const groupedHits = hits.reduce((acc, hit) => {
@@ -113,6 +144,33 @@ export const SearchPanel: React.FC = () => {
               <X className="w-4 h-4" />
             </button>
           )}
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            variant={searchOptions.caseSensitive ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => toggleOption('caseSensitive')}
+            className="flex-1 text-xs"
+          >
+            [Aa] Case
+          </Button>
+          <Button
+            variant={searchOptions.wholeWord ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => toggleOption('wholeWord')}
+            className="flex-1 text-xs"
+          >
+            [\b] Word
+          </Button>
+          <Button
+            variant={searchOptions.useRegex ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => toggleOption('useRegex')}
+            className="flex-1 text-xs"
+          >
+            [.*] Regex
+          </Button>
         </div>
 
         {hits.length > 0 && (

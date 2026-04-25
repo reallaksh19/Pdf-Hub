@@ -16,6 +16,7 @@ export const ToolbarFile: React.FC = () => {
     fileName,
     saveHandle,
     setSaveHandle,
+    isDirty,
     setDirty,
     recordSaveExportAction,
   } = useSessionStore();
@@ -148,8 +149,11 @@ export const ToolbarFile: React.FC = () => {
       </Tooltip>
 
       <Tooltip content="Save">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSave} disabled={!workingBytes}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 relative" onClick={handleSave} disabled={!workingBytes || !isDirty}>
           <Save className="w-4 h-4" />
+          {isDirty && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full border border-white dark:border-slate-900" />
+          )}
         </Button>
       </Tooltip>
 

@@ -1,0 +1,47 @@
+--- frontend/src/components/inspector/InspectorPanel.tsx
++++ frontend/src/components/inspector/InspectorPanel.tsx
+@@ -2,7 +2,7 @@
+ import { useEditorStore } from '@/core/editor/store';
+ import { useAnnotationStore } from '@/core/annotations/store';
+ import type { AnnotationType, PdfAnnotation } from '@/core/annotations/types';
+-import { Settings, Palette, Info, ChevronRight, ChevronLeft, ChevronDown, MessageSquare, Send, Minus, X, Pin } from 'lucide-react';
++import { Settings, Palette, Info, ChevronRight, ChevronLeft, ChevronDown, MessageSquare, Send, Minus, X } from 'lucide-react';
+ import { v4 as uuidv4 } from 'uuid';
+ import type { ReviewReply, ReviewStatus } from '@/core/review/types';
+ import { Button } from '@/components/ui/Button';
+--- frontend/src/components/sidebar/MacrosSidebar.tsx
++++ frontend/src/components/sidebar/MacrosSidebar.tsx
+@@ -790,7 +790,7 @@
+       <label className="flex items-center gap-2 mt-2">
+         <input type="checkbox"
+-          checked={overrides.headerFooterDateToken || false}
++          checked={overrides.headerFooterDateToken === true}
+           onChange={e => updateOverride('headerFooterDateToken', e.target.checked)} />
+         <span className="text-xs text-slate-700">Include Date Token</span>
+       </label>
+--- frontend/src/components/toolbar/ToolbarComment.tsx
++++ frontend/src/components/toolbar/ToolbarComment.tsx
+@@ -200,7 +200,7 @@
+       <Tooltip content="Align Top">
+         <Button variant="ghost" size="icon" onClick={() => alignSelection('top')} disabled={selectedAnnotationIds.length < 2}>
+-          <AlignTop className="w-4 h-4 rotate-90" />
++          <AlignLeft className="w-4 h-4 rotate-90" />
+         </Button>
+       </Tooltip>
+--- frontend/src/components/workspace/DocumentWorkspace.tsx
++++ frontend/src/components/workspace/DocumentWorkspace.tsx
+@@ -2380,7 +2380,7 @@
+ function renderVisibleContent(annotation: PdfAnnotation): React.ReactNode {
+   if (annotation.type === 'highlight') return null;
+-  if (annotation.type === 'shape') return null;
++  if (annotation.type.startsWith('shape')) return null;
+   if (annotation.type === 'line' || annotation.type === 'arrow') return null;
+--- frontend/src/core/macro/executor.ts
++++ frontend/src/core/macro/executor.ts
+@@ -385,7 +385,6 @@
+           fontSize: step.fontSize,
+           color: step.color ?? '#0f172a',
+           opacity: step.opacity ?? 1,
+-          textAlign: step.textAlign ?? 'left',
+           fileName: ctx.fileName,
+           now: ctx.now,

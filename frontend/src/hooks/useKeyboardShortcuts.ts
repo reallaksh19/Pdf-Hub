@@ -30,11 +30,12 @@ export const useKeyboardShortcuts = () => {
       const zoomSteps = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'd') {
-        if (isDebugRouteEnabled(window.location.hostname, import.meta.env.DEV)) {
+        const enabled = isDebugRouteEnabled(window.location.hostname, import.meta.env.DEV);
+        if (enabled) {
           event.preventDefault();
           navigate('/debug');
         }
-        return;
+        if (enabled) return;
       }
 
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey) {

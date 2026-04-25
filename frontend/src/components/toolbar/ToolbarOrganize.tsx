@@ -10,6 +10,8 @@ import {
   Trash2,
   Split,
   PlaySquare,
+  Undo,
+  Redo,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -19,6 +21,8 @@ import { dispatchCommand } from '@/core/commands/dispatch';
 import type { DocumentCommand } from '@/core/commands/types';
 import { useSessionStore } from '@/core/session/store';
 import { useToastStore } from '@/core/toast/store';
+import { useHistoryStore } from '@/core/document-history/store';
+import { applyUndo, applyRedo } from '@/core/document-history/transactions';
 import { InsertBlankPageDialog } from '../dialogs/InsertBlankPageDialog';
 import { ReplacePageDialog } from '../dialogs/ReplacePageDialog';
 import { BatchRunDialog } from '../dialogs/BatchRunDialog';
@@ -41,6 +45,7 @@ export const ToolbarOrganize: React.FC = () => {
     clearSelectedPages,
   } = useSessionStore();
   const addToast = useToastStore((state) => state.addToast);
+  const { canUndo, canRedo, peekUndo, peekRedo } = useHistoryStore();
 
   const activePages = selectedPages.length > 0 ? selectedPages : [viewState.currentPage];
   const activeIndices = activePages.map((page) => page - 1);
@@ -304,6 +309,20 @@ export const ToolbarOrganize: React.FC = () => {
         onConfirm={confirmBatchRun}
       />
       <div className="flex items-center space-x-1">
+        <Tooltip content={peekUndo() ? `Undo: ${peekUndo()?.label}` : "Undo"}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => applyUndo()} disabled={!canUndo() || !workingBytes}>
+            <Undo className="w-4 h-4" />
+          </Button>
+        </Tooltip>
+
+        <Tooltip content={peekRedo() ? `Redo: ${peekRedo()?.label}` : "Redo"}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => applyRedo()} disabled={!canRedo() || !workingBytes}>
+            <Redo className="w-4 h-4" />
+          </Button>
+        </Tooltip>
+
+        <div className="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1" />
+
         <Tooltip content="Merge PDFs">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleMerge} disabled={!workingBytes}>
             <Layers className="w-4 h-4" />

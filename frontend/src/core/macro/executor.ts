@@ -19,6 +19,66 @@ export async function executeMacroRecipe(
 
   for (const step of recipe.steps) {
     switch (step.op) {
+      case 'add_content_page': {
+        const { renderPageToImageBytes } = await import('./layout/pageRenderer');
+        const imageBytes = await renderPageToImageBytes({
+          size: step.size ?? 'a4',
+          background: step.background,
+          blocks: step.blocks,
+        });
+
+        const atIndex = await resolveInsertIndex(step.position, ctx.currentPage, pageCount);
+        const size = step.size === 'letter' ? { width: 612, height: 792 } : { width: 595, height: 842 };
+
+        workingBytes = await PdfEditAdapter.insertBlankPage(workingBytes, atIndex, size);
+        pageCount = await PdfEditAdapter.countPages(workingBytes);
+        workingBytes = await PdfEditAdapter.insertImage(workingBytes, {
+          pages: [atIndex],
+          imageBytes,
+          mimeType: 'image/png',
+          x: 0,
+          y: 0,
+          width: size.width,
+          height: size.height,
+        });
+
+        logs.push(`Generated content page at index ${atIndex + 1}`);
+        break;
+      }
+
+      case 'add_image_header_page': {
+        const { renderPageToImageBytes } = await import('./layout/pageRenderer');
+
+        const imageBytes = await renderPageToImageBytes({
+          size: step.size ?? 'a4',
+          blocks: [
+            { type: 'image-header', src: step.imageSrc, height: step.headerHeight ?? 200 },
+            { type: 'heading', text: step.title, level: 1 as const },
+            ...(step.subtitle ? [{ type: 'heading' as const, text: step.subtitle, level: 3 as const, color: '#64748b' }] : []),
+            { type: 'divider' },
+            ...(step.bodyMarkdown ? [{ type: 'rich-text' as const, markdown: step.bodyMarkdown }] : []),
+          ],
+        });
+
+        const atIndex = await resolveInsertIndex(step.position, ctx.currentPage, pageCount);
+        const size = step.size === 'letter' ? { width: 612, height: 792 } : { width: 595, height: 842 };
+
+        workingBytes = await PdfEditAdapter.insertBlankPage(workingBytes, atIndex, size);
+        pageCount = await PdfEditAdapter.countPages(workingBytes);
+        workingBytes = await PdfEditAdapter.insertImage(workingBytes, {
+          pages: [atIndex],
+          imageBytes,
+          mimeType: 'image/png',
+          x: 0,
+          y: 0,
+          width: size.width,
+          height: size.height,
+        });
+
+        logs.push(`Generated branded header page: "${step.title}" at index ${atIndex + 1}`);
+        break;
+      }
+
       case 'select_pages': {
         selectedPages = resolvePageSelector(step.selector, pageCount, {
           currentPage: ctx.currentPage,
@@ -316,17 +376,15 @@ export async function executeMacroRecipe(
           break;
         }
 
-        workingBytes = await PdfEditAdapter.injectRichText(workingBytes, {
+        workingBytes = await PdfEditAdapter.drawTextOnPages(workingBytes, {
           pages: pages.map((p) => p - 1),
           text: step.text,
           x: step.x,
           y: step.y,
-          width: step.width,
-          height: step.height,
           fontSize: step.fontSize,
           color: step.color ?? '#0f172a',
           opacity: step.opacity ?? 1,
-          textAlign: step.textAlign ?? 'left',
+          align: step.textAlign === 'justify' ? 'left' : (step.textAlign ?? 'left'),
           fileName: ctx.fileName,
           now: ctx.now,
           enablePageNumberToken: step.pageNumberToken ?? true,

@@ -1,0 +1,26 @@
+--- frontend/src/components/workspace/DocumentWorkspace.tsx
++++ frontend/src/components/workspace/DocumentWorkspace.tsx
+@@ -495,6 +495,15 @@
+   React.useEffect(() => {
+     draftLinePointsRef.current = draftLinePoints;
+   }, [draftLinePoints]);
++
++  React.useEffect(() => {
++    if (activeHitId) {
++      const activeHitElement = document.getElementById(`search-hit-${activeHitId}`);
++      if (activeHitElement) {
++        activeHitElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
++      }
++    }
++  }, [activeHitId]);
+
+   const pageWidth = size.width / scale;
+   const pageHeight = size.height / scale;
+@@ -1014,6 +1023,7 @@
+               const isActive = hit.id === activeHitId;
+               return (
+                 <div
++                  id={isActive && index === 0 ? `search-hit-${hit.id}` : undefined}
+                   key={`hit-${hit.id}-${index}`}
+                   className={`absolute pointer-events-none ${
+                     isActive ? 'bg-orange-300/35 border border-orange-500/60' : 'bg-yellow-200/30 border border-yellow-400/35'
