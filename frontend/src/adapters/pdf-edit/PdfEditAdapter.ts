@@ -495,7 +495,60 @@ export class PdfEditAdapter {
         continue;
       }
 
-      if (annotation.type === 'rectangle') {
+      if (annotation.type === 'squiggly') {
+        if (borderColor) {
+          const width = annotation.rect.width;
+          let currentX = x;
+          const yBase = y; // squiggly renders at bottom
+          let up = true;
+          while (currentX < x + width) {
+            const nextX = Math.min(currentX + 4, x + width);
+            page.drawLine({
+              start: { x: currentX, y: up ? yBase : yBase + 3 },
+              end: { x: nextX, y: up ? yBase + 3 : yBase },
+              thickness: 1.5,
+              color: borderColor,
+            });
+            currentX = nextX;
+            up = !up;
+          }
+        }
+        continue;
+      }
+
+      if (annotation.type === 'shape-polygon' && Array.isArray(annotation.data.points)) {
+        const polyPoints = annotation.data.points as number[];
+        if (polyPoints.length >= 6) {
+          let prevX = x + polyPoints[0];
+          let prevY = y + annotation.rect.height - polyPoints[1];
+          for (let i = 2; i < polyPoints.length; i += 2) {
+            const currX = x + polyPoints[i];
+            const currY = y + annotation.rect.height - polyPoints[i+1];
+            if (borderColor) {
+              page.drawLine({
+                start: { x: prevX, y: prevY },
+                end: { x: currX, y: currY },
+                thickness: strokeWidth,
+                color: borderColor,
+              });
+            }
+            prevX = currX;
+            prevY = currY;
+          }
+          // Close the polygon
+          if (borderColor) {
+            page.drawLine({
+              start: { x: prevX, y: prevY },
+              end: { x: x + polyPoints[0], y: y + annotation.rect.height - polyPoints[1] },
+              thickness: strokeWidth,
+              color: borderColor,
+            });
+          }
+        }
+        continue;
+      }
+
+      if (annotation.type === 'shape-rect' || annotation.type === 'rectangle' || annotation.type === 'shape') {
         page.drawRectangle({
           x, y,
           width: annotation.rect.width,
@@ -507,7 +560,61 @@ export class PdfEditAdapter {
         continue;
       }
 
-      if (annotation.type === 'ellipse') {
+      if (annotation.type === 'redaction') {
+        page.drawRectangle({
+          x, y,
+          width: annotation.rect.width,
+          height: annotation.rect.height,
+          color: rgb(0, 0, 0),
+        });
+        page.drawText('REDACTED', {
+          x: x + annotation.rect.width / 2 - 25,
+          y: y + annotation.rect.height / 2 - 4,
+          size: 9,
+          color: rgb(1, 1, 1),
+          font: helvetica,
+          opacity: 0.5,
+        });
+        continue;
+      }
+
+      if (annotation.type === 'ink' && Array.isArray(annotation.data.paths)) {
+        for (const path of annotation.data.paths as number[][]) {
+          if (!path || path.length < 4) continue;
+          let prevX = x + path[0];
+          let prevY = y + annotation.rect.height - path[1];
+          for (let i = 2; i < path.length; i += 2) {
+            const currX = x + path[i];
+            const currY = y + annotation.rect.height - path[i+1];
+            if (borderColor) {
+              page.drawLine({
+                start: { x: prevX, y: prevY },
+                end: { x: currX, y: currY },
+                thickness: strokeWidth,
+                color: borderColor,
+              });
+            }
+            prevX = currX;
+            prevY = currY;
+          }
+        }
+        continue;
+      }
+
+      if (annotation.type === 'shape-cloud') {
+        page.drawRectangle({
+          x, y,
+          width: annotation.rect.width,
+          height: annotation.rect.height,
+          borderWidth: strokeWidth,
+          borderColor,
+          color: fillColor,
+          opacity: 0.8,
+        });
+        continue;
+      }
+
+      if (annotation.type === 'shape-ellipse' || annotation.type === 'ellipse') {
         page.drawEllipse({
           x: x + annotation.rect.width / 2,
           y: y + annotation.rect.height / 2,

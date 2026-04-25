@@ -5,14 +5,21 @@ export type AnnotationType =
   | 'highlight'
   | 'underline'
   | 'strikeout'
+  | 'squiggly'
   | 'shape'
+  | 'shape-rect'
+  | 'shape-ellipse'
+  | 'shape-polygon'
+  | 'shape-cloud'
   | 'freehand'
+  | 'ink'
   | 'stamp'
   | 'sticky-note'
   | 'comment'
   | 'line'
   | 'arrow'
-  | 'callout';
+  | 'callout'
+  | 'redaction';
 
 export type ReviewStatus = 'open' | 'resolved' | 'rejected';
 
@@ -49,11 +56,16 @@ export interface AnnotationData extends Record<string, unknown> {
   borderColor?: string;
   textColor?: string;
   borderWidth?: number;
+  borderStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
+  borderRadius?: number;
   opacity?: number;
 
   fontSize?: number;
   fontWeight?: 'normal' | 'bold';
+  fontStyle?: 'normal' | 'italic';
+  fontFamily?: string;
   textAlign?: 'left' | 'center' | 'right';
+  lineHeight?: number;
 
   rotation?: number;
   locked?: boolean;
@@ -61,7 +73,22 @@ export interface AnnotationData extends Record<string, unknown> {
   autoSize?: boolean;
 
   anchor?: Point2D;
+  knee?: Point2D;
+  leaderStyle?: 'straight' | 'elbow';
+  arrowHead?: 'open' | 'filled' | 'none';
+
+  lineStartCap?: 'none' | 'arrow' | 'circle' | 'square';
+  lineEndCap?: 'none' | 'arrow' | 'circle' | 'square';
+
+  paths?: Array<number[]>;
   points?: number[];
+
+  stampLabel?: string;
+  stampImageDataUrl?: string;
+  stampStyle?: 'approved' | 'rejected' | 'draft' | 'confidential' | 'custom';
+
+  isCollapsed?: boolean;
+  author?: string;
 
   reviewStatus?: ReviewStatus;
   style?: AnnotationStyle;

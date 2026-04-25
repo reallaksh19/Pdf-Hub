@@ -18,6 +18,12 @@ import {
   AlignStartVertical,
   AlignHorizontalSpaceBetween,
   AlignVerticalSpaceBetween,
+  Waves,
+  PenTool,
+  Cloud,
+  Hexagon,
+  SquareSquare,
+  RectangleHorizontal,
 } from 'lucide-react';
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
@@ -87,6 +93,12 @@ export const ToolbarComment: React.FC = () => {
         </Button>
       </Tooltip>
 
+      <Tooltip content="Squiggly Underline">
+        <Button variant={getToolVariant('squiggly')} size="icon" onClick={() => handleToolClick('squiggly')}>
+          <Waves className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
       <Tooltip content="Sticky Note">
         <Button variant={getToolVariant('sticky-note')} size="icon" onClick={() => handleToolClick('sticky-note')}>
           <MessageSquare className="w-4 h-4" />
@@ -105,9 +117,33 @@ export const ToolbarComment: React.FC = () => {
         </Button>
       </Tooltip>
 
+      <Tooltip content="Cloud Shape">
+        <Button variant={getToolVariant('shape-cloud')} size="icon" onClick={() => handleToolClick('shape-cloud')}>
+          <Cloud className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content="Polygon">
+        <Button variant={getToolVariant('shape-polygon')} size="icon" onClick={() => handleToolClick('shape-polygon')}>
+          <Hexagon className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
       <Tooltip content="Stamp">
         <Button variant={getToolVariant('stamp')} size="icon" onClick={() => handleToolClick('stamp')}>
           <Stamp className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content="Redaction">
+        <Button variant={getToolVariant('redaction')} size="icon" onClick={() => handleToolClick('redaction')}>
+          <SquareSquare className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <Tooltip content="Ink">
+        <Button variant={getToolVariant('ink')} size="icon" onClick={() => handleToolClick('ink')}>
+          <PenTool className="w-4 h-4" />
         </Button>
       </Tooltip>
 
