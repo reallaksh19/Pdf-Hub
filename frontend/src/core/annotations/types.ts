@@ -107,3 +107,10 @@ export interface PdfAnnotation {
   createdAt: number;
   updatedAt: number;
 }
+
+export interface AnnotationNodeProps<T extends AnnotationType> {
+  annotation: Extract<PdfAnnotation, { type: T }> | PdfAnnotation;
+  isSelected?: boolean;
+  onSelect?: () => void;
+  onChange?: (data: Partial<AnnotationData>) => void;
+}
