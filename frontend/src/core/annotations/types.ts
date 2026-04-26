@@ -107,3 +107,7 @@ export interface PdfAnnotation {
   createdAt: number;
   updatedAt: number;
 }
+
+export interface AnnotationNodeProps<T extends AnnotationType = AnnotationType> {
+  annotation: PdfAnnotation & { type: T };
+}

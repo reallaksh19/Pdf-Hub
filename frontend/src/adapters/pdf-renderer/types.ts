@@ -3,3 +3,4 @@ export interface RenderedPage {
   height: number;
   scale: number;
 }
+// Amended for Agent C usage
