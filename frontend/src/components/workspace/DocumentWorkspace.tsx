@@ -1134,7 +1134,6 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
                 <div
                   id={isActive && index === 0 ? `search-hit-${hit.id}` : undefined}
                   key={`hit-${hit.id}-${index}`}
-                  id={isActive ? `search-hit-${hit.id}` : undefined}
                   className={`absolute pointer-events-none ${
                     isActive ? 'bg-orange-300/35 border border-orange-500/60' : 'bg-yellow-200/30 border border-yellow-400/35'
                   }`}
