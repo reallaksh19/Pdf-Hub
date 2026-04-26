@@ -118,7 +118,11 @@ export type MacroStep =
       pageNumberToken?: boolean;
       fileNameToken?: boolean;
       dateToken?: boolean;
-    };
+    }
+  | { op: 'place_rich_textbox'; x: number; y: number; width: number; text: string; selector?: PageSelector }
+  | { op: 'place_table'; x: number; y: number; width: number; selector?: PageSelector }
+  | { op: 'adjust_image'; x: number; y: number; width: number; selector?: PageSelector }
+  | { op: 'conditional'; condition: unknown; then: MacroStep[] };
 
 export interface MacroRecipe {
   id: string;

@@ -119,8 +119,8 @@ describe('ThumbnailSidebar', () => {
       expect(screen.queryByText(/Generating thumbnails.../i)).not.toBeInTheDocument();
     });
 
+    await vi.waitFor(() => { expect(screen.getAllByRole('button', { name: /Page \d+/ })).toHaveLength(2); });
     const thumbnails = screen.getAllByRole('button', { name: /Page \d+/ });
-    expect(thumbnails).toHaveLength(2);
 
     await act(async () => {
       fireEvent.keyDown(thumbnails[0], { key: 'Enter' });
