@@ -8,6 +8,7 @@ export async function runMacroRecipeAgainstSession(
   options?: {
     donorFiles?: Record<string, Uint8Array>;
     saveOutputs?: boolean;
+    dryRun?: boolean;
   },
 ) {
   const session = useSessionStore.getState();
