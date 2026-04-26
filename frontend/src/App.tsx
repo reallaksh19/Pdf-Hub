@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { WorkspacePage } from '@/pages/WorkspacePage';
 import { DebugPage } from '@/pages/DebugPage';
 import { LandingPage } from '@/pages/LandingPage';
@@ -24,10 +24,10 @@ const AppContent = () => {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AppContent />
       <ToastProvider />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
