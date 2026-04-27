@@ -19,7 +19,6 @@ export const useEditorStore = create<EditorState & EditorActions>((set) => ({
   activeTool: 'select',
   sidebarTab: 'thumbnails',
   inspectorTab: 'properties',
-  activeRibbonTab: 'file',
   leftPanelWidth: 20,
   rightPanelWidth: 18,
   setActiveTool: (activeTool) => set({ activeTool }),
