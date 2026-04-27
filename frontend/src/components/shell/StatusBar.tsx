@@ -1,9 +1,9 @@
-﻿import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { useSessionStore } from '@/core/session/store';
 
 export const StatusBar: React.FC = () => {
-  const { isDirty, viewState, pageCount, setZoom } = useSessionStore();
+  const { isDirty, viewState, pageCount, setZoom, setPage } = useSessionStore();
   const zoomSteps = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 
   const handleZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -12,6 +12,67 @@ export const StatusBar: React.FC = () => {
       Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev,
     );
     setZoom(closest);
+  };
+
+  const [visiblePage, setVisiblePage] = useState(1);
+
+  useEffect(() => {
+    const container = document.getElementById('document-workspace-scroll-container');
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the page with the greatest intersection ratio
+        const mostVisible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (mostVisible) {
+          const pageAttr = (mostVisible.target as HTMLElement).dataset.page;
+          if (pageAttr) setVisiblePage(parseInt(pageAttr, 10));
+        }
+      },
+      {
+        root: container,           // scoped to workspace scroll container
+        threshold: [0, 0.5, 1.0], // fire at 0%, 50%, 100% visibility
+      },
+    );
+
+    // Observe all page surface divs
+    container.querySelectorAll('[data-page]').forEach(el => observer.observe(el));
+
+    // Re-observe when pages change (use a MutationObserver for this)
+    const mutationObs = new MutationObserver(() => {
+      observer.disconnect();
+      container.querySelectorAll('[data-page]').forEach(el => observer.observe(el));
+    });
+    mutationObs.observe(container, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      mutationObs.disconnect();
+    };
+  }, []);
+
+  const [inputValue, setInputValue] = useState('');
+  const [isEditingPage, setIsEditingPage] = useState(false);
+
+  const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      commitPageInput(e.currentTarget.value);
+      e.currentTarget.blur();
+    }
+    if (e.key === 'Escape') {
+      setIsEditingPage(false);
+    }
+  };
+
+  const commitPageInput = (value: string) => {
+    const parsed = parseInt(value, 10);
+    if (!isNaN(parsed) && parsed >= 1 && parsed <= pageCount) {
+      setPage(parsed);        // ONLY called here — not on every keystroke
+    }
+    setIsEditingPage(false);
   };
 
   return (
@@ -27,7 +88,35 @@ export const StatusBar: React.FC = () => {
       </div>
 
       <div className="flex items-center space-x-4">
-        <span className="font-mono">Page: {pageCount > 0 ? `${viewState.currentPage} / ${pageCount}` : '— / —'}</span>
+        <span className="font-mono flex items-center">
+          Page:{' '}
+          {pageCount > 0 ? (
+            isEditingPage ? (
+              <input
+                autoFocus
+                type="text"
+                className="w-8 ml-1 text-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-slate-100"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handlePageInputKeyDown}
+                onBlur={(e) => commitPageInput(e.target.value)}
+              />
+            ) : (
+              <span
+                className="cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 px-1"
+                onClick={() => {
+                  setInputValue(String(visiblePage));
+                  setIsEditingPage(true);
+                }}
+              >
+                {visiblePage}
+              </span>
+            )
+          ) : (
+            <span className="ml-1">—</span>
+          )}{' '}
+          / {pageCount > 0 ? pageCount : '—'}
+        </span>
         <div className="flex items-center space-x-2">
           <span className="font-mono w-12 text-right">{viewState.zoom}%</span>
           <input

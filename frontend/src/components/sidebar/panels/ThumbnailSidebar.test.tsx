@@ -6,6 +6,7 @@ import { useSessionStore } from '@/core/session/store';
 import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import { useSearchStore } from '@/core/search/store';
+import { usePdfStore } from '@/core/session/pdfStore';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 
 vi.mock('virtua', () => ({
@@ -16,6 +17,10 @@ vi.mock('virtua', () => ({
 
 vi.mock('@/core/session/store', () => ({
   useSessionStore: vi.fn(),
+}));
+
+vi.mock('@/core/session/pdfStore', () => ({
+  usePdfStore: vi.fn(),
 }));
 
 vi.mock('@/core/editor/store', () => ({
@@ -48,6 +53,9 @@ describe('ThumbnailSidebar', () => {
     const mockToggleSelectedPage = vi.fn();
     const mockSetSidebarTab = vi.fn();
 
+    const mockedUsePdfStore = usePdfStore as unknown as {
+      mockReturnValue: (value: unknown) => void;
+    };
     const mockedUseSessionStore = useSessionStore as unknown as {
       mockReturnValue: (value: unknown) => void;
     };
@@ -70,13 +78,14 @@ describe('ThumbnailSidebar', () => {
       toggleSelectedPage: mockToggleSelectedPage,
     });
 
-    const { usePdfStore } = await import('@/core/session/pdfStore');
-    usePdfStore.setState({
-      pdfDoc: {
-        numPages: 2,
-        getPage: vi.fn().mockResolvedValue({}),
-      } as any,
-    });
+    const mockDoc2 = {
+      numPages: 2,
+      getPage: vi.fn().mockResolvedValue({
+        cleanup: vi.fn(),
+      }),
+      destroy: vi.fn(),
+    };
+    mockedUsePdfStore.mockReturnValue({ pdfDoc: mockDoc2 });
     mockedUseEditorStore.mockReturnValue({ setSidebarTab: mockSetSidebarTab });
     mockedUseAnnotationStore.mockReturnValue({ annotations: [] });
     mockedUseSearchStore.mockReturnValue({ hits: [] });
