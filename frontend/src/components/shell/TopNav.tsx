@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
+
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -141,29 +141,35 @@ export const TopNav: React.FC = () => {
           </Badge>
         </div>
 
-        {fileName && (
-          <div className="hidden lg:flex items-center ml-4 px-3 py-1 bg-slate-100 dark:bg-slate-800/50 rounded text-sm text-slate-700 dark:text-slate-300 font-medium">
-            <span className="truncate max-w-[300px]">
-              {isDirty && <span className="text-blue-500 mr-1 font-bold">•</span>}
-              {fileName}
-            </span>
-          </div>
-        )}
+        {fileName && (() => {
+          const MAX_NAME = 40;
+          const displayName = fileName.length > MAX_NAME
+            ? fileName.slice(0, MAX_NAME - 1) + '…'
+            : fileName;
 
-        <div className="hidden md:flex space-x-1 pl-4 ml-4 border-l border-slate-200 dark:border-slate-800">
-          <NavLink
-            to="/workspace"
-            className={({ isActive }) =>
-              `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/50'
-              }`
-            }
-          >
-            Workspace
-          </NavLink>
-        </div>
+          return (
+            <div className="hidden lg:flex items-center ml-4 px-3 py-1 bg-slate-100 dark:bg-slate-800/50 rounded text-sm text-slate-700 dark:text-slate-300 font-medium">
+              {isDirty && <span className="text-blue-500 mr-1 font-bold">•</span>}
+              <span
+                title={fileName}
+                style={{
+                  maxWidth:     200,
+                  overflow:     'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace:   'nowrap',
+                  fontSize:     13,
+                  fontWeight:   450,
+                  color:        'var(--color-text-primary)',
+                  cursor:       'default',
+                }}
+              >
+                {displayName}
+              </span>
+            </div>
+          );
+        })()}
+
+
       </div>
 
       <div className="flex items-center space-x-2">
