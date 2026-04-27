@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
+import { documentBus } from '../events/bus';
+import { remapAfterReorder, remapAfterDelete, remapAfterInsert } from './pageRemapper';
 import type {
   AnnotationStyle,
   PdfAnnotation,
@@ -512,3 +514,24 @@ export const useAnnotationStore = create<AnnotationState & AnnotationActions>((s
       return snapshot(state, nextAnnotations);
     }),
 }));
+
+documentBus.subscribe((event) => {
+  if (event.type === 'PAGES_REORDERED') {
+    useAnnotationStore.setState((state) => ({
+      annotations: remapAfterReorder(state.annotations, event.order),
+    }));
+  }
+  if (event.type === 'PAGES_DELETED') {
+    useAnnotationStore.setState((state) => ({
+      annotations: remapAfterDelete(state.annotations, event.indices),
+    }));
+  }
+  if (event.type === 'PAGES_INSERTED') {
+    useAnnotationStore.setState((state) => ({
+      annotations: remapAfterInsert(state.annotations, event.atIndex, event.count),
+    }));
+  }
+  if (event.type === 'DOCUMENT_REPLACED') {
+    useAnnotationStore.setState({ annotations: [] });
+  }
+});

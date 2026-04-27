@@ -7,6 +7,9 @@ import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 
 import { emitStartupLog } from '@/core/logger/service';
 
+// Register all annotation renderers exactly once at startup
+import './core/annotations/register-all';
+
 emitStartupLog('static', '0.0.0', navigator.userAgent);
 PdfRendererAdapter.configureWorker({ workerSrc });
 
