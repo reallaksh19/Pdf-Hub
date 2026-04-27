@@ -85,7 +85,7 @@ export const StatusBar: React.FC = () => {
               width:        6,
               height:       6,
               borderRadius: '50%',
-              background:   'var(--color-text-warning, #f59e0b)',
+              background:   'var(--color-text-warning)',
               marginLeft:   5,
               flexShrink:   0,
               alignSelf:    'center',
