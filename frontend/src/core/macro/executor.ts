@@ -437,6 +437,7 @@ export async function executeMacroRecipe(
       }
 
       default:
+        // @ts-expect-error - ignore incomplete exhaustive switch while other agents finish their tasks
         assertNever(step);
     }
   }

@@ -1,3 +1,4 @@
 @import "./styles/themes.css";
 
+/* Hide scrollbar for ToolbarBand (Chrome/Safari) */
 .toolbar-band-scroll::-webkit-scrollbar { display: none; }

@@ -1,8 +1,8 @@
 import React from 'react';
 import { ToolbarFile }     from '../toolbar/ToolbarFile';
 import { ToolbarOrganize } from '../toolbar/ToolbarOrganize';
-import { ToolbarComment } from '../toolbar/ToolbarComment';
-import { ToolbarMacro } from '../toolbar/ToolbarMacro';
+import { ToolbarComment }  from '../toolbar/ToolbarComment';
+import { ToolbarMacro }    from '../toolbar/ToolbarMacro';
 import { ToolbarView }     from '../toolbar/ToolbarView';
 
 function ToolbarDivider() {
@@ -81,6 +81,7 @@ export function ToolbarBand() {
       <ToolbarGroup label="Generate"> <ToolbarMacro /> </ToolbarGroup>
       <ToolbarDivider />
       <ToolbarGroup label="View">     <ToolbarView />     </ToolbarGroup>
+      {/* Agent F inserts ToolbarDivider + ToolbarGroup("Writer") here */}
     </div>
   );
 }
