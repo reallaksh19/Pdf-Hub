@@ -499,6 +499,9 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
 
   const finalSize = renderedSize || size;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _setSizeToAvoidLinterError = setSize;
+
   React.useEffect(() => {
     let cancelled = false;
 

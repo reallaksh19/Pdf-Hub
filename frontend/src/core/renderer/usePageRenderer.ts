@@ -68,6 +68,7 @@ export function usePageRenderer({
       } catch (err) {
         // Suppress cancellation errors — they are expected during rapid scale changes
         if (err instanceof Error && err.message.includes('Rendering cancelled')) return;
+        // eslint-disable-next-line no-console
         console.error('[usePageRenderer] Render error:', err);
       } finally {
         if (!abandoned) setIsRendering(false);
