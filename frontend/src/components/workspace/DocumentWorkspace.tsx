@@ -13,6 +13,8 @@ import { useEditorStore } from '@/core/editor/store';
 import { useSessionStore } from '@/core/session/store';
 import { usePdfStore } from '@/core/session/pdfStore';
 import { useReviewStore } from '@/core/review/store';
+import { usePageRenderer } from '@/core/renderer/usePageRenderer';
+
 import { useSearchStore } from '@/core/search/store';
 import { SearchIndexer } from '@/core/search/indexer';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
@@ -387,6 +389,7 @@ export const DocumentWorkspace: React.FC = () => {
   return (
     <div
       ref={containerRef}
+      id="workspace-scroll-container"
       className={`flex flex-col h-full bg-slate-200 dark:bg-slate-950 overflow-auto ${
         activeTool === 'hand' ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''
       }`}
@@ -447,7 +450,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   onCommitAnnotation,
   onCommitManyAnnotations,
 }) => {
-  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const pageRef = React.useRef<HTMLDivElement | null>(null);
   const { hits, activeHitId } = useSearchStore();
   const isSelectTool = activeTool === 'select';
@@ -483,19 +486,21 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const draftAnchorsRef = React.useRef<Record<string, Point2D | null>>({});
   const draftLinePointsRef = React.useRef<Record<string, number[]>>({});
 
+  const { size: renderSize } = usePageRenderer({
+    doc,
+    pageNumber,
+    scale,
+    canvasRef,
+  });
+
   React.useEffect(() => {
     let cancelled = false;
 
     const render = async () => {
       const page = await doc.getPage(pageNumber);
-      const viewport = page.getViewport({ scale });
-
       if (!cancelled) {
+        const viewport = page.getViewport({ scale });
         setSize({ width: viewport.width, height: viewport.height });
-      }
-
-      if (!cancelled && canvasRef.current) {
-        await PdfRendererAdapter.renderPage(page, scale, canvasRef.current);
       }
 
       const items = await PdfRendererAdapter.getPageTextItems(page, scale);
@@ -532,8 +537,8 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     }
   }, [activeHitId]);
 
-  const pageWidth = size.width / scale;
-  const pageHeight = size.height / scale;
+  const pageWidth = (renderSize?.width || size.width) / scale;
+  const pageHeight = (renderSize?.height || size.height) / scale;
 
   const clampRect = React.useCallback(
     (rect: Rect): Rect => {
@@ -1095,8 +1100,9 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   return (
     <div
       ref={pageRef}
+      data-page={pageNumber}
       className="relative bg-white dark:bg-slate-900 shadow-md mb-8 transition-all hover:ring-1 hover:ring-slate-300"
-      style={{ width: size.width, minHeight: size.height }}
+      style={{ width: renderSize?.width || size.width, minHeight: renderSize?.height || size.height }}
       onClick={onActivate}
     >
       <canvas ref={canvasRef} className="block" />

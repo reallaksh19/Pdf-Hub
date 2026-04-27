@@ -677,12 +677,12 @@ const StyleTab: React.FC<{
           <div className="space-y-3">
             <LineCapPicker
               label="Start"
-              value={typeof annotation.data.lineStartCap === 'string' ? (annotation.data.lineStartCap as any) : 'none'}
+              value={typeof annotation.data.lineStartCap === 'string' ? (annotation.data.lineStartCap as unknown) : 'none'}
               onChange={(v) => applyToSelection({ lineStartCap: v })}
             />
             <LineCapPicker
               label="End"
-              value={typeof annotation.data.lineEndCap === 'string' ? (annotation.data.lineEndCap as any) : 'arrow'}
+              value={typeof annotation.data.lineEndCap === 'string' ? (annotation.data.lineEndCap as unknown) : 'arrow'}
               onChange={(v) => applyToSelection({ lineEndCap: v })}
             />
           </div>
@@ -870,4 +870,3 @@ const KeyValue: React.FC<{ label: string; value: string; mono?: boolean }> = ({ 
 function readColor(value: unknown, fallback: string): string {
   return typeof value === 'string' ? value : fallback;
 }
-

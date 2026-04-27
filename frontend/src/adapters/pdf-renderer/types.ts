@@ -3,4 +3,8 @@ export interface RenderedPage {
   height: number;
   scale: number;
 }
-// Amended for Agent C usage
+
+export interface RenderToken {
+  cancel: () => Promise<void>;
+  completed: Promise<void>;
+}
