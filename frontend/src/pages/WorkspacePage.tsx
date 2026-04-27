@@ -9,6 +9,7 @@ import { InspectorPanel } from '@/components/inspector/InspectorPanel';
 import { StatusBar } from '@/components/shell/StatusBar';
 
 export const WorkspacePage: React.FC = () => {
+
   return (
     <AppShell
       topnav={<TopNav />}
