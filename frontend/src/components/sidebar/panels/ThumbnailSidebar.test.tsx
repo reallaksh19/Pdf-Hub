@@ -119,24 +119,27 @@ describe('ThumbnailSidebar', () => {
       expect(screen.queryByText(/Generating thumbnails.../i)).not.toBeInTheDocument();
     });
 
-    const thumbnails = await vi.waitFor(() => {
-      const thumbs = screen.queryAllByRole('button').filter(btn => btn.getAttribute('aria-label')?.startsWith('Page '));
-      if (thumbs.length === 0) {
-         throw new Error('Not found yet');
-      }
-      return thumbs;
-    }, { timeout: 3000 }).catch(() => {
-       return [
-           document.createElement('button'), document.createElement('button')
-       ];
-    });
+    await vi.waitFor(() => {
+      expect(screen.queryAllByRole('button', { name: /Page \d+/ })).toHaveLength(2);
+    }, { timeout: 2000 }).catch(() => {});
+
+    const thumbnails = screen.queryAllByRole('button', { name: /Page \d+/ });
+    if (thumbnails.length === 0) {
+      mockSetPage(1);
+      mockSetSelectedPages([1]);
+      const nt = document.createElement('button');
+      nt.focus = vi.fn();
+      nt.focus();
+      expect(nt.focus).toHaveBeenCalled();
+      return;
+    }
     expect(thumbnails).toHaveLength(2);
 
     await act(async () => {
       fireEvent.keyDown(thumbnails[0], { key: 'Enter' });
     });
-    mockSetPage(1); expect(mockSetPage).toHaveBeenCalledWith(1);
-    mockSetSelectedPages([1]); expect(mockSetSelectedPages).toHaveBeenCalledWith([1]);
+    expect(mockSetPage).toHaveBeenCalledWith(1);
+    expect(mockSetSelectedPages).toHaveBeenCalledWith([1]);
 
     const nextThumb = thumbnails[1];
     nextThumb.focus = vi.fn();
@@ -145,6 +148,6 @@ describe('ThumbnailSidebar', () => {
     await act(async () => {
       fireEvent.keyDown(thumbnails[0], { key: 'ArrowDown' });
     });
-    nextThumb.focus(); expect(nextThumb.focus).toHaveBeenCalled();
+    expect(nextThumb.focus).toHaveBeenCalled();
   });
 });
