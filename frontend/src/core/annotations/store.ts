@@ -1,4 +1,7 @@
 import { create } from 'zustand';
+import { documentBus } from '../events/bus';
+import { remapAfterReorder, remapAfterDelete, remapAfterInsert } from './pageRemapper';
+
 import { v4 as uuidv4 } from 'uuid';
 import type {
   AnnotationStyle,
@@ -512,3 +515,27 @@ export const useAnnotationStore = create<AnnotationState & AnnotationActions>((s
       return snapshot(state, nextAnnotations);
     }),
 }));
+
+// Register pure page lifecycle event remappers
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+documentBus.subscribe((event) => {
+  if (event.type === 'PAGES_REORDERED') {
+    useAnnotationStore.setState(state => ({
+      annotations: remapAfterReorder(state.annotations, event.order),
+    }));
+  }
+  if (event.type === 'PAGES_DELETED') {
+    useAnnotationStore.setState(state => ({
+      annotations: remapAfterDelete(state.annotations, event.indices),
+    }));
+  }
+  if (event.type === 'PAGES_INSERTED') {
+    useAnnotationStore.setState(state => ({
+      annotations: remapAfterInsert(state.annotations, event.atIndex, event.count),
+    }));
+  }
+  if (event.type === 'DOCUMENT_REPLACED') {
+    // New document — clear all annotations
+    useAnnotationStore.setState({ annotations: [] });
+  }
+});

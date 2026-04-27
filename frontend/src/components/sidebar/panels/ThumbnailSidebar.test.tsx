@@ -48,16 +48,16 @@ describe('ThumbnailSidebar', () => {
     const mockToggleSelectedPage = vi.fn();
     const mockSetSidebarTab = vi.fn();
 
-    const mockedUseSessionStore = useSessionStore as unknown as {
+    const mockedUseSessionStore = useSessionStore as any as {
       mockReturnValue: (value: unknown) => void;
     };
-    const mockedUseEditorStore = useEditorStore as unknown as {
+    const mockedUseEditorStore = useEditorStore as any as {
       mockReturnValue: (value: unknown) => void;
     };
-    const mockedUseAnnotationStore = useAnnotationStore as unknown as {
+    const mockedUseAnnotationStore = useAnnotationStore as any as {
       mockReturnValue: (value: unknown) => void;
     };
-    const mockedUseSearchStore = useSearchStore as unknown as {
+    const mockedUseSearchStore = useSearchStore as any as {
       mockReturnValue: (value: unknown) => void;
     };
 
@@ -75,7 +75,7 @@ describe('ThumbnailSidebar', () => {
       pdfDoc: {
         numPages: 2,
         getPage: vi.fn().mockResolvedValue({}),
-      } as unknown,
+      } as any,
     });
     mockedUseEditorStore.mockReturnValue({ setSidebarTab: mockSetSidebarTab });
     mockedUseAnnotationStore.mockReturnValue({ annotations: [] });
@@ -98,10 +98,10 @@ describe('ThumbnailSidebar', () => {
       }),
       destroy: vi.fn(),
     };
-    const mockedLoadDocument = PdfRendererAdapter.loadDocument as unknown as {
+    const mockedLoadDocument = PdfRendererAdapter.loadDocument as any as {
       mockReturnValue: (value: unknown) => void;
     };
-    const mockedGetThumbnail = PdfRendererAdapter.getThumbnail as unknown as {
+    const mockedGetThumbnail = PdfRendererAdapter.getThumbnail as any as {
       mockResolvedValue: (value: string) => void;
     };
     mockedLoadDocument.mockReturnValue(mockDocPromise);

@@ -14,8 +14,8 @@ class ResizeObserverMock {
   unobserve() {}
   disconnect() {}
 }
-(globalThis as unknown as { ResizeObserver: typeof ResizeObserver }).ResizeObserver =
-  ResizeObserverMock as unknown as typeof ResizeObserver;
+(globalThis as any as { ResizeObserver: typeof ResizeObserver }).ResizeObserver =
+  ResizeObserverMock as any as typeof ResizeObserver;
 
 // Mock dependencies
 vi.mock('@/core/annotations/persistence', () => ({
@@ -99,7 +99,7 @@ describe('DocumentWorkspace', () => {
       fillRect: vi.fn(),
       fillStyle: '',
       setTransform: vi.fn(),
-    }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    }) as any as typeof HTMLCanvasElement.prototype.getContext;
   });
 
   it('renders continuously', async () => {
@@ -205,7 +205,7 @@ describe('DocumentWorkspace', () => {
           getTextContent: vi.fn().mockResolvedValue({ items: [] }),
         }),
         destroy: vi.fn().mockResolvedValue(undefined),
-      } as unknown,
+      } as any,
     });
 
     // Simulate window layout size to trigger the resize effect
@@ -218,7 +218,7 @@ describe('DocumentWorkspace', () => {
       unobserve() {}
       disconnect() {}
     }
-    window.ResizeObserver = MockResizeObserver as unknown;
+    window.ResizeObserver = MockResizeObserver as any;
 
 
     await act(async () => {
