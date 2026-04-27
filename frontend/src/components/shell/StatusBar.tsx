@@ -1,10 +1,43 @@
-﻿import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { useSessionStore } from '@/core/session/store';
 
 export const StatusBar: React.FC = () => {
-  const { isDirty, viewState, pageCount, setZoom } = useSessionStore();
+  const { isDirty, viewState, pageCount, setZoom, setPage } = useSessionStore();
   const zoomSteps = [25, 50, 75, 100, 125, 150, 200, 300, 400];
+
+  const [localPageValue, setLocalPageValue] = useState('');
+  const [isEditingInput, setIsEditingInput] = useState(false);
+
+  const displayPage = isEditingInput ? localPageValue : String(viewState.currentPage ?? 1);
+
+  const handleFocus = () => {
+    setLocalPageValue(String(viewState.currentPage));
+    setIsEditingInput(true);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalPageValue(e.target.value);
+  };
+
+  const commitPage = (value: string) => {
+    const parsed = parseInt(value, 10);
+    if (!isNaN(parsed) && parsed >= 1 && parsed <= pageCount) {
+      setPage(parsed);
+    }
+    setIsEditingInput(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      commitPage(e.currentTarget.value);
+      e.currentTarget.blur();
+    }
+    if (e.key === 'Escape') {
+      setIsEditingInput(false);
+      e.currentTarget.blur();
+    }
+  };
 
   const handleZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
@@ -19,15 +52,40 @@ export const StatusBar: React.FC = () => {
       <div className="flex items-center space-x-4">
         <span>DocCraft Static</span>
         {isDirty && (
-          <span className="flex items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-            Unsaved changes
-          </span>
+          <div
+            title="Unsaved changes"
+            style={{
+              width: 6, height: 6,
+              borderRadius: '50%',
+              background: 'var(--color-text-warning)',
+              marginLeft: 6,
+              flexShrink: 0,
+            }}
+            className="bg-amber-500"
+          />
         )}
       </div>
 
       <div className="flex items-center space-x-4">
-        <span className="font-mono">Page: {pageCount > 0 ? `${viewState.currentPage} / ${pageCount}` : '— / —'}</span>
+        <div className="flex items-center font-mono">
+          <span>Page: </span>
+          {pageCount > 0 ? (
+            <div className="flex items-center ml-1">
+              <input
+                type="text"
+                value={displayPage}
+                onFocus={handleFocus}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                onBlur={(e) => commitPage(e.target.value)}
+                className="w-10 text-center bg-transparent border border-slate-300 dark:border-slate-700 rounded-sm mx-1 focus:outline-none focus:border-blue-500"
+              />
+              <span>/ {pageCount}</span>
+            </div>
+          ) : (
+            <span className="ml-1">— / —</span>
+          )}
+        </div>
         <div className="flex items-center space-x-2">
           <span className="font-mono w-12 text-right">{viewState.zoom}%</span>
           <input
