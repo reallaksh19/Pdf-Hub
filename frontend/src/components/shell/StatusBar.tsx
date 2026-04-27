@@ -6,8 +6,12 @@ export const StatusBar: React.FC = () => {
   const { isDirty, viewState, pageCount, setZoom, setPage } = useSessionStore();
 
   const [visiblePage, setVisiblePage] = useState(1);
-  const [inputValue, setInputValue] = useState('');
-  const [isEditingPage, setIsEditingPage] = useState(false);
+  const [localPageValue, setLocalPageValue] = useState<string>('');
+  const [isEditingPageInput, setIsEditingPageInput] = useState(false);
+
+  const pageDisplayValue = isEditingPageInput
+    ? localPageValue
+    : String(visiblePage ?? viewState.currentPage);
 
   useEffect(() => {
     const container = document.getElementById('workspace-scroll-container');
@@ -49,28 +53,12 @@ export const StatusBar: React.FC = () => {
 
 
 
-  const commitPageInput = (value: string) => {
-    const parsed = parseInt(value, 10);
+  const commitPageInput = (raw: string) => {
+    const parsed = parseInt(raw, 10);
     if (!isNaN(parsed) && parsed >= 1 && parsed <= pageCount) {
       setPage(parsed);
-      setVisiblePage(parsed);
-      setInputValue(parsed.toString());
-    } else {
-      setInputValue(visiblePage.toString());
     }
-    setIsEditingPage(false);
-  };
-
-  const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      commitPageInput(e.currentTarget.value);
-      e.currentTarget.blur();
-    }
-    if (e.key === 'Escape') {
-      setIsEditingPage(false);
-
-      e.currentTarget.blur();
-    }
+    setIsEditingPageInput(false);
   };
 
   const zoomSteps = [25, 50, 75, 100, 125, 150, 200, 300, 400];
@@ -86,13 +74,24 @@ export const StatusBar: React.FC = () => {
   return (
     <div className="flex items-center justify-between px-4 h-8 bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 z-10 shrink-0">
       <div className="flex items-center space-x-4">
-        <span>DocCraft Static</span>
-        {isDirty && (
-          <span className="flex items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-            Unsaved changes
-          </span>
-        )}
+        <span className="flex items-center">
+          DocCraft Static
+          {isDirty && (
+            <div
+              title="Unsaved changes"
+              aria-label="Unsaved changes"
+              style={{
+                width:        6,
+                height:       6,
+                borderRadius: '50%',
+                background:   'var(--color-text-warning)',
+                marginLeft:   5,
+                flexShrink:   0,
+                alignSelf:    'center',
+              }}
+            />
+          )}
+        </span>
       </div>
 
       <div className="flex items-center space-x-4">
@@ -100,12 +99,41 @@ export const StatusBar: React.FC = () => {
           <span className="font-mono text-slate-500">Page</span>
           <input
             type="text"
-            className="w-10 px-1 py-0.5 text-center bg-transparent border border-transparent rounded hover:border-slate-300 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 focus:outline-none transition-colors font-mono"
-            value={isEditingPage ? inputValue : visiblePage.toString()}
-            onChange={(e) => setInputValue(e.target.value)}
-            onFocus={() => setIsEditingPage(true)}
-            onBlur={(e) => commitPageInput(e.target.value)}
-            onKeyDown={handlePageInputKeyDown}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={pageDisplayValue}
+            aria-label={`Page ${pageDisplayValue} of ${pageCount}`}
+            style={{
+              width:        36,
+              textAlign:    'center',
+              fontSize:     12,
+              padding:      '1px 4px',
+              border:       '0.5px solid var(--color-border-secondary)',
+              borderRadius: 4,
+              background:   'var(--color-background-secondary)',
+              color:        'var(--color-text-primary)',
+              outline:      'none',
+            }}
+            onFocus={() => {
+              setLocalPageValue(String(viewState.currentPage));
+              setIsEditingPageInput(true);
+            }}
+            onChange={(e) => {
+              setLocalPageValue(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                commitPageInput(e.currentTarget.value);
+                e.currentTarget.blur();
+              }
+              if (e.key === 'Escape') {
+                setIsEditingPageInput(false);
+                e.currentTarget.blur();
+              }
+            }}
+            onBlur={(e) => {
+              commitPageInput(e.currentTarget.value);
+            }}
             disabled={pageCount === 0}
           />
           <span className="font-mono text-slate-500">of {pageCount > 0 ? pageCount : '—'}</span>
