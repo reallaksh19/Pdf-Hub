@@ -1,1 +1,5 @@
 @import "./styles/themes.css";
+
+/* Toolbar Band Scrollbar Hide */
+.toolbar-band-no-scrollbar::-webkit-scrollbar { display: none; }
+.toolbar-band-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
