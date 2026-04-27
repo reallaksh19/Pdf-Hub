@@ -6,6 +6,7 @@ import { VList } from 'virtua';
 import { MessageSquare, X } from 'lucide-react';
 
 import { PdfRendererAdapter, type TextLayerItem } from '@/adapters/pdf-renderer/PdfRendererAdapter';
+import { usePageRenderer } from '@/core/renderer/usePageRenderer';
 import { loadAnnotations, saveAnnotations } from '@/core/annotations/persistence';
 import { useAnnotationStore } from '@/core/annotations/store';
 import type { PdfAnnotation, Rect, AnnotationType, Point2D } from '@/core/annotations/types';
@@ -269,7 +270,7 @@ export const DocumentWorkspace: React.FC = () => {
   const renderPage = (index: number) => {
     const pageNumber = index + 1;
     return (
-      <div key={pageNumber} className="flex justify-center mb-8">
+      <div key={pageNumber} data-page={pageNumber} className="flex justify-center mb-8">
         <PageSurface
           doc={pdfDoc}
           pageNumber={pageNumber}
@@ -387,6 +388,7 @@ export const DocumentWorkspace: React.FC = () => {
   return (
     <div
       ref={containerRef}
+      id="document-workspace-scroll-container"
       className={`flex flex-col h-full bg-slate-200 dark:bg-slate-950 overflow-auto ${
         activeTool === 'hand' ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''
       }`}
@@ -468,7 +470,15 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     activeTool === 'arrow' ||
     activeTool === 'stamp';
 
-  const [size, setSize] = React.useState({ width: 800, height: 1000 });
+  const { size: hookSize, isRendering } = usePageRenderer({
+    doc,
+    pageNumber,
+    scale,
+    canvasRef,
+  });
+
+  const size = hookSize ?? { width: 800, height: 1000 };
+
   const [textItems, setTextItems] = React.useState<TextLayerItem[]>([]);
   const [draftRects, setDraftRects] = React.useState<Record<string, Rect>>({});
   const [draftAnchors, setDraftAnchors] = React.useState<Record<string, Point2D | null>>({});
@@ -486,25 +496,15 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   React.useEffect(() => {
     let cancelled = false;
 
-    const render = async () => {
+    const fetchTextItems = async () => {
       const page = await doc.getPage(pageNumber);
-      const viewport = page.getViewport({ scale });
-
-      if (!cancelled) {
-        setSize({ width: viewport.width, height: viewport.height });
-      }
-
-      if (!cancelled && canvasRef.current) {
-        await PdfRendererAdapter.renderPage(page, scale, canvasRef.current);
-      }
-
       const items = await PdfRendererAdapter.getPageTextItems(page, scale);
       if (!cancelled) {
         setTextItems(items);
       }
     };
 
-    void render();
+    void fetchTextItems();
 
     return () => {
       cancelled = true;

@@ -4,11 +4,14 @@
   Util,
   type PDFDocumentProxy,
   type PDFPageProxy,
+  type PageViewport,
 } from 'pdfjs-dist';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { debug, error } from '@/core/logger/service';
+import type { RenderToken } from './types';
 
-GlobalWorkerOptions.workerSrc = workerSrc;
+export interface RenderOptions {
+  annotationMode?: number;
+}
 
 export interface RenderedPage {
   width: number;
@@ -62,6 +65,23 @@ function isTransformItem(
 
 export class PdfRendererAdapter {
   private static cachedDoc: { bytes: Uint8Array | ArrayBuffer; doc: PDFDocumentProxy } | null = null;
+  private static workerConfigured = false;
+
+  /**
+   * Configure the PDF.js worker — call once from main.tsx before any renders.
+   * Idempotent: subsequent calls are no-ops.
+   */
+  static configureWorker(options: {
+    workerSrc: string;
+    cMapUrl: string;
+    standardFontDataUrl: string;
+  }): void {
+    if (PdfRendererAdapter.workerConfigured) return;
+    const pdfjsLib = (window as unknown as { pdfjsLib: typeof import('pdfjs-dist') }).pdfjsLib
+      ?? require('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = options.workerSrc;
+    PdfRendererAdapter.workerConfigured = true;
+  }
 
   static async loadDocument(buffer: Uint8Array | ArrayBuffer): Promise<PDFDocumentProxy> {
     if (this.cachedDoc && this.cachedDoc.bytes === buffer) {
@@ -91,48 +111,58 @@ export class PdfRendererAdapter {
     }
   }
 
-  static async renderPage(
+  /**
+   * Renders a PDF page to a canvas.
+   *
+   * Returns a RenderToken. The CALLER is responsible for cancelling any
+   * previous token before calling renderPage again on the same canvas.
+   *
+   * PdfRendererAdapter is STATELESS — it does not hold any token refs.
+   *
+   * @example
+   *   // Cancel previous, then start new:
+   *   await tokenRef.current?.cancel();
+   *   tokenRef.current = PdfRendererAdapter.renderPage(page, canvas, viewport);
+   */
+  static renderPage(
     page: PDFPageProxy,
-    scale: number,
     canvas: HTMLCanvasElement,
-  ): Promise<RenderedPage> {
-    const startTime = performance.now();
-    const viewport = page.getViewport({ scale });
-    const outputScale = window.devicePixelRatio || 1;
-    const context = canvas.getContext('2d');
+    viewport: PageViewport,
+    options: RenderOptions = {},
+  ): RenderToken {
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) throw new Error('[PdfRendererAdapter] Could not get 2d context from canvas');
 
-    if (!context) {
-      throw new Error('2D canvas context is not available');
-    }
-
-    canvas.width = Math.floor(viewport.width * outputScale);
-    canvas.height = Math.floor(viewport.height * outputScale);
-    canvas.style.width = `${Math.floor(viewport.width)}px`;
-    canvas.style.height = `${Math.floor(viewport.height)}px`;
-
-    const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : undefined;
+    canvas.width  = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
 
     const renderTask = page.render({
-      canvas,
-      canvasContext: context,
+      canvasContext: ctx,
       viewport,
-      transform,
+      // Suppress optional content group warnings:
+      optionalContentConfigPromise: page.getOptionalContentConfig(),
+      annotationMode: options.annotationMode,
     });
 
-    try {
-      await renderTask.promise;
-      debug('pdf-renderer', 'Page rendered', {
-        pageNumber: page.pageNumber,
-        renderTimeMs: Math.round(performance.now() - startTime),
+    let cancelled = false;
+    let resolveCancel!: () => void;
+    const cancelPromise = new Promise<void>(res => { resolveCancel = res; });
+
+    const completedPromise = renderTask.promise
+      .then(() => { resolveCancel(); })
+      .catch(err => {
+        resolveCancel();
+        if (!cancelled) throw err;   // only rethrow if not a deliberate cancel
       });
-      return { width: viewport.width, height: viewport.height, scale };
-    } catch (err) {
-      error('pdf-renderer', 'Failed to render page', {
-        pageNumber: page.pageNumber,
-        error: String(err),
-      });
-      throw err;
-    }
+
+    return {
+      cancel: async () => {
+        cancelled = true;
+        renderTask.cancel();
+        await cancelPromise;
+      },
+      completed: completedPromise,
+    };
   }
 
   static async getPageTextItems(

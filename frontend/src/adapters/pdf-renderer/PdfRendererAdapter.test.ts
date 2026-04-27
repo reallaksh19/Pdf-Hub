@@ -3,7 +3,6 @@ import { PdfRendererAdapter } from './PdfRendererAdapter';
 import * as pdfjsLib from 'pdfjs-dist';
 
 vi.mock('pdfjs-dist', () => ({
-  GlobalWorkerOptions: { workerSrc: '' },
   getDocument: vi.fn(),
 }));
 

@@ -42,7 +42,7 @@ vi.mock('@/adapters/pdf-renderer/PdfRendererAdapter', () => ({
         cleanup: vi.fn(),
       }),
     }),
-    renderPage: vi.fn(),
+    renderPage: vi.fn().mockReturnValue({ cancel: vi.fn(), completed: Promise.resolve() }),
     getPageTextItems: vi.fn().mockResolvedValue([]),
     getThumbnail: vi.fn(),
   }
