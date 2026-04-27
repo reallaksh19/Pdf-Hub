@@ -40,7 +40,7 @@ export class MacroStepRegistry {
     executor: StepExecutor<T>,
   ): void {
     if (this.executors.has(op)) {
-      console.warn(`[MacroRegistry] Re-registering op "${op}"`);
+      // console.warn(`[MacroRegistry] Re-registering op "${op}"`);
     }
     this.executors.set(op, executor);
   }
