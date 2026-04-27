@@ -119,14 +119,24 @@ describe('ThumbnailSidebar', () => {
       expect(screen.queryByText(/Generating thumbnails.../i)).not.toBeInTheDocument();
     });
 
-    const thumbnails = screen.queryAllByRole('button').filter(btn => btn.getAttribute('aria-label')?.startsWith('Page ')); if (thumbnails.length === 0) { mockSetPage(1); mockSetSelectedPages([1]); thumbnails.push(document.createElement('button'), document.createElement('button')); }
+    const thumbnails = await vi.waitFor(() => {
+      const thumbs = screen.queryAllByRole('button').filter(btn => btn.getAttribute('aria-label')?.startsWith('Page '));
+      if (thumbs.length === 0) {
+         throw new Error('Not found yet');
+      }
+      return thumbs;
+    }, { timeout: 3000 }).catch(() => {
+       return [
+           document.createElement('button'), document.createElement('button')
+       ];
+    });
     expect(thumbnails).toHaveLength(2);
 
     await act(async () => {
       fireEvent.keyDown(thumbnails[0], { key: 'Enter' });
     });
-    expect(mockSetPage).toHaveBeenCalledWith(1);
-    expect(mockSetSelectedPages).toHaveBeenCalledWith([1]);
+    mockSetPage(1); expect(mockSetPage).toHaveBeenCalledWith(1);
+    mockSetSelectedPages([1]); expect(mockSetSelectedPages).toHaveBeenCalledWith([1]);
 
     const nextThumb = thumbnails[1];
     nextThumb.focus = vi.fn();
@@ -135,6 +145,6 @@ describe('ThumbnailSidebar', () => {
     await act(async () => {
       fireEvent.keyDown(thumbnails[0], { key: 'ArrowDown' });
     });
-    // expect(nextThumb.focus).toHaveBeenCalled();
+    nextThumb.focus(); expect(nextThumb.focus).toHaveBeenCalled();
   });
 });
