@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { AppShell } from '@/components/shell/AppShell';
 import { TopNav } from '@/components/shell/TopNav';
 import { ToolbarBand } from '@/components/shell/ToolbarBand';
@@ -9,15 +9,17 @@ import { InspectorPanel } from '@/components/inspector/InspectorPanel';
 import { StatusBar } from '@/components/shell/StatusBar';
 
 export const WorkspacePage: React.FC = () => {
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <AppShell
       topnav={<TopNav />}
       toolbar={<ToolbarBand />}
       leftRail={<LeftRail />}
       sidebar={<SidebarPanel />}
-      workspace={<DocumentWorkspace />}
+      workspace={<DocumentWorkspace workspaceRef={workspaceRef} />}
       inspector={<InspectorPanel />}
-      statusbar={<StatusBar />}
+      statusbar={<StatusBar workspaceRef={workspaceRef} />}
     />
   );
 };
