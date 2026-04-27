@@ -1,3 +1,4 @@
+import { documentBus } from '../events/bus';
 import { v4 as uuidv4 } from 'uuid';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 import { useHistoryStore } from '@/core/document-history/store';
@@ -180,6 +181,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
       }
 
       case 'REORDER_PAGES_BY_ORDER': {
+documentBus.emit({ type: 'PAGES_REORDERED', order: command.order });
         const nextBytes = await PdfEditAdapter.reorderPages(context.workingBytes, command.order);
         const result = await applyMutation(command, source, context.workingBytes, nextBytes);
         return commandSuccess(command.type, source, true, 'Pages reordered', result.nextBytes, result.nextPageCount);
@@ -218,6 +220,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
       }
 
       case 'DELETE_PAGES': {
+documentBus.emit({ type: 'PAGES_DELETED', indices: command.pageIndices });
         const pageIndices = sanitizePageIndices(command.pageIndices, pageCount);
         if (pageIndices.length === 0) {
           return commandError(command.type, source, 'VALIDATION_FAILED', 'No pages selected for deletion');
@@ -228,6 +231,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
       }
 
       case 'INSERT_PAGES': {
+documentBus.emit({ type: 'PAGES_INSERTED', atIndex: command.atIndex, count: (await PdfEditAdapter.countPages(command.newBytes)) });
         const nextBytes = await PdfEditAdapter.insertAt(
           context.workingBytes,
           command.newBytes,
@@ -238,6 +242,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
       }
 
       case 'INSERT_BLANK_PAGE': {
+documentBus.emit({ type: 'PAGES_INSERTED', atIndex: command.atIndex, count: 1 });
         const nextBytes = await PdfEditAdapter.insertBlankPage(
           context.workingBytes,
           command.atIndex,
@@ -333,6 +338,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
       }
 
       case 'REPLACE_WORKING_COPY': {
+documentBus.emit({ type: 'DOCUMENT_REPLACED' });
         const nextBytes = command.nextBytes;
         const resolvedPageCount = typeof command.nextPageCount === 'number'
           ? command.nextPageCount
