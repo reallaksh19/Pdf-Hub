@@ -677,12 +677,12 @@ const StyleTab: React.FC<{
           <div className="space-y-3">
             <LineCapPicker
               label="Start"
-              value={typeof annotation.data.lineStartCap === 'string' ? (annotation.data.lineStartCap as unknown) : 'none'}
+              value={typeof annotation.data.lineStartCap === 'string' ? (annotation.data.lineStartCap as any) : 'none'}
               onChange={(v) => applyToSelection({ lineStartCap: v })}
             />
             <LineCapPicker
               label="End"
-              value={typeof annotation.data.lineEndCap === 'string' ? (annotation.data.lineEndCap as unknown) : 'arrow'}
+              value={typeof annotation.data.lineEndCap === 'string' ? (annotation.data.lineEndCap as any) : 'arrow'}
               onChange={(v) => applyToSelection({ lineEndCap: v })}
             />
           </div>

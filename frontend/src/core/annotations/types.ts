@@ -108,6 +108,16 @@ export interface PdfAnnotation {
   updatedAt: number;
 }
 
+
 export interface AnnotationNodeProps<T extends AnnotationType = AnnotationType> {
   annotation: PdfAnnotation & { type: T };
+  rect: Rect;
+  scale: number;
+  isSelected: boolean;
+  isEditing?: boolean;
+  editingValue?: string;
+  onSelect: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onTransformStart: (e: React.PointerEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+  onDoubleClick?: () => void;
+  onCommitEdit?: (value: string) => void;
 }

@@ -96,13 +96,13 @@ export const ToolbarComment: React.FC = () => {
       </Tooltip>
 
       <Tooltip content="Squiggly Underline">
-        <Button variant={getToolVariant('squiggly')} size="icon" onClick={() => handleToolClick('squiggly' as unknown)}>
+        <Button variant={getToolVariant('squiggly')} size="icon" onClick={() => handleToolClick('squiggly' as any)}>
           <Activity className="w-4 h-4" />
         </Button>
       </Tooltip>
 
       <Tooltip content="Freehand / Ink">
-        <Button variant={getToolVariant('ink')} size="icon" onClick={() => handleToolClick('ink' as unknown)}>
+        <Button variant={getToolVariant('ink')} size="icon" onClick={() => handleToolClick('ink' as any)}>
           <PenTool className="w-4 h-4" />
         </Button>
       </Tooltip>
@@ -120,31 +120,31 @@ export const ToolbarComment: React.FC = () => {
       </Tooltip>
 
       <Tooltip content="Callout">
-        <Button variant={getToolVariant('callout')} size="icon" onClick={() => handleToolClick('callout' as unknown)}>
+        <Button variant={getToolVariant('callout')} size="icon" onClick={() => handleToolClick('callout' as any)}>
           <SquareSquare className="w-4 h-4" />
         </Button>
       </Tooltip>
 
       <Tooltip content="Rectangle Shape">
-        <Button variant={getToolVariant('shape-rect')} size="icon" onClick={() => handleToolClick('shape-rect' as unknown)}>
+        <Button variant={getToolVariant('shape-rect')} size="icon" onClick={() => handleToolClick('shape-rect' as any)}>
           <Square className="w-4 h-4" />
         </Button>
       </Tooltip>
 
       <Tooltip content="Polygon Shape">
-        <Button variant={getToolVariant('shape-polygon')} size="icon" onClick={() => handleToolClick('shape-polygon' as unknown)}>
+        <Button variant={getToolVariant('shape-polygon')} size="icon" onClick={() => handleToolClick('shape-polygon' as any)}>
           <Hexagon className="w-4 h-4" />
         </Button>
       </Tooltip>
 
       <Tooltip content="Cloud Shape">
-        <Button variant={getToolVariant('shape-cloud')} size="icon" onClick={() => handleToolClick('shape-cloud' as unknown)}>
+        <Button variant={getToolVariant('shape-cloud')} size="icon" onClick={() => handleToolClick('shape-cloud' as any)}>
           <Cloud className="w-4 h-4" />
         </Button>
       </Tooltip>
 
       <Tooltip content="Redaction">
-        <Button variant={getToolVariant('redaction')} size="icon" onClick={() => handleToolClick('redaction' as unknown)}>
+        <Button variant={getToolVariant('redaction')} size="icon" onClick={() => handleToolClick('redaction' as any)}>
           <Square className="w-4 h-4 fill-black" />
         </Button>
       </Tooltip>
@@ -155,13 +155,7 @@ export const ToolbarComment: React.FC = () => {
         </Button>
       </Tooltip>
 
-      <Tooltip content="Redaction">
-        <Button variant={getToolVariant('redaction')} size="icon" onClick={() => handleToolClick('redaction')}>
-          <SquareSquare className="w-4 h-4" />
-        </Button>
-      </Tooltip>
-
-      <Tooltip content="Ink">
+<Tooltip content="Ink">
         <Button variant={getToolVariant('ink')} size="icon" onClick={() => handleToolClick('ink')}>
           <PenTool className="w-4 h-4" />
         </Button>
