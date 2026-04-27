@@ -1,90 +1,86 @@
 import React from 'react';
-import { ToolbarFile } from '@/components/toolbar/ToolbarFile';
-import { ToolbarOrganize } from '@/components/toolbar/ToolbarOrganize';
-import { ToolbarComment } from '@/components/toolbar/ToolbarComment';
-import { ToolbarView } from '@/components/toolbar/ToolbarView';
-import { ToolbarMacro } from '@/components/toolbar/ToolbarMacro';
-import { useEditorStore } from '@/core/editor/store';
-import type { RibbonTab } from '@/core/editor/types';
+import { ToolbarFile }     from '../toolbar/ToolbarFile';
+import { ToolbarOrganize } from '../toolbar/ToolbarOrganize';
+import { ToolbarComment } from '../toolbar/ToolbarComment';
+import { ToolbarMacro } from '../toolbar/ToolbarMacro';
+import { ToolbarView }     from '../toolbar/ToolbarView';
 
-const RIBBON_TABS: Array<{ id: RibbonTab; label: string }> = [
-  { id: 'file', label: 'File' },
-  { id: 'organize', label: 'Organize' },
-  { id: 'annotate', label: 'Annotate' },
-  { id: 'macro', label: 'Macro' },
-  { id: 'view', label: 'View' },
-];
-
-export const ToolbarBand: React.FC = () => {
-  const { activeRibbonTab, setActiveRibbonTab } = useEditorStore();
-
+function ToolbarDivider() {
   return (
-    <div className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-      <div className="flex items-center gap-1 px-3 pt-2">
-        {RIBBON_TABS.map((tab) => {
-          const active = activeRibbonTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveRibbonTab(tab.id)}
-              className={`rounded-t-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                active
-                  ? 'bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-b-0 border-slate-200 dark:border-slate-800'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
-              }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+    <div
+      style={{
+        width: 1,
+        height: 20,
+        background: 'var(--color-border-tertiary)',
+        margin: '0 6px',
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+interface ToolbarGroupProps {
+  label:    string;
+  children: React.ReactNode;
+}
+
+function ToolbarGroup({ label, children }: ToolbarGroupProps) {
+  return (
+    <div
+      style={{
+        display:        'flex',
+        flexDirection:  'column',
+        alignItems:     'center',
+        gap:            0,
+        flexShrink:     0,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, height: 28 }}>
+        {children}
       </div>
-
-      <div className="flex items-stretch gap-3 px-3 py-2 overflow-x-auto overflow-y-hidden min-h-[74px]">
-        {activeRibbonTab === 'file' && (
-          <RibbonGroup title="Document">
-            <ToolbarFile />
-          </RibbonGroup>
-        )}
-
-        {activeRibbonTab === 'organize' && (
-          <RibbonGroup title="Page Tools">
-            <ToolbarOrganize />
-          </RibbonGroup>
-        )}
-
-        {activeRibbonTab === 'annotate' && (
-          <RibbonGroup title="Annotation">
-            <ToolbarComment />
-          </RibbonGroup>
-        )}
-
-        {activeRibbonTab === 'macro' && (
-          <RibbonGroup title="Macro Commands">
-            <ToolbarMacro />
-          </RibbonGroup>
-        )}
-
-        {activeRibbonTab === 'view' && (
-          <RibbonGroup title="Viewer">
-            <ToolbarView />
-          </RibbonGroup>
-        )}
-      </div>
+      <span
+        style={{
+          fontSize:   10,
+          color:      'var(--color-text-tertiary)',
+          lineHeight: 1,
+          marginTop:  0,
+          userSelect: 'none',
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
-};
+}
 
-const RibbonGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
-  title,
-  children,
-}) => {
+export function ToolbarBand() {
   return (
-    <div className="flex flex-col rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 min-w-fit">
-      <div className="p-2">{children}</div>
-      <div className="border-t border-slate-200 dark:border-slate-800 px-2 py-1 text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400 text-center">
-        {title}
-      </div>
+    <div
+      style={{
+        display:         'flex',
+        alignItems:      'center',
+        height:          40,           // h-10 — NEVER exceed this
+        minHeight:       40,
+        padding:         '0 8px',
+        borderBottom:    '0.5px solid var(--color-border-tertiary)',
+        background:      'var(--color-background-primary)',
+        overflowX:       'auto',
+        overflowY:       'hidden',
+        scrollbarWidth:  'none',       // hide scrollbar (Firefox)
+        flexShrink:      0,
+      }}
+      // Hide scrollbar (Chrome/Safari)
+      className="toolbar-band-scroll"
+    >
+      <ToolbarGroup label="File">     <ToolbarFile />     </ToolbarGroup>
+      <ToolbarDivider />
+      <ToolbarGroup label="Organize"> <ToolbarOrganize /> </ToolbarGroup>
+      <ToolbarDivider />
+      <ToolbarGroup label="Annotate"> <ToolbarComment /> </ToolbarGroup>
+      <ToolbarDivider />
+      <ToolbarGroup label="Generate"> <ToolbarMacro /> </ToolbarGroup>
+      <ToolbarDivider />
+      <ToolbarGroup label="View">     <ToolbarView />     </ToolbarGroup>
     </div>
   );
-};
+}

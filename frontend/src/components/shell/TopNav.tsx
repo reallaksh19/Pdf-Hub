@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -149,21 +148,6 @@ export const TopNav: React.FC = () => {
             </span>
           </div>
         )}
-
-        <div className="hidden md:flex space-x-1 pl-4 ml-4 border-l border-slate-200 dark:border-slate-800">
-          <NavLink
-            to="/workspace"
-            className={({ isActive }) =>
-              `px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/50'
-              }`
-            }
-          >
-            Workspace
-          </NavLink>
-        </div>
       </div>
 
       <div className="flex items-center space-x-2">

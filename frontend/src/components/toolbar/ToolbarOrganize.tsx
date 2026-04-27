@@ -161,6 +161,12 @@ export const ToolbarOrganize: React.FC = () => {
   const handleSplitOut = async () => {
     if (!workingBytes || activeIndices.length === 0) return;
 
+    const pageCount = activeIndices.length;
+    const confirmed = window.confirm(
+      `Split will permanently remove ${pageCount} page(s) from this document and save them to a new PDF.\n\nThis cannot be undone. Continue?`
+    );
+    if (!confirmed) return;
+
     const result = await runMutation(
       {
         type: 'SPLIT_PAGES',
@@ -329,7 +335,7 @@ export const ToolbarOrganize: React.FC = () => {
           </Button>
         </Tooltip>
 
-        <Tooltip content="Extract selected/current pages">
+        <Tooltip content="Extract — copies selected pages to a new PDF. This document is unchanged.">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleExtract} disabled={!workingBytes}>
             <Scissors className="w-4 h-4" />
           </Button>
@@ -377,8 +383,8 @@ export const ToolbarOrganize: React.FC = () => {
           </Button>
         </Tooltip>
 
-        <Tooltip content="Split selected pages into a new PDF and remove them here">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSplitOut} disabled={!workingBytes}>
+        <Tooltip content="Split — moves selected pages to a new PDF and removes them from this document.">
+          <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950" onClick={handleSplitOut} disabled={!workingBytes}>
             <Split className="w-4 h-4" />
           </Button>
         </Tooltip>
