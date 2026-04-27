@@ -205,7 +205,7 @@ describe('DocumentWorkspace', () => {
           getTextContent: vi.fn().mockResolvedValue({ items: [] }),
         }),
         destroy: vi.fn().mockResolvedValue(undefined),
-      } as any,
+      } as unknown as import("pdfjs-dist").PDFDocumentProxy,
     });
 
     // Simulate window layout size to trigger the resize effect
@@ -218,7 +218,7 @@ describe('DocumentWorkspace', () => {
       unobserve() {}
       disconnect() {}
     }
-    window.ResizeObserver = MockResizeObserver as any;
+    window.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
 
 
     await act(async () => {

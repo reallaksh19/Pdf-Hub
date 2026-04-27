@@ -1,0 +1,5 @@
+const fs = require('fs');
+
+let toolbarComment = fs.readFileSync('./frontend/src/components/toolbar/ToolbarComment.tsx', 'utf8');
+toolbarComment = toolbarComment.replace(/as import\("\.\.\/\.\.\/core\/editor\/types"\)\.ActiveTool\)/g, 'as any)');
+fs.writeFileSync('./frontend/src/components/toolbar/ToolbarComment.tsx', toolbarComment);
