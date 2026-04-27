@@ -48,7 +48,7 @@ export async function runMacroBatch(options: BatchRunOptions): Promise<BatchRunR
 
       successes.push({
         fileName: file.name,
-        bytes: result.finalBytes,
+        bytes: result.workingBytes,
         logs: result.logs,
       });
 

@@ -37,7 +37,7 @@ export async function executeHeadlessMacro(
     recipe
   );
 
-  return result.finalBytes;
+  return result.workingBytes;
 }
 
 // Global registration so external apps can invoke via `window.PDFHubHeadless.execute(...)`

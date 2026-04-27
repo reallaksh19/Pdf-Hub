@@ -35,9 +35,9 @@ describe('Quantitative pass test - macros to expert level', () => {
       }, recipe);
 
       if (i === 0) {
-        firstOutputBytes = res.finalBytes;
+        firstOutputBytes = res.workingBytes;
       } else {
-        expect(res.finalBytes).toEqual(firstOutputBytes);
+        expect(res.workingBytes).toEqual(firstOutputBytes);
       }
     }
   });
