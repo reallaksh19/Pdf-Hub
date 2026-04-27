@@ -1,5 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { executeMacroRecipe, resolvePageSelector } from './executor';
+import './steps/register-all';
+import { executeMacroRecipe } from './executor';
+import { resolvePageSelector } from './steps/utils';
 import type { MacroExecutionContext, MacroRecipe } from './types';
 
 const pdfMocks = vi.hoisted(() => ({
@@ -133,7 +135,7 @@ describe('macro executor', () => {
     const result = await executeMacroRecipe(baseContext, recipe);
 
     expect(pdfMocks.rotatePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3], 90);
-    expect(result.workingBytes).toEqual(new Uint8Array([4, 4, 4]));
+    expect(result.finalBytes).toEqual(new Uint8Array([4, 4, 4]));
     expect(result.logs.some((entry) => entry.includes('Rotated pages'))).toBe(true);
   });
 
@@ -147,9 +149,9 @@ describe('macro executor', () => {
     const result = await executeMacroRecipe(baseContext, recipe);
 
     expect(pdfMocks.extractPages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
-    expect(result.workingBytes).toEqual(baseContext.workingBytes);
-    expect(result.extractedOutputs).toHaveLength(1);
-    expect(result.extractedOutputs[0].name).toBe('selected.pdf');
+    expect(result.finalBytes).toEqual(baseContext.workingBytes);
+    expect(result.outputFiles).toHaveLength(1);
+    expect(result.outputFiles[0].name).toBe('selected.pdf');
   });
 
   it('splits pages and clears selectedPages in result', async () => {
@@ -163,9 +165,8 @@ describe('macro executor', () => {
 
     expect(pdfMocks.extractPages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
     expect(pdfMocks.removePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
-    expect(result.selectedPages).toEqual([]);
-    expect(result.workingBytes).toEqual(new Uint8Array([6, 6, 6]));
-    expect(result.extractedOutputs[0].name).toBe('split.pdf');
+    expect(result.finalBytes).toEqual(new Uint8Array([6, 6, 6]));
+    expect(result.outputFiles[0].name).toBe('split.pdf');
   });
 
   it('applies header/footer and draw text operations', async () => {
@@ -247,7 +248,6 @@ describe('macro executor', () => {
 
     const result = await executeMacroRecipe(baseContext, recipe);
     expect(pdfMocks.removePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
-    expect(result.selectedPages).toEqual([]);
   });
 
   it('inserts blank pages with match-current size', async () => {

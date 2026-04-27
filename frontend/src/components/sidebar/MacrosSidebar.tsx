@@ -91,6 +91,7 @@ export const MacrosSidebar: React.FC = () => {
     Record<string, RecipeOverrides>
   >({});
   const [isRunning, setIsRunning] = React.useState(false);
+  const [executionProgress, setExecutionProgress] = React.useState<import('@/core/macro/executor').ExecutionProgress | null>(null);
   const [runLogs, setRunLogs] = React.useState<string[]>([]);
   const [runError, setRunError] = React.useState<string | null>(null);
   const [outputQueue, setOutputQueue] = React.useState<OutputQueueItem[]>([]);
@@ -206,11 +207,13 @@ export const MacrosSidebar: React.FC = () => {
     setPreflightReport(null);
     setIsRunning(true);
     setRunError(null);
+    setExecutionProgress(null);
 
     try {
 
       const result = await runMacroRecipeAgainstSession(runtimeRecipe, {
         saveOutputs: false,
+        onProgress: setExecutionProgress,
       });
 
       setRunLogs(result.logs);
@@ -309,9 +312,11 @@ export const MacrosSidebar: React.FC = () => {
     });
 
     setIsRunning(true);
+    setExecutionProgress(null);
     try {
       await runMacroRecipeAgainstSession(finalRecipe, {
         saveOutputs: false,
+        onProgress: setExecutionProgress,
       });
     } catch (err) {
       logError('macro', 'Failed to generate document', { error: String(err) });
@@ -805,6 +810,12 @@ export const MacrosSidebar: React.FC = () => {
         {runError && (
           <div className="rounded-md border border-red-300 bg-red-50 text-red-700 px-2 py-1 text-xs">
             {runError}
+          </div>
+        )}
+
+        {executionProgress && isRunning && (
+          <div className="text-xs font-semibold text-blue-600 mb-2">
+            Step {executionProgress.current}/{executionProgress.total}: {executionProgress.currentOp}
           </div>
         )}
 

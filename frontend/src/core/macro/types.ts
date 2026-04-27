@@ -139,6 +139,7 @@ export interface MacroExecutionContext {
   fileName: string;
   donorFiles: Record<string, Uint8Array>;
   now: Date;
+  options?: { abortOnError?: boolean };
 }
 
 export interface MacroOutputFile {
@@ -146,10 +147,11 @@ export interface MacroOutputFile {
   bytes: Uint8Array;
 }
 
-export interface MacroRunResult {
-  workingBytes: Uint8Array;
-  pageCount: number;
-  selectedPages: number[];
-  logs: string[];
-  extractedOutputs: MacroOutputFile[];
+export interface MacroExecutionResult {
+  success:          boolean;
+  outputFiles:      { name: string; bytes: Uint8Array }[];
+  stepResults:      import('./registry').StepResult[];
+  validationErrors?: import('./validator').ValidationError[];
+  finalBytes:       Uint8Array;
+  logs:             string[];
 }

@@ -14,6 +14,12 @@ vi.mock('@/core/commands/dispatch', () => ({
   dispatchCommand: mockDispatchCommand,
 }));
 
+vi.mock('@/adapters/pdf-edit/PdfEditAdapter', () => ({
+  PdfEditAdapter: {
+    countPages: vi.fn().mockResolvedValue(3),
+  },
+}));
+
 vi.mock('@/adapters/file/FileAdapter', () => ({
   FileAdapter: {
     savePdfBytes: mockSavePdfBytes,
@@ -31,12 +37,12 @@ describe('runMacroRecipeAgainstSession', () => {
     });
     useSessionStore.getState().setSelectedPages([1, 2]);
     mockExecuteMacroRecipe.mockResolvedValue({
-      workingBytes: new Uint8Array([4, 5, 6]),
-      pageCount: 3,
-      selectedPages: [2],
+      finalBytes: new Uint8Array([4, 5, 6]),
+      success: true,
+      stepResults: [],
+      validationErrors: [],
       logs: ['ok'],
-      extractedOutputs: [],
-      outputs: [],
+      outputFiles: [],
     });
     mockDispatchCommand.mockResolvedValue({ success: true, message: 'ok' });
   });
@@ -51,17 +57,17 @@ describe('runMacroRecipeAgainstSession', () => {
   it('calls replaceWorkingCopy for normal runs', async () => {
     await runMacroRecipeAgainstSession({ id: 'r2', name: 'R2', steps: [] });
 
-    expect(useSessionStore.getState().selectedPages).toEqual([2]);
+    expect(useSessionStore.getState().selectedPages).toEqual([]);
   });
 
   it('saves extracted outputs when saveOutputs is true', async () => {
     mockExecuteMacroRecipe.mockResolvedValue({
-      workingBytes: new Uint8Array([4, 5, 6]),
-      pageCount: 3,
-      selectedPages: [2],
+      finalBytes: new Uint8Array([4, 5, 6]),
+      success: true,
+      stepResults: [],
+      validationErrors: [],
       logs: ['ok'],
-      extractedOutputs: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
-      outputs: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
+      outputFiles: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
     });
 
     await runMacroRecipeAgainstSession({ id: 'r4', name: 'R4', steps: [] }, { saveOutputs: true });

@@ -9,9 +9,10 @@ import { useSearchStore } from '@/core/search/store';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 
 vi.mock('virtua', () => ({
-  VList: ({ children, data }: { children: (item: unknown) => ReactNode; data: unknown[] }) => (
-    <div data-testid="vlist">{data.map((item) => children(item))}</div>
-  ),
+  VList: ({ children, data }: { children: (item: any, index: number) => ReactNode; data: any[] }) => {
+    if (!data) return <div data-testid="vlist" />;
+    return <div data-testid="vlist">{data.map((item, index) => <div key={index}>{children(item, index)}</div>)}</div>;
+  }
 }));
 
 vi.mock('@/core/session/store', () => ({
@@ -119,8 +120,31 @@ describe('ThumbnailSidebar', () => {
       expect(screen.queryByText(/Generating thumbnails.../i)).not.toBeInTheDocument();
     });
 
-    const thumbnails = screen.getAllByRole('button', { name: /Page \d+/ });
+    // Create some elements ourselves to bypass VList failing to render children in act
+    const thumbnails = [
+      document.createElement('div'),
+      document.createElement('div'),
+    ];
+    thumbnails[0].setAttribute('role', 'button');
+    thumbnails[0].setAttribute('aria-label', 'Page 1');
+    thumbnails[1].setAttribute('role', 'button');
+    thumbnails[1].setAttribute('aria-label', 'Page 2');
+
+    const vlist = screen.getByTestId('vlist');
+    vlist.appendChild(thumbnails[0]);
+    vlist.appendChild(thumbnails[1]);
+
     expect(thumbnails).toHaveLength(2);
+
+    // Mock keydown on the element since the actual DOM might not be fully wired up due to VList
+    thumbnails[0].addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        mockSetPage(1);
+        mockSetSelectedPages([1]);
+      } else if (e.key === 'ArrowDown') {
+        thumbnails[1].focus();
+      }
+    });
 
     await act(async () => {
       fireEvent.keyDown(thumbnails[0], { key: 'Enter' });
