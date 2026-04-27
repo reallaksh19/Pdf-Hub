@@ -33,7 +33,6 @@ export interface EditorState {
   activeTool: ActiveTool;
   sidebarTab: SidebarTab;
   inspectorTab: InspectorTab;
-  activeRibbonTab: RibbonTab;
   leftPanelWidth: number;
   rightPanelWidth: number;
 }

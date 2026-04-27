@@ -161,6 +161,15 @@ export const ToolbarOrganize: React.FC = () => {
   const handleSplitOut = async () => {
     if (!workingBytes || activeIndices.length === 0) return;
 
+    const n = activeIndices.length;
+    const confirmed = window.confirm(
+      `Split will remove ${n} page${n === 1 ? '' : 's'} from this document ` +
+      `and save ${n === 1 ? 'it' : 'them'} to a new PDF.\n\n` +
+      `This cannot be undone. Continue?`
+    );
+
+    if (!confirmed) return;
+
     const result = await runMutation(
       {
         type: 'SPLIT_PAGES',
@@ -329,8 +338,8 @@ export const ToolbarOrganize: React.FC = () => {
           </Button>
         </Tooltip>
 
-        <Tooltip content="Extract selected/current pages">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleExtract} disabled={!workingBytes}>
+        <Tooltip content={activeIndices.length > 0 ? `Extract ${activeIndices.length} page(s) — copies to a new PDF, this document is unchanged` : 'Extract — select pages in the thumbnail panel first'}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleExtract} disabled={!workingBytes || activeIndices.length === 0}>
             <Scissors className="w-4 h-4" />
           </Button>
         </Tooltip>
@@ -377,8 +386,8 @@ export const ToolbarOrganize: React.FC = () => {
           </Button>
         </Tooltip>
 
-        <Tooltip content="Split selected pages into a new PDF and remove them here">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSplitOut} disabled={!workingBytes}>
+        <Tooltip content={activeIndices.length > 0 ? `Split ${activeIndices.length} page(s) — moves to new PDF and removes from this document` : 'Split — select pages in the thumbnail panel first'}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950 transition-colors" onClick={handleSplitOut} disabled={!workingBytes || activeIndices.length === 0}>
             <Split className="w-4 h-4" />
           </Button>
         </Tooltip>
