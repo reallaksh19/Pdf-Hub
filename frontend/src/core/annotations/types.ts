@@ -110,4 +110,16 @@ export interface PdfAnnotation {
 
 export interface AnnotationNodeProps<T extends AnnotationType = AnnotationType> {
   annotation: PdfAnnotation & { type: T };
+  rect: Rect;
+  scale: number;
+  isSelected: boolean;
+  isEditing?: boolean;
+  editingValue?: string;
+  points?: number[];
+  onSelect: (event: React.PointerEvent) => void;
+  onTransformStart: (event: React.PointerEvent, mode: string) => void;
+  onDoubleClick?: (event: React.MouseEvent) => void;
+  onCommitEdit?: (value: string) => void;
+  anchorPoint?: Point2D | null;
+  onAnchorDragStart?: (event: React.PointerEvent) => void;
 }

@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { documentBus } from '../events/bus';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 import { useHistoryStore } from '@/core/document-history/store';
 import { useSessionStore } from '@/core/session/store';
@@ -182,6 +183,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
       case 'REORDER_PAGES_BY_ORDER': {
         const nextBytes = await PdfEditAdapter.reorderPages(context.workingBytes, command.order);
         const result = await applyMutation(command, source, context.workingBytes, nextBytes);
+        documentBus.emit({ type: 'PAGES_REORDERED', order: command.order });
         return commandSuccess(command.type, source, true, 'Pages reordered', result.nextBytes, result.nextPageCount);
       }
 
@@ -224,6 +226,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
         }
         const nextBytes = await PdfEditAdapter.removePages(context.workingBytes, pageIndices);
         const result = await applyMutation(command, source, context.workingBytes, nextBytes);
+        documentBus.emit({ type: 'PAGES_DELETED', indices: pageIndices });
         return commandSuccess(command.type, source, true, 'Pages deleted', result.nextBytes, result.nextPageCount);
       }
 
@@ -234,6 +237,8 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
           command.atIndex,
         );
         const result = await applyMutation(command, source, context.workingBytes, nextBytes);
+        const insertedPageCount = await PdfEditAdapter.countPages(command.donorBytes);
+        documentBus.emit({ type: 'PAGES_INSERTED', atIndex: command.atIndex, count: insertedPageCount });
         return commandSuccess(command.type, source, true, 'Pages inserted', result.nextBytes, result.nextPageCount);
       }
 
@@ -244,6 +249,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
           command.size,
         );
         const result = await applyMutation(command, source, context.workingBytes, nextBytes);
+        documentBus.emit({ type: 'PAGES_INSERTED', atIndex: command.atIndex, count: 1 });
         return commandSuccess(command.type, source, true, 'Blank page inserted', result.nextBytes, result.nextPageCount);
       }
 
@@ -338,6 +344,7 @@ export async function dispatchCommand(payload: CommandPayload): Promise<CommandR
           ? command.nextPageCount
           : await PdfEditAdapter.countPages(nextBytes);
         const result = await applyMutation(command, source, context.workingBytes, nextBytes);
+        documentBus.emit({ type: 'DOCUMENT_REPLACED' });
         return commandSuccess(
           command.type,
           source,
