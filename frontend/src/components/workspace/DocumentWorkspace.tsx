@@ -50,7 +50,11 @@ type TextSelectionDraft = {
   unionRect: Rect;
 };
 
-export const DocumentWorkspace: React.FC = () => {
+interface DocumentWorkspaceProps {
+  workspaceRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+export const DocumentWorkspace: React.FC<DocumentWorkspaceProps> = ({ workspaceRef }) => {
   const {
     annotations,
     setAnnotations,
@@ -80,7 +84,8 @@ export const DocumentWorkspace: React.FC = () => {
   const [pdfDoc, setPdfDoc] = React.useState<PDFDocumentProxy | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const localContainerRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = workspaceRef || localContainerRef;
   const [isPanning, setIsPanning] = React.useState(false);
   const lastPanPos = React.useRef<{ x: number; y: number } | null>(null);
 
@@ -430,6 +435,8 @@ interface PageSurfaceProps {
   onCommitManyAnnotations: (updates: Array<{ id: string; data: Partial<PdfAnnotation> }>) => void;
 }
 
+import { usePageRenderer } from '@/core/renderer/usePageRenderer';
+
 const PageSurface: React.FC<PageSurfaceProps> = ({
   doc,
   pageNumber,
@@ -483,28 +490,31 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const draftAnchorsRef = React.useRef<Record<string, Point2D | null>>({});
   const draftLinePointsRef = React.useRef<Record<string, number[]>>({});
 
+  const { size: renderedSize } = usePageRenderer({
+    doc,
+    pageNumber,
+    scale,
+    canvasRef,
+  });
+
+  const finalSize = renderedSize || size;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _setSizeToAvoidLinterError = setSize;
+
   React.useEffect(() => {
     let cancelled = false;
 
-    const render = async () => {
+    const loadTextLayer = async () => {
       const page = await doc.getPage(pageNumber);
-      const viewport = page.getViewport({ scale });
-
-      if (!cancelled) {
-        setSize({ width: viewport.width, height: viewport.height });
-      }
-
-      if (!cancelled && canvasRef.current) {
-        await PdfRendererAdapter.renderPage(page, scale, canvasRef.current);
-      }
-
+      if (cancelled) return;
       const items = await PdfRendererAdapter.getPageTextItems(page, scale);
       if (!cancelled) {
         setTextItems(items);
       }
     };
 
-    void render();
+    void loadTextLayer();
 
     return () => {
       cancelled = true;
@@ -532,8 +542,8 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     }
   }, [activeHitId]);
 
-  const pageWidth = size.width / scale;
-  const pageHeight = size.height / scale;
+  const pageWidth = finalSize.width / scale;
+  const pageHeight = finalSize.height / scale;
 
   const clampRect = React.useCallback(
     (rect: Rect): Rect => {
@@ -623,8 +633,8 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
       startRects,
       startAnchors,
       startPoints,
-      pageWidth: size.width / scale,
-      pageHeight: size.height / scale,
+        pageWidth: finalSize.width / scale,
+        pageHeight: finalSize.height / scale,
     };
 
     const onMove = (moveEvent: MouseEvent) => {
@@ -1096,8 +1106,9 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     <div
       ref={pageRef}
       className="relative bg-white dark:bg-slate-900 shadow-md mb-8 transition-all hover:ring-1 hover:ring-slate-300"
-      style={{ width: size.width, minHeight: size.height }}
+      style={{ width: finalSize.width, minHeight: finalSize.height }}
       onClick={onActivate}
+      data-page={pageNumber}
     >
       <canvas ref={canvasRef} className="block" />
 
