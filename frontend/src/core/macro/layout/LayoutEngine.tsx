@@ -62,14 +62,13 @@ function RenderBlock({ block }: { block: ContentBlock }): React.ReactNode {
           />
         </div>
       );
-    case 'heading': {
+    case 'heading':
       const sizes = { 1: 32, 2: 24, 3: 18 };
       return (
         <div style={{ fontSize: sizes[block.level], fontWeight: 700, color: block.color ?? '#0f172a', margin: '20px 0 10px' }}>
           {block.text}
         </div>
       );
-    }
     case 'rich-text':
       return (
         <div style={{ fontSize: block.fontSize ?? 13, color: block.color ?? '#1e293b', lineHeight: 1.7 }}>

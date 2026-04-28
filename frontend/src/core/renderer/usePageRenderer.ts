@@ -15,17 +15,6 @@ interface PageSize {
   height: number;
 }
 
-/**
- * Custom hook that owns the full render lifecycle for a single PDF page.
- *
- * Guarantees:
- * - Only one render in flight at a time per hook instance.
- * - Cancels in-flight render before starting a new one.
- * - Cancels on unmount.
- * - Uses useLayoutEffect to avoid a one-frame flash on scale change.
- *
- * This is the ONLY place in the codebase that calls PdfRendererAdapter.renderPage.
- */
 export function usePageRenderer({
   doc, pageNumber, scale, canvasRef,
 }: UsePageRendererOptions) {
@@ -78,7 +67,6 @@ export function usePageRenderer({
 
     return () => {
       abandoned = true;
-      // Cancel in-flight render on cleanup (scale change or unmount)
       tokenRef.current?.cancel();
       tokenRef.current = null;
     };

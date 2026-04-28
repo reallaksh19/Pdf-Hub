@@ -1,8 +1,9 @@
 import React from 'react';
-import { UploadCloud } from 'lucide-react';
+import { UploadCloud, Lock } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { VList } from 'virtua';
+import { MessageSquare, X } from 'lucide-react';
 
 import { PdfRendererAdapter, type TextLayerItem } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 import { loadAnnotations, saveAnnotations } from '@/core/annotations/persistence';
@@ -12,10 +13,6 @@ import { useEditorStore } from '@/core/editor/store';
 import { useSessionStore } from '@/core/session/store';
 import { usePdfStore } from '@/core/session/pdfStore';
 import { useReviewStore } from '@/core/review/store';
-import { annotationRegistry } from '../../core/annotations/registry';
-
-import { usePageRenderer } from '@/core/renderer/usePageRenderer';
-
 import { useSearchStore } from '@/core/search/store';
 import { SearchIndexer } from '@/core/search/indexer';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
@@ -390,7 +387,6 @@ export const DocumentWorkspace: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      id="workspace-scroll-container"
       className={`flex flex-col h-full bg-slate-200 dark:bg-slate-950 overflow-auto ${
         activeTool === 'hand' ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''
       }`}
@@ -451,7 +447,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   onCommitAnnotation,
   onCommitManyAnnotations,
 }) => {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const pageRef = React.useRef<HTMLDivElement | null>(null);
   const { hits, activeHitId } = useSearchStore();
   const isSelectTool = activeTool === 'select';
@@ -487,21 +483,19 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   const draftAnchorsRef = React.useRef<Record<string, Point2D | null>>({});
   const draftLinePointsRef = React.useRef<Record<string, number[]>>({});
 
-  const { size: renderSize } = usePageRenderer({
-    doc,
-    pageNumber,
-    scale,
-    canvasRef,
-  });
-
   React.useEffect(() => {
     let cancelled = false;
 
     const render = async () => {
       const page = await doc.getPage(pageNumber);
+      const viewport = page.getViewport({ scale });
+
       if (!cancelled) {
-        const viewport = page.getViewport({ scale });
         setSize({ width: viewport.width, height: viewport.height });
+      }
+
+      if (!cancelled && canvasRef.current) {
+        await PdfRendererAdapter.renderPage(page, canvasRef.current, viewport);
       }
 
       const items = await PdfRendererAdapter.getPageTextItems(page, scale);
@@ -538,8 +532,8 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
     }
   }, [activeHitId]);
 
-  const pageWidth = (renderSize?.width || size.width) / scale;
-  const pageHeight = (renderSize?.height || size.height) / scale;
+  const pageWidth = size.width / scale;
+  const pageHeight = size.height / scale;
 
   const clampRect = React.useCallback(
     (rect: Rect): Rect => {
@@ -1101,9 +1095,8 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   return (
     <div
       ref={pageRef}
-      data-page={pageNumber}
       className="relative bg-white dark:bg-slate-900 shadow-md mb-8 transition-all hover:ring-1 hover:ring-slate-300"
-      style={{ width: renderSize?.width || size.width, minHeight: renderSize?.height || size.height }}
+      style={{ width: size.width, minHeight: size.height }}
       onClick={onActivate}
     >
       <canvas ref={canvasRef} className="block" />
@@ -1252,77 +1245,170 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
         style={{ pointerEvents: isPlacementOnlyTool ? 'auto' : 'none' }}
         onClick={handleOverlayClick}
       >
-        {pageAnnotations
-        .slice()
-        .sort((a, b) => (a.data?.zIndex ?? 0) - (b.data?.zIndex ?? 0))
-        .map((annotation) => {
-          let NodeComponent: React.FC<any>;
+        {pageAnnotations.map((annotation) => {
+          const selected = selectedAnnotationIds.includes(annotation.id);
+          const rect = draftRects[annotation.id] ?? annotation.rect;
+          const anchor = readAnchor(annotation, draftAnchors[annotation.id] ?? null);
 
-          try {
-            NodeComponent = annotationRegistry.get(annotation.type);
-          } catch (err) {
-            console.error(err);
+          if (annotation.type === 'line' || annotation.type === 'arrow') {
             return (
-              <div
+              <LineLikeNode
                 key={annotation.id}
-                style={{
-                  position: 'absolute',
-                  left: annotation.rect.x * scale,
-                  top: annotation.rect.y * scale,
-                  width: 80, height: 24,
-                  background: 'rgba(255,0,0,0.15)',
-                  border: '1px dashed red',
-                  fontSize: 10, color: 'red',
-                  display: 'flex', alignItems: 'center', padding: '0 4px',
+                annotation={annotation}
+                rect={rect}
+                points={draftLinePoints[annotation.id]}
+                selected={selected}
+                scale={scale}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
                 }}
-              >
-                unknown: {annotation.type}
-              </div>
+                onTransform={(event, mode) => startTransform(event, annotation, mode)}
+              />
             );
           }
 
-          const selected = selectedAnnotationIds.includes(annotation.id);
-          const rawRect = draftRects[annotation.id] ?? annotation.rect;
-          const scaledRect = {
-            x: rawRect.x * scale,
-            y: rawRect.y * scale,
-            width: rawRect.width * scale,
-            height: rawRect.height * scale,
-          };
-          const anchor = readAnchor(annotation, draftAnchors[annotation.id] ?? null);
+          if (annotation.type === 'callout' && anchor) {
+            return (
+              <CalloutNode
+                key={annotation.id}
+                annotation={annotation}
+                rect={rect}
+                anchor={anchor}
+                selected={selected}
+                scale={scale}
+                editingId={editingId}
+                editingValue={editingValue}
+                setEditingValue={setEditingValue}
+                setEditingId={setEditingId}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
+                }}
+                onTransform={(event, mode) => startTransform(event, annotation, mode)}
+                onAnchorDrag={(event) => startAnchorDrag(event, annotation)}
+                onDoubleClick={() => {
+                  if (annotation.data.locked === true) return;
+                  setEditingId(annotation.id);
+                  setEditingValue(readText(annotation));
+                }}
+                onCommitText={(value) => commitTextEdit(annotation, value)}
+              />
+            );
+          }
+
+          if (annotation.type === 'sticky-note') {
+            return (
+              <StickyNoteNode
+                key={annotation.id}
+                annotation={annotation}
+                rect={rect}
+                selected={selected}
+                scale={scale}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
+                }}
+                onTransform={(event, mode) => startTransform(event, annotation, mode)}
+                onDoubleClick={() => {
+                  onCommitAnnotation(annotation.id, {
+                    data: { ...annotation.data, isCollapsed: annotation.data.isCollapsed === false }
+                  });
+                }}
+              />
+            );
+          }
+
+          if (annotation.type === 'ink') {
+            return (
+              <InkNode
+                key={annotation.id}
+                annotation={annotation}
+                rect={rect}
+                selected={selected}
+                scale={scale}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
+                }}
+                onTransform={(event, mode) => startTransform(event, annotation, mode)}
+              />
+            );
+          }
+
+          if (annotation.type === 'redaction') {
+            return (
+              <RedactionNode
+                key={annotation.id}
+                annotation={annotation}
+                rect={rect}
+                selected={selected}
+                scale={scale}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
+                    onSetSingleSelection(annotation.id);
+                  }
+                }}
+                onTransform={(event, mode) => startTransform(event, annotation, mode)}
+              />
+            );
+          }
 
           return (
-            <NodeComponent
+            <BoxNode
               key={annotation.id}
               annotation={annotation}
-              rect={scaledRect}
+              rect={rect}
+              selected={selected}
               scale={scale}
-              isSelected={selected}
-              isEditing={editingId === annotation.id}
+              editingId={editingId}
               editingValue={editingValue}
-              onSelect={(event: React.PointerEvent<HTMLDivElement>) => {
-                event.stopPropagation();
-                clearTextSelectionDraft();
-                if (event.metaKey || event.ctrlKey) {
-                  onToggleSelection(annotation.id);
-                } else {
+              setEditingValue={setEditingValue}
+              setEditingId={setEditingId}
+                onSelect={(event) => {
+                  event.stopPropagation();
+                  clearTextSelectionDraft();
+                  if (event.metaKey || event.ctrlKey) {
+                    onToggleSelection(annotation.id);
+                  } else {
                   onSetSingleSelection(annotation.id);
                 }
               }}
-              onTransformStart={(event: React.PointerEvent<HTMLDivElement>, mode: 'move' | 'resize') => startTransform(event, annotation, mode)}
+              onTransform={(event, mode) => startTransform(event, annotation, mode)}
               onDoubleClick={() => {
-                if (annotation.data?.locked === true) return;
+                if (!isTextLike(annotation.type) || annotation.data.locked === true) return;
                 setEditingId(annotation.id);
                 setEditingValue(readText(annotation));
               }}
-              onCommitEdit={(v: string) => commitTextEdit(annotation, v)}
-              {...(annotation.type === 'callout' ? {
-                anchorPoint: anchor,
-                onAnchorDragStart: (event: any) => startAnchorDrag(event, annotation),
-              } : {})}
+              onCommitText={(value) => commitTextEdit(annotation, value)}
             />
           );
         })}
+
         {marquee && (
           <div
             className="absolute pointer-events-none border border-blue-500 bg-blue-200/20"
@@ -1343,18 +1429,577 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
   );
 };
 
+const BoxNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  selected: boolean;
+  scale: number;
+  editingId: string | null;
+  editingValue: string;
+  setEditingValue: (value: string) => void;
+  setEditingId: (id: string | null) => void;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+  onDoubleClick: () => void;
+  onCommitText: (value: string) => void;
+}> = ({
+  annotation,
+  rect,
+  selected,
+  scale,
+  editingId,
+  editingValue,
+  setEditingValue,
+  setEditingId,
+  onSelect,
+  onTransform,
+  onDoubleClick,
+  onCommitText,
+}) => {
+  const style = annotationVisualStyle(annotation, selected);
+
+  return (
+    <div
+      className="absolute pointer-events-auto overflow-hidden transition-shadow"
+      style={{
+        left: rect.x * scale,
+        top: rect.y * scale,
+        width: rect.width * scale,
+        height: rect.height * scale,
+        ...style,
+      }}
+      onClick={onSelect}
+      onDoubleClick={(event) => {
+        event.stopPropagation();
+        onDoubleClick();
+      }}
+      onMouseDown={(event) => {
+        if (annotation.data.locked === true) return;
+        onTransform(event, 'move');
+      }}
+    >
+      {annotation.data.locked === true && (
+        <div className="absolute top-1 right-1 opacity-70">
+          <Lock className="w-3.5 h-3.5" />
+        </div>
+      )}
+
+      {editingId === annotation.id && isTextLike(annotation.type) ? (
+        <textarea
+          autoFocus
+          className="w-full h-full bg-white/95 text-slate-900 p-1 text-[11px] outline-none resize-none"
+          value={editingValue}
+          onChange={(event) => setEditingValue(event.target.value)}
+          onBlur={() => {
+            onCommitText(editingValue);
+            setEditingId(null);
+          }}
+          onKeyDown={(event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+              onCommitText(editingValue);
+              setEditingId(null);
+            }
+            if (event.key === 'Escape') {
+              setEditingId(null);
+            }
+          }}
+        />
+      ) : (
+        <div
+          className="w-full h-full px-1 py-0.5 select-none"
+          style={{
+            fontSize: `${readFontSize(annotation) * scale}px`,
+            textAlign: readTextAlign(annotation),
+            fontWeight: readFontWeight(annotation),
+            lineHeight: 1.25,
+          }}
+        >
+          {renderVisibleContent(annotation)}
+        </div>
+      )}
+
+      {annotation.type === 'shape-cloud' && (
+        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <path
+            d={cloudPath({ x: 0, y: 0, width: rect.width, height: rect.height }, scale)}
+            fill={typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : 'transparent'}
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#3b82f6'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          />
+        </svg>
+      )}
+
+      {annotation.type === 'squiggly' && (
+        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <path
+            d={squigglyPath({ x: 0, y: 0, width: rect.width, height: rect.height }, scale)}
+            fill="none"
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#ef4444'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          />
+        </svg>
+      )}
+
+      {annotation.type === 'shape-ellipse' && (
+        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <ellipse
+            cx={(rect.width / 2) * scale}
+            cy={(rect.height / 2) * scale}
+            rx={(rect.width / 2) * scale}
+            ry={(rect.height / 2) * scale}
+            fill={typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : 'transparent'}
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#3b82f6'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          />
+        </svg>
+      )}
+
+      {annotation.type === 'shape-polygon' && Array.isArray(annotation.data.points) && (
+        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" style={{ overflow: 'visible' }}>
+          <polygon
+            points={annotation.data.points.reduce((acc: string, curr: number, idx: number) => {
+              return acc + (idx % 2 === 0 ? `${(curr - rect.x) * scale},` : `${(curr - rect.y) * scale} `);
+            }, '').trim()}
+            fill={typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : 'transparent'}
+            stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#3b82f6'}
+            strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          />
+        </svg>
+      )}
+
+      {selected && annotation.data.locked !== true && (
+        <div
+          className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+            onTransform(event, 'resize');
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const StickyNoteNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  selected: boolean;
+  scale: number;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+  onDoubleClick: () => void;
+}> = ({ annotation, rect, selected, scale, onSelect, onTransform, onDoubleClick }) => {
+  const collapsed = annotation.data.isCollapsed !== false;
+
+  if (collapsed) {
+    return (
+      <div
+        className={`absolute pointer-events-auto cursor-pointer group`}
+        style={{ left: rect.x * scale, top: rect.y * scale }}
+        onClick={onSelect}
+        onDoubleClick={(event) => {
+          event.stopPropagation();
+          onDoubleClick();
+        }}
+        onMouseDown={(event) => {
+          if (annotation.data.locked === true) return;
+          onTransform(event, 'move');
+        }}
+      >
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 ${
+          selected ? 'ring-2 ring-blue-500' : ''
+        }`} style={{ background: typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : '#fde047' }}>
+          <MessageSquare className="w-4 h-4 text-slate-700" />
+        </div>
+        <div className="absolute left-8 top-0 hidden group-hover:block z-50 w-48 p-2 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-slate-200 text-xs text-slate-700 dark:text-slate-200 pointer-events-none">
+          <div className="font-semibold mb-0.5">{typeof annotation.data.author === 'string' ? annotation.data.author : 'Note'}</div>
+          {typeof annotation.data.text === 'string' ? annotation.data.text.slice(0, 80) : ''}
+          {(typeof annotation.data.text === 'string' && annotation.data.text.length > 80) ? '…' : ''}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="absolute pointer-events-auto overflow-hidden rounded-xl shadow-xl flex flex-col"
+      style={{
+        left: rect.x * scale, top: rect.y * scale,
+        width: rect.width * scale, height: rect.height * scale,
+        background: typeof annotation.data.backgroundColor === 'string' ? annotation.data.backgroundColor : '#fef9c3',
+        border: `1.5px solid ${typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#fde047'}`,
+      }}
+      onClick={onSelect}
+      onMouseDown={(event) => {
+        if (annotation.data.locked === true) return;
+        onTransform(event, 'move');
+      }}
+    >
+      <div className="flex items-center justify-between px-2 py-1 bg-black/10 shrink-0">
+        <span className="text-[10px] font-semibold text-slate-800">{typeof annotation.data.author === 'string' ? annotation.data.author : 'Note'}</span>
+        <button onClick={(e) => { e.stopPropagation(); onDoubleClick(); }}><X className="w-3 h-3 text-slate-700" /></button>
+      </div>
+      <div className="p-2 text-xs flex-1 overflow-hidden text-slate-900">
+        {typeof annotation.data.text === 'string' ? annotation.data.text : ''}
+      </div>
+      {selected && annotation.data.locked !== true && (
+        <div
+          className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+            onTransform(event, 'resize');
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const RedactionNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  selected: boolean;
+  scale: number;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+}> = ({ annotation, rect, selected, scale, onSelect, onTransform }) => (
+  <div
+    className="absolute pointer-events-auto flex items-center justify-center overflow-hidden"
+    style={{
+      left: rect.x * scale, top: rect.y * scale,
+      width: rect.width * scale, height: rect.height * scale,
+      background: selected ? '#1e293b' : '#000000',
+      border: selected ? '2px solid #3b82f6' : '2px solid #000',
+    }}
+    onClick={onSelect}
+    onMouseDown={(event) => {
+      if (annotation.data.locked === true) return;
+      onTransform(event, 'move');
+    }}
+  >
+    <span style={{
+      color: '#ffffff', fontSize: `${Math.max(9, Math.min(16, rect.height * scale * 0.4))}px`, fontWeight: 700,
+      letterSpacing: '0.15em', opacity: 0.5, userSelect: 'none'
+    }}>
+      REDACTED
+    </span>
+    {selected && annotation.data.locked !== true && (
+      <div
+        className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize"
+        onMouseDown={(event) => {
+          event.stopPropagation();
+          onTransform(event, 'resize');
+        }}
+      />
+    )}
+  </div>
+);
+
+const InkNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  selected: boolean;
+  scale: number;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+}> = ({ annotation, rect, selected, scale, onSelect, onTransform }) => {
+  const paths = Array.isArray(annotation.data.paths) ? annotation.data.paths : [];
+  const color = typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#111827';
+  const strokeWidth = typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2;
+
+  return (
+    <div
+      className="absolute pointer-events-auto"
+      style={{
+        left: rect.x * scale, top: rect.y * scale,
+        width: rect.width * scale, height: rect.height * scale,
+      }}
+      onClick={onSelect}
+      onMouseDown={(event) => {
+        if (annotation.data.locked === true) return;
+        onTransform(event, 'move');
+      }}
+    >
+      <svg width="100%" height="100%" className="overflow-visible">
+        {paths.map((path: number[], index: number) => {
+          // Normalize points relative to rect.x and rect.y
+          const normalizedPath = [];
+          for (let i = 0; i < path.length; i += 2) {
+            normalizedPath.push(path[i] - rect.x);
+            normalizedPath.push(path[i+1] - rect.y);
+          }
+          return (
+            <path
+              key={index}
+              d={inkPathToSvgD(normalizedPath, scale)}
+              stroke={color}
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          );
+        })}
+      </svg>
+      {selected && (
+        <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none" />
+      )}
+      {selected && annotation.data.locked !== true && (
+        <div
+          className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize pointer-events-auto"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+            onTransform(event, 'resize');
+          }}
+        />
+      )}
+    </div>
+  );
+};
 
 
+const CalloutNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  anchor: Point2D;
+  selected: boolean;
+  scale: number;
+  editingId: string | null;
+  editingValue: string;
+  setEditingValue: (value: string) => void;
+  setEditingId: (id: string | null) => void;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+  onAnchorDrag: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onDoubleClick: () => void;
+  onCommitText: (value: string) => void;
+}> = ({
+  annotation,
+  rect,
+  anchor,
+  selected,
+  scale,
+  editingId,
+  editingValue,
+  setEditingValue,
+  setEditingId,
+  onSelect,
+  onTransform,
+  onAnchorDrag,
+  onDoubleClick,
+  onCommitText,
+}) => {
+  const style = annotationVisualStyle(annotation, selected);
+  const knee = typeof annotation.data.knee === 'object' && annotation.data.knee !== null
+    ? (annotation.data.knee as Point2D)
+    : undefined;
+  const pathD = computeCalloutLeader3pt(anchor, knee, rect, scale);
+  const arrowHead = annotation.data.arrowHead;
 
+  return (
+    <>
+      <svg
+        className="absolute inset-0 pointer-events-none"
+        style={{ width: '100%', height: '100%', overflow: 'visible' }}
+      >
+        <defs>
+          <marker id={`arrow-filled-${annotation.id}`} markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#334155'} />
+          </marker>
+          <marker id={`arrow-open-${annotation.id}`} markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#334155'} strokeWidth="1.5" />
+          </marker>
+        </defs>
+        <path
+          d={pathD}
+          stroke={typeof annotation.data.borderColor === 'string' ? annotation.data.borderColor : '#334155'}
+          strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          markerStart={arrowHead === 'filled' ? `url(#arrow-filled-${annotation.id})` : arrowHead === 'open' ? `url(#arrow-open-${annotation.id})` : undefined}
+        />
+        {selected && (
+          <circle
+            cx={anchor.x * scale}
+            cy={anchor.y * scale}
+            r={4}
+            fill="#2563eb"
+          />
+        )}
+      </svg>
 
+      {selected && annotation.data.locked !== true && (
+        <div
+          className="absolute pointer-events-auto w-3.5 h-3.5 rounded-full bg-blue-600 border border-white shadow cursor-move"
+          style={{
+            left: anchor.x * scale - 7,
+            top: anchor.y * scale - 7,
+          }}
+          onMouseDown={onAnchorDrag}
+          title="Drag callout anchor"
+        />
+      )}
 
+      <div
+        className="absolute pointer-events-auto overflow-hidden transition-shadow"
+        style={{
+          left: rect.x * scale,
+          top: rect.y * scale,
+          width: rect.width * scale,
+          height: rect.height * scale,
+          ...style,
+        }}
+        onClick={onSelect}
+        onDoubleClick={(event) => {
+          event.stopPropagation();
+          onDoubleClick();
+        }}
+        onMouseDown={(event) => {
+          if (annotation.data.locked === true) return;
+          onTransform(event, 'move');
+        }}
+      >
+        {annotation.data.locked === true && (
+          <div className="absolute top-1 right-1 opacity-70">
+            <Lock className="w-3.5 h-3.5" />
+          </div>
+        )}
 
+        {editingId === annotation.id ? (
+          <textarea
+            autoFocus
+            className="w-full h-full bg-white/95 text-slate-900 p-1 text-[11px] outline-none resize-none"
+            value={editingValue}
+            onChange={(event) => setEditingValue(event.target.value)}
+            onBlur={() => {
+              onCommitText(editingValue);
+              setEditingId(null);
+            }}
+            onKeyDown={(event) => {
+              if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                onCommitText(editingValue);
+                setEditingId(null);
+              }
+              if (event.key === 'Escape') {
+                setEditingId(null);
+              }
+            }}
+          />
+        ) : (
+          <div
+            className="w-full h-full px-2 py-1 select-none"
+            style={{
+              fontSize: `${readFontSize(annotation) * scale}px`,
+              textAlign: readTextAlign(annotation),
+              fontWeight: readFontWeight(annotation),
+              lineHeight: 1.25,
+            }}
+          >
+            {renderVisibleContent(annotation)}
+          </div>
+        )}
 
+        {selected && annotation.data.locked !== true && (
+          <div
+            className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize"
+            onMouseDown={(event) => {
+              event.stopPropagation();
+              onTransform(event, 'resize');
+            }}
+          />
+        )}
+      </div>
+    </>
+  );
+};
 
+const LineLikeNode: React.FC<{
+  annotation: PdfAnnotation;
+  rect: Rect;
+  points?: number[];
+  selected: boolean;
+  scale: number;
+  onSelect: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onTransform: (event: React.MouseEvent<HTMLDivElement>, mode: 'move' | 'resize') => void;
+}> = ({ annotation, rect, points: pointsOverride, selected, scale, onSelect, onTransform }) => {
+  const points = Array.isArray(pointsOverride)
+    ? pointsOverride
+    : Array.isArray(annotation.data.points)
+    ? (annotation.data.points as number[])
+    : [0, rect.height / 2, rect.width, rect.height / 2];
 
+  const color =
+    typeof annotation.data.borderColor === 'string'
+      ? annotation.data.borderColor
+      : '#111827';
 
+  return (
+    <div
+      className="absolute pointer-events-auto"
+      style={{
+        left: rect.x * scale,
+        top: rect.y * scale,
+        width: rect.width * scale,
+        height: rect.height * scale,
+      }}
+      onClick={onSelect}
+      onMouseDown={(event) => {
+        if (annotation.data.locked === true) return;
+        onTransform(event, 'move');
+      }}
+    >
+      <svg width="100%" height="100%" className={selected ? 'overflow-visible' : ''}>
+        <defs>
+          <marker id={`line-arrow-filled-${annotation.id}`} markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
+          </marker>
+          <marker id={`line-arrow-open-${annotation.id}`} markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke={color} strokeWidth="1.5" />
+          </marker>
+          <marker id={`line-circle-${annotation.id}`} markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <circle cx="4" cy="4" r="3" fill={color} />
+          </marker>
+          <marker id={`line-square-${annotation.id}`} markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <rect x="1" y="1" width="6" height="6" fill={color} />
+          </marker>
+        </defs>
 
+        <line
+          x1={points[0] * scale}
+          y1={points[1] * scale}
+          x2={points[2] * scale}
+          y2={points[3] * scale}
+          stroke={color}
+          strokeWidth={typeof annotation.data.borderWidth === 'number' ? annotation.data.borderWidth : 2}
+          strokeDasharray={annotation.data.borderStyle === 'dashed' ? '6,6' : annotation.data.borderStyle === 'dotted' ? '2,4' : 'none'}
+          strokeLinecap="round"
+          markerStart={
+            annotation.data.lineStartCap === 'arrow' ? `url(#line-arrow-filled-${annotation.id})` :
+            annotation.data.lineStartCap === 'circle' ? `url(#line-circle-${annotation.id})` :
+            annotation.data.lineStartCap === 'square' ? `url(#line-square-${annotation.id})` : undefined
+          }
+          markerEnd={
+            annotation.type === 'arrow' && annotation.data.lineEndCap !== 'none' && annotation.data.lineEndCap !== 'circle' && annotation.data.lineEndCap !== 'square' ? `url(#line-arrow-filled-${annotation.id})` :
+            annotation.data.lineEndCap === 'arrow' ? `url(#line-arrow-filled-${annotation.id})` :
+            annotation.data.lineEndCap === 'circle' ? `url(#line-circle-${annotation.id})` :
+            annotation.data.lineEndCap === 'square' ? `url(#line-square-${annotation.id})` : undefined
+          }
+        />
+      </svg>
 
+      {selected && annotation.data.locked !== true && (
+        <div
+          className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-tl-sm cursor-se-resize"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+            onTransform(event, 'resize');
+          }}
+        />
+      )}
+    </div>
+  );
+};
 
 function buildAnnotation(
   tool: AnnotationType,
@@ -1657,9 +2302,15 @@ function readFontSize(annotation: PdfAnnotation): number {
   return typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12;
 }
 
+function readFontWeight(annotation: PdfAnnotation): 'normal' | 'bold' {
+  return annotation.data.fontWeight === 'bold' ? 'bold' : 'normal';
+}
 
-
-
+function readTextAlign(annotation: PdfAnnotation): 'left' | 'center' | 'right' {
+  return annotation.data.textAlign === 'center' || annotation.data.textAlign === 'right'
+    ? annotation.data.textAlign
+    : 'left';
+}
 
 function readAnchor(
   annotation: PdfAnnotation,
@@ -1681,9 +2332,76 @@ function readZIndex(annotation: PdfAnnotation): number {
   return typeof annotation.data.zIndex === 'number' ? annotation.data.zIndex : 0;
 }
 
+function renderVisibleContent(annotation: PdfAnnotation): React.ReactNode {
+  const t = annotation.type;
+  if (t === 'highlight' || t === 'underline' || t === 'strikeout' || t === 'squiggly') return null;
+  if (t.startsWith('shape-')) return null;
+  if (t === 'line' || t === 'arrow' || t === 'ink' || t === 'redaction') return null;
 
+  const text = readText(annotation);
+  if (text.trim().length > 0) return text;
 
+  if (t === 'comment') return 'Note';
+  if (t === 'callout') return 'Callout';
+  if (t === 'textbox') return 'Text';
+  if (t === 'sticky-note') return 'Note';
+  return null;
+}
 
+function annotationVisualStyle(
+  annotation: PdfAnnotation,
+  selected: boolean,
+): React.CSSProperties {
+  const backgroundColor =
+    typeof annotation.data.backgroundColor === 'string'
+      ? annotation.data.backgroundColor
+      : annotation.type === 'highlight'
+      ? '#fde047'
+      : annotation.type === 'comment'
+      ? '#fff7cc'
+      : annotation.type === 'stamp'
+      ? '#fef2f2'
+      : 'transparent';
+
+  const borderColor =
+    typeof annotation.data.borderColor === 'string'
+      ? annotation.data.borderColor
+      : annotation.type.startsWith('shape')
+      ? '#3b82f6'
+      : annotation.type === 'stamp'
+      ? '#ef4444'
+      : '#60a5fa';
+
+  const textColor =
+    typeof annotation.data.textColor === 'string'
+      ? annotation.data.textColor
+      : annotation.type === 'stamp'
+      ? '#b91c1c'
+      : '#0f172a';
+
+  const borderWidth =
+    typeof annotation.data.borderWidth === 'number'
+      ? annotation.data.borderWidth
+      : annotation.type.startsWith('shape')
+      ? 2
+      : 1;
+
+  return {
+    backgroundColor,
+    border: `${selected ? Math.max(borderWidth, 2) : borderWidth}px solid ${
+      selected ? '#2563eb' : borderColor
+    }`,
+    color: textColor,
+    opacity:
+      typeof annotation.data.opacity === 'number'
+        ? annotation.data.opacity
+        : annotation.type === 'highlight'
+        ? 0.38
+        : 0.9,
+    boxShadow: selected ? '0 0 0 2px rgba(37, 99, 235, 0.18)' : undefined,
+    borderRadius: annotation.type === 'comment' ? 6 : 2,
+  };
+}
 
 function autoSizeRectForText(text: string, fontSize: number, rect: Rect): Rect {
   const lines = text.split('\n');
@@ -1693,7 +2411,30 @@ function autoSizeRectForText(text: string, fontSize: number, rect: Rect): Rect {
   return { ...rect, width, height };
 }
 
+function computeCalloutLeader3pt(
+  anchor: Point2D,
+  knee: Point2D | undefined,
+  rect: Rect,
+  scale: number,
+) {
+  const ref = knee ?? anchor;
 
+  const dists = [
+    { x: rect.x, y: clamp(ref.y, rect.y, rect.y + rect.height) },
+    { x: rect.x + rect.width, y: clamp(ref.y, rect.y, rect.y + rect.height) },
+    { x: clamp(ref.x, rect.x, rect.x + rect.width), y: rect.y },
+    { x: clamp(ref.x, rect.x, rect.x + rect.width), y: rect.y + rect.height },
+  ].sort((a, b) =>
+    Math.hypot(a.x - ref.x, a.y - ref.y) - Math.hypot(b.x - ref.x, b.y - ref.y)
+  );
+  const exit = dists[0];
+
+  const points = knee ? [anchor, knee, exit] : [anchor, exit];
+
+  return points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x * scale} ${p.y * scale}`)
+    .join(' ');
+}
 
 function inkPathToSvgD(points: number[], scale: number): string {
   if (points.length < 4) return '';
@@ -1706,9 +2447,61 @@ function inkPathToSvgD(points: number[], scale: number): string {
   return pairs.join(' ');
 }
 
+function cloudPath(rect: Rect, scale: number, amplitude = 6): string {
+  const { x, y, width, height } = rect;
+  const bumps = Math.max(3, Math.round(width / 18));
+  const step = (width * scale) / bumps;
+  let d = `M ${x * scale} ${(y + height / 2) * scale} `;
 
+  for (let i = 0; i < bumps; i++) {
+    const cx = (x * scale) + i * step + step / 2;
+    const cy = (y * scale) - amplitude;
+    const ex = (x * scale) + (i + 1) * step;
+    d += `Q ${cx} ${cy} ${ex} ${y * scale} `;
+  }
 
+  const rightBumps = Math.max(2, Math.round(height / 18));
+  const rStep = (height * scale) / rightBumps;
+  for (let i = 0; i < rightBumps; i++) {
+    const cx = ((x + width) * scale) + amplitude;
+    const cy = (y * scale) + i * rStep + rStep / 2;
+    const ey = (y * scale) + (i + 1) * rStep;
+    d += `Q ${cx} ${cy} ${(x + width) * scale} ${ey} `;
+  }
 
+  for (let i = bumps - 1; i >= 0; i--) {
+    const cx = (x * scale) + i * step + step / 2;
+    const cy = ((y + height) * scale) + amplitude;
+    const ex = (x * scale) + i * step;
+    d += `Q ${cx} ${cy} ${ex} ${(y + height) * scale} `;
+  }
+
+  for (let i = rightBumps - 1; i >= 0; i--) {
+    const cx = (x * scale) - amplitude;
+    const cy = (y * scale) + i * rStep + rStep / 2;
+    const ey = (y * scale) + i * rStep;
+    d += `Q ${cx} ${cy} ${x * scale} ${ey} `;
+  }
+
+  d += 'Z';
+  return d;
+}
+
+function squigglyPath(rect: Rect, scale: number, amplitude = 2): string {
+  const { x, y, width, height } = rect;
+  const bumps = Math.max(3, Math.round(width / 8));
+  const step = (width * scale) / bumps;
+  let d = `M ${x * scale} ${(y + height) * scale} `;
+
+  for (let i = 0; i < bumps; i++) {
+    const cx = (x * scale) + i * step + step / 2;
+    const cy = (y + height) * scale + (i % 2 === 0 ? amplitude : -amplitude);
+    const ex = (x * scale) + (i + 1) * step;
+    d += `Q ${cx} ${cy} ${ex} ${(y + height) * scale} `;
+  }
+
+  return d;
+}
 
 function readPoints(
   annotation: PdfAnnotation,

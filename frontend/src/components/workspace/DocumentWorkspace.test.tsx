@@ -14,8 +14,8 @@ class ResizeObserverMock {
   unobserve() {}
   disconnect() {}
 }
-(globalThis as any as { ResizeObserver: typeof ResizeObserver }).ResizeObserver =
-  ResizeObserverMock as any as typeof ResizeObserver;
+(globalThis as unknown as { ResizeObserver: typeof ResizeObserver }).ResizeObserver =
+  ResizeObserverMock as unknown as typeof ResizeObserver;
 
 // Mock dependencies
 vi.mock('@/core/annotations/persistence', () => ({
@@ -99,7 +99,7 @@ describe('DocumentWorkspace', () => {
       fillRect: vi.fn(),
       fillStyle: '',
       setTransform: vi.fn(),
-    }) as any as typeof HTMLCanvasElement.prototype.getContext;
+    }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   });
 
   it('renders continuously', async () => {
