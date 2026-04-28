@@ -122,7 +122,14 @@ export type MacroStep =
   | { op: 'place_rich_textbox'; selector?: PageSelector; x: number; y: number; width: number }
   | { op: 'place_table'; selector?: PageSelector; x: number; y: number; width: number }
   | { op: 'adjust_image'; selector?: PageSelector; x: number; y: number; width: number }
-  | { op: 'conditional'; condition: unknown; then: MacroStep[] };
+  | { op: 'conditional'; condition: MacroCondition; then: MacroStep[]; else?: MacroStep[] }
+  | { op: 'apply_template_vars'; vars: Record<string, string> };
+
+export type MacroCondition =
+  | { type: 'page_count_gt';     value: number }
+  | { type: 'page_count_lt';     value: number }
+  | { type: 'filename_contains'; value: string }
+  | { type: 'custom_var_equals'; key: string; value: string };
 
 export interface MacroRecipe {
   id: string;
@@ -135,10 +142,14 @@ export interface MacroExecutionContext {
   workingBytes: Uint8Array;
   pageCount: number;
   selectedPages: number[];
-  currentPage: number;
+  currentPage?: number;
   fileName: string;
-  donorFiles: Record<string, Uint8Array>;
-  now: Date;
+  fileId?: string;
+  donorFiles?: Record<string, Uint8Array>;
+  now?: Date;
+  options?: {
+    abortOnError?: boolean;
+  };
 }
 
 export interface MacroOutputFile {

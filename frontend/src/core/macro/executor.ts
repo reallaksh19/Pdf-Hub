@@ -1,4 +1,5 @@
-import { macroRegistry, MacroMutableState, StepResult } from './registry';
+import { macroRegistry } from './registry';
+import type { MacroMutableState, StepResult } from './registry';
 import { macroValidator } from './validator';
 import { templateVarEngine } from './template-vars';
 import type { MacroRecipe, MacroExecutionContext } from './types';

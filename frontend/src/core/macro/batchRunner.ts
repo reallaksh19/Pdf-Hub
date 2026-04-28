@@ -34,6 +34,7 @@ export async function runMacroBatch(options: BatchRunOptions): Promise<BatchRunR
       const pageCount = await PdfEditAdapter.countPages(file.bytes);
 
       const result = await executeMacroRecipe(
+        options.recipe,
         {
           workingBytes: file.bytes,
           pageCount,
@@ -42,13 +43,12 @@ export async function runMacroBatch(options: BatchRunOptions): Promise<BatchRunR
           fileName: file.name,
           donorFiles: options.donorFiles ?? {},
           now: new Date(),
-        },
-        options.recipe,
+        }
       );
 
       successes.push({
         fileName: file.name,
-        bytes: result.workingBytes,
+        bytes: result.finalBytes,
         logs: result.logs,
       });
 

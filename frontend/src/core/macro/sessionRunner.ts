@@ -37,16 +37,16 @@ export async function runMacroRecipeAgainstSession(
       source: 'macro-runner',
       command: {
         type: 'REPLACE_WORKING_COPY',
-        nextBytes: result.workingBytes,
-        nextPageCount: result.pageCount,
+        nextBytes: result.finalBytes,
+        nextPageCount: useSessionStore.getState().pageCount,
         reason: `Ran macro recipe ${recipe.name}`,
       },
     });
-    useSessionStore.getState().setSelectedPages(result.selectedPages);
+    useSessionStore.getState().setSelectedPages(useSessionStore.getState().selectedPages);
   }
 
   if (options?.saveOutputs) {
-    for (const output of result.extractedOutputs) {
+    for (const output of result.outputFiles) {
       await FileAdapter.savePdfBytes(output.bytes, output.name, null);
     }
   }

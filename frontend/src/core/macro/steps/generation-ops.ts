@@ -1,4 +1,5 @@
-import { macroRegistry, StepResult, MacroMutableState } from '../registry';
+import { macroRegistry } from '../registry';
+import type { StepResult, MacroMutableState } from '../registry';
 import type { MacroExecutionContext, MacroStep, InsertPosition } from '../types';
 import { PdfEditAdapter } from '../../../adapters/pdf-edit/PdfEditAdapter';
 import { resolveSelector } from './page-ops';
@@ -119,8 +120,8 @@ async function executeInsertImage(
       if (match) {
         mimeType = match[1] === 'image/jpeg' ? 'image/jpeg' : 'image/png';
         // Use a universal cross-platform method if available or stick to standard Buffer if in Node
-        if (typeof Buffer !== 'undefined') {
-          imageBytes = new Uint8Array(Buffer.from(match[2], 'base64'));
+        if (typeof (globalThis as unknown as { Buffer: unknown }).Buffer !== 'undefined') {
+          imageBytes = new Uint8Array((globalThis as unknown as { Buffer: { from: (data: string, encoding: string) => ArrayBuffer } }).Buffer.from(match[2], 'base64'));
         } else {
           const binaryString = atob(match[2]);
           imageBytes = new Uint8Array(binaryString.length);
@@ -174,7 +175,8 @@ macroRegistry.register('adjust_image', executeAdjustImage);
 
 function resolveInsertIndex(
   position: InsertPosition,
-  currentPage: number,
+
+  _currentPage: number,
   pageCount: number,
 ): number {
   switch (position.mode) {

@@ -1,4 +1,5 @@
-import { macroRegistry, MacroMutableState, StepResult } from '../registry';
+import { macroRegistry } from '../registry';
+import type { MacroMutableState, StepResult } from '../registry';
 import type { MacroExecutionContext, MacroCondition, MacroStep } from '../types';
 
 type ConditionalStep = Extract<MacroStep, { op: 'conditional' }>;

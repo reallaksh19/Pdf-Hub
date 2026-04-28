@@ -25,6 +25,7 @@ export async function executeHeadlessMacro(
   const pageCount = await PdfEditAdapter.countPages(basePdfBytes);
 
   const result = await executeMacroRecipe(
+    recipe,
     {
       workingBytes: basePdfBytes,
       pageCount,
@@ -33,11 +34,10 @@ export async function executeHeadlessMacro(
       fileName,
       donorFiles,
       now: new Date(),
-    },
-    recipe
+    }
   );
 
-  return result.workingBytes;
+  return result.finalBytes;
 }
 
 // Global registration so external apps can invoke via `window.PDFHubHeadless.execute(...)`

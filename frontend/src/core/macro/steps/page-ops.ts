@@ -1,4 +1,5 @@
-import { macroRegistry, StepResult, MacroMutableState } from '../registry';
+import { macroRegistry } from '../registry';
+import type { StepResult, MacroMutableState } from '../registry';
 import type { MacroExecutionContext, PageSelector, MacroStep } from '../types';
 import { PdfEditAdapter } from '../../../adapters/pdf-edit/PdfEditAdapter';
 
