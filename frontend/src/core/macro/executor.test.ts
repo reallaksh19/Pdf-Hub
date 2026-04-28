@@ -16,7 +16,7 @@ const pdfMocks = vi.hoisted(() => ({
   addHeaderFooterText: vi.fn(),
   drawTextOnPages: vi.fn(),
   mergePdfs: vi.fn(),
-  insertPdf: vi.fn(),
+  insertAt: vi.fn(),
   duplicatePages: vi.fn(),
   insertBlankPage: vi.fn(),
   replacePage: vi.fn(),
@@ -32,8 +32,8 @@ vi.mock('@/adapters/pdf-edit/PdfEditAdapter', () => ({
     removePages: pdfMocks.removePages,
     addHeaderFooterText: pdfMocks.addHeaderFooterText,
     drawTextOnPages: pdfMocks.drawTextOnPages,
-    merge: pdfMocks.merge,
-    insertPdf: pdfMocks.insertPdf,
+    merge: pdfMocks.mergePdfs,
+    insertAt: pdfMocks.insertAt,
     duplicatePages: pdfMocks.duplicatePages,
     insertBlankPage: pdfMocks.insertBlankPage,
     replacePage: pdfMocks.replacePage,
@@ -62,7 +62,7 @@ describe('macro executor', () => {
     pdfMocks.addHeaderFooterText.mockResolvedValue(new Uint8Array([7, 7, 7]));
     pdfMocks.drawTextOnPages.mockResolvedValue(new Uint8Array([8, 8, 8]));
     pdfMocks.mergePdfs.mockResolvedValue(new Uint8Array([9, 9, 9]));
-    pdfMocks.insertPdf.mockResolvedValue(new Uint8Array([3, 3, 3]));
+    pdfMocks.insertAt.mockResolvedValue(new Uint8Array([3, 3, 3]));
     pdfMocks.duplicatePages.mockResolvedValue(new Uint8Array([2, 2, 2]));
     pdfMocks.insertBlankPage.mockResolvedValue(new Uint8Array([1, 1, 1]));
     pdfMocks.replacePage.mockResolvedValue(new Uint8Array([6, 1, 6]));
@@ -136,7 +136,7 @@ describe('macro executor', () => {
       steps: [{ op: 'rotate_pages', selector: { mode: 'selected' }, degrees: 90 }],
     };
 
-    const result = await executeMacroRecipe(baseContext, recipe);
+    const result = await executeMacroRecipe(recipe, baseContext);
 
     expect(pdfMocks.rotatePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3], 90);
     expect(result.finalBytes).toEqual(new Uint8Array([4, 4, 4]));
@@ -150,7 +150,7 @@ describe('macro executor', () => {
       steps: [{ op: 'extract_pages', selector: { mode: 'selected' }, outputName: 'selected.pdf' }],
     };
 
-    const result = await executeMacroRecipe(baseContext, recipe);
+    const result = await executeMacroRecipe(recipe, baseContext);
 
     expect(pdfMocks.extractPages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
     expect(result.finalBytes).toEqual(baseContext.workingBytes);
@@ -165,7 +165,7 @@ describe('macro executor', () => {
       steps: [{ op: 'split_pages', selector: { mode: 'selected' }, outputName: 'split.pdf' }],
     };
 
-    const result = await executeMacroRecipe(baseContext, recipe);
+    const result = await executeMacroRecipe(recipe, baseContext);
 
     expect(pdfMocks.extractPages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
     expect(pdfMocks.removePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
@@ -200,7 +200,7 @@ describe('macro executor', () => {
       ],
     };
 
-    await executeMacroRecipe(baseContext, recipe);
+    await executeMacroRecipe(recipe, baseContext);
 
     expect(pdfMocks.addHeaderFooterText).toHaveBeenCalledTimes(1);
     expect(pdfMocks.drawTextOnPages).toHaveBeenCalledTimes(1);
@@ -213,7 +213,7 @@ describe('macro executor', () => {
       steps: [{ op: 'merge_files', donorFileIds: ['missing'] }],
     };
 
-    const result = await executeMacroRecipe(baseContext, recipe);
+    const result = await executeMacroRecipe(recipe, baseContext);
     expect(pdfMocks.mergePdfs).not.toHaveBeenCalled();
     expect(result.logs[0]).toContain('Skipped merge_files');
   });
@@ -226,10 +226,10 @@ describe('macro executor', () => {
     };
 
     const result = await executeMacroRecipe(
-      { ...baseContext, donorFiles: { donorA: new Uint8Array([8, 8]) } },
       recipe,
+      { ...baseContext, donorFiles: { donorA: new Uint8Array([8, 8]) } },
     );
-    expect(pdfMocks.insertPdf).toHaveBeenCalledTimes(1);
+    expect(pdfMocks.insertAt).toHaveBeenCalledTimes(1);
     expect(result.logs[0]).toContain('Inserted PDF at index 2');
   });
 
@@ -240,7 +240,7 @@ describe('macro executor', () => {
       steps: [{ op: 'duplicate_pages', selector: { mode: 'selected' } }],
     };
 
-    await executeMacroRecipe(baseContext, recipe);
+    await executeMacroRecipe(recipe, baseContext);
     expect(pdfMocks.duplicatePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
   });
 
@@ -251,7 +251,7 @@ describe('macro executor', () => {
       steps: [{ op: 'remove_pages', selector: { mode: 'selected' } }],
     };
 
-    const result = await executeMacroRecipe(baseContext, recipe);
+    await executeMacroRecipe(recipe, baseContext);
     expect(pdfMocks.removePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
     // expect(result.selectedPages).toEqual([]);
   });
@@ -270,7 +270,7 @@ describe('macro executor', () => {
       ],
     };
 
-    await executeMacroRecipe(baseContext, recipe);
+    await executeMacroRecipe(recipe, baseContext);
     expect(pdfMocks.getPageSize).toHaveBeenCalled();
     expect(pdfMocks.insertBlankPage).toHaveBeenCalledTimes(2);
   });
@@ -283,8 +283,8 @@ describe('macro executor', () => {
     };
 
     await executeMacroRecipe(
-      { ...baseContext, donorFiles: { d1: new Uint8Array([5, 5, 5]) } },
       recipe,
+      { ...baseContext, donorFiles: { d1: new Uint8Array([5, 5, 5]) } },
     );
     expect(pdfMocks.replacePage).toHaveBeenCalledWith(baseContext.workingBytes, 1, new Uint8Array([5, 5, 5]), 0);
   });
@@ -296,7 +296,7 @@ describe('macro executor', () => {
       steps: [{ op: 'reorder_pages', order: [1, 2] }],
     };
 
-    const result = await executeMacroRecipe(baseContext, recipe);
+    const result = await executeMacroRecipe(recipe, baseContext);
     expect(pdfMocks.reorderPages).not.toHaveBeenCalled();
     expect(result.logs[0]).toContain('Skipped reorder_pages');
   });

@@ -53,7 +53,7 @@ async function executeInsertPdf(
       return { status: 'warning', message: `Skipped insert_pdf: missing donor file ${step.donorFileId}`, sideEffects: [] };
     }
 
-    const updatedBytes = await PdfEditAdapter.insertPdf(state.workingBytes, donor, step.atIndex);
+    const updatedBytes = await PdfEditAdapter.insertAt(state.workingBytes, donor, step.atIndex);
     const newPageCount = await PdfEditAdapter.countPages(updatedBytes);
 
     return {

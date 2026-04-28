@@ -19,6 +19,7 @@ export async function runMacroRecipeAgainstSession(
 
   const donorFiles = options?.donorFiles ?? {};
   const result = await executeMacroRecipe(
+    recipe,
     {
       workingBytes: session.workingBytes,
       pageCount: session.pageCount,
@@ -28,7 +29,6 @@ export async function runMacroRecipeAgainstSession(
       donorFiles,
       now: new Date(),
     },
-    recipe,
   );
 
   if (!options?.dryRun) {

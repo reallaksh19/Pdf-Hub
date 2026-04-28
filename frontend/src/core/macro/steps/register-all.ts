@@ -18,6 +18,9 @@ if (import.meta.env.DEV) {
   ];
   const registered = new Set(macroRegistry.getRegisteredOps());
   ALL_OPS.forEach(op => {
-    if (!registered.has(op)) console.error(`[macro/register-all] Missing executor for op: "${op}"`);
+    if (!registered.has(op)) {
+      // eslint-disable-next-line no-console
+      console.error(`[macro/register-all] Missing executor for op: "${op}"`);
+    }
   });
 }

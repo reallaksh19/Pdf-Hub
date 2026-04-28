@@ -123,8 +123,11 @@ macroRegistry.register('header_footer_text', executeHeaderFooterText);
 
 type PlaceRichTextboxStep = Extract<MacroStep, { op: 'place_rich_textbox' }>;
 async function executePlaceRichTextbox(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _step: PlaceRichTextboxStep,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _ctx: MacroExecutionContext,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _state: MacroMutableState,
 ): Promise<StepResult> {
   // Stub for Agent E
@@ -134,8 +137,11 @@ macroRegistry.register('place_rich_textbox', executePlaceRichTextbox);
 
 type PlaceTableStep = Extract<MacroStep, { op: 'place_table' }>;
 async function executePlaceTable(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _step: PlaceTableStep,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _ctx: MacroExecutionContext,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _state: MacroMutableState,
 ): Promise<StepResult> {
   // Stub for Agent E

@@ -19,8 +19,8 @@ export interface ExecutionProgress {
 }
 
 export async function executeMacroRecipe(
-  ctx: MacroExecutionContext,
   recipe: MacroRecipe,
+  ctx: MacroExecutionContext,
   onProgress?: (progress: ExecutionProgress) => void,
 ): Promise<MacroExecutionResult> {
   // 1. Validate before touching the PDF
