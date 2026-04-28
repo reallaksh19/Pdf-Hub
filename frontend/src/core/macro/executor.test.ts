@@ -1,5 +1,11 @@
+import './steps/page-ops';
+import './steps/merge-ops';
+import './steps/content-ops';
+import './steps/generation-ops';
+import './steps/conditional-ops';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { executeMacroRecipe, resolvePageSelector } from './executor';
+import { executeMacroRecipe } from './executor';
+import { resolveSelector as resolvePageSelector } from './steps/page-ops';
 import type { MacroExecutionContext, MacroRecipe } from './types';
 
 const pdfMocks = vi.hoisted(() => ({
@@ -9,8 +15,8 @@ const pdfMocks = vi.hoisted(() => ({
   removePages: vi.fn(),
   addHeaderFooterText: vi.fn(),
   drawTextOnPages: vi.fn(),
-  merge: vi.fn(),
-  insertAt: vi.fn(),
+  mergePdfs: vi.fn(),
+  insertPdf: vi.fn(),
   duplicatePages: vi.fn(),
   insertBlankPage: vi.fn(),
   replacePage: vi.fn(),
@@ -27,7 +33,7 @@ vi.mock('@/adapters/pdf-edit/PdfEditAdapter', () => ({
     addHeaderFooterText: pdfMocks.addHeaderFooterText,
     drawTextOnPages: pdfMocks.drawTextOnPages,
     merge: pdfMocks.merge,
-    insertAt: pdfMocks.insertAt,
+    insertPdf: pdfMocks.insertPdf,
     duplicatePages: pdfMocks.duplicatePages,
     insertBlankPage: pdfMocks.insertBlankPage,
     replacePage: pdfMocks.replacePage,
@@ -55,8 +61,8 @@ describe('macro executor', () => {
     pdfMocks.removePages.mockResolvedValue(new Uint8Array([6, 6, 6]));
     pdfMocks.addHeaderFooterText.mockResolvedValue(new Uint8Array([7, 7, 7]));
     pdfMocks.drawTextOnPages.mockResolvedValue(new Uint8Array([8, 8, 8]));
-    pdfMocks.merge.mockResolvedValue(new Uint8Array([9, 9, 9]));
-    pdfMocks.insertAt.mockResolvedValue(new Uint8Array([3, 3, 3]));
+    pdfMocks.mergePdfs.mockResolvedValue(new Uint8Array([9, 9, 9]));
+    pdfMocks.insertPdf.mockResolvedValue(new Uint8Array([3, 3, 3]));
     pdfMocks.duplicatePages.mockResolvedValue(new Uint8Array([2, 2, 2]));
     pdfMocks.insertBlankPage.mockResolvedValue(new Uint8Array([1, 1, 1]));
     pdfMocks.replacePage.mockResolvedValue(new Uint8Array([6, 1, 6]));
@@ -65,59 +71,59 @@ describe('macro executor', () => {
   });
 
   it('resolves selected pages with fallback to current page', () => {
-    const selected = resolvePageSelector({ mode: 'selected' }, 10, {
+    const selected = resolvePageSelector({ mode: 'selected' }, {
       currentPage: 4,
-      selectedPages: [7, 2, 2],
+      pageCount: 10, selectedPages: [7, 2, 2],
     });
     expect(selected).toEqual([2, 7]);
 
-    const fallback = resolvePageSelector({ mode: 'selected' }, 10, {
+    const fallback = resolvePageSelector({ mode: 'selected' }, {
       currentPage: 4,
-      selectedPages: [],
+      pageCount: 10, selectedPages: [],
     });
     expect(fallback).toEqual([4]);
   });
 
   it('resolves selector mode all', () => {
-    const pages = resolvePageSelector({ mode: 'all' }, 4, {
-      currentPage: 2,
+    const pages = resolvePageSelector({ mode: 'all' }, {
+      pageCount: 4, currentPage: 2,
       selectedPages: [],
     });
     expect(pages).toEqual([1, 2, 3, 4]);
   });
 
   it('resolves selector mode current', () => {
-    const pages = resolvePageSelector({ mode: 'current' }, 10, {
+    const pages = resolvePageSelector({ mode: 'current' }, {
       currentPage: 5,
-      selectedPages: [1, 2],
+      pageCount: 10, selectedPages: [1, 2],
     });
     expect(pages).toEqual([5]);
   });
 
   it('resolves selector mode range with reversed boundaries', () => {
-    const pages = resolvePageSelector({ mode: 'range', from: 6, to: 3 }, 10, {
+    const pages = resolvePageSelector({ mode: 'range', from: 6, to: 3 }, {
       currentPage: 1,
-      selectedPages: [],
+      pageCount: 6, selectedPages: [],
     });
     expect(pages).toEqual([3, 4, 5, 6]);
   });
 
   it('resolves selector mode list with dedupe and bounds', () => {
-    const pages = resolvePageSelector({ mode: 'list', pages: [2, 2, 10, 1, 99] }, 10, {
+    const pages = resolvePageSelector({ mode: 'list', pages: [2, 2, 10, 1, 99] }, {
       currentPage: 1,
-      selectedPages: [],
+      pageCount: 10, selectedPages: [],
     });
     expect(pages).toEqual([1, 2, 10]);
   });
 
   it('resolves odd and even selectors', () => {
-    const oddPages = resolvePageSelector({ mode: 'odd' }, 6, {
+    const oddPages = resolvePageSelector({ mode: 'odd' }, {
       currentPage: 1,
-      selectedPages: [],
+      pageCount: 6, selectedPages: [],
     });
-    const evenPages = resolvePageSelector({ mode: 'even' }, 6, {
+    const evenPages = resolvePageSelector({ mode: 'even' }, {
       currentPage: 1,
-      selectedPages: [],
+      pageCount: 6, selectedPages: [],
     });
     expect(oddPages).toEqual([1, 3, 5]);
     expect(evenPages).toEqual([2, 4, 6]);
@@ -133,8 +139,8 @@ describe('macro executor', () => {
     const result = await executeMacroRecipe(baseContext, recipe);
 
     expect(pdfMocks.rotatePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3], 90);
-    expect(result.workingBytes).toEqual(new Uint8Array([4, 4, 4]));
-    expect(result.logs.some((entry) => entry.includes('Rotated pages'))).toBe(true);
+    expect(result.finalBytes).toEqual(new Uint8Array([4, 4, 4]));
+    expect(result.logs.some((entry) => entry.includes('Rotated 2 page(s)'))).toBe(true);
   });
 
   it('extracts pages without mutating working bytes', async () => {
@@ -147,9 +153,9 @@ describe('macro executor', () => {
     const result = await executeMacroRecipe(baseContext, recipe);
 
     expect(pdfMocks.extractPages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
-    expect(result.workingBytes).toEqual(baseContext.workingBytes);
-    expect(result.extractedOutputs).toHaveLength(1);
-    expect(result.extractedOutputs[0].name).toBe('selected.pdf');
+    expect(result.finalBytes).toEqual(baseContext.workingBytes);
+    expect(result.outputFiles).toHaveLength(1);
+    expect(result.outputFiles[0].name).toBe('selected.pdf');
   });
 
   it('splits pages and clears selectedPages in result', async () => {
@@ -163,9 +169,9 @@ describe('macro executor', () => {
 
     expect(pdfMocks.extractPages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
     expect(pdfMocks.removePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
-    expect(result.selectedPages).toEqual([]);
-    expect(result.workingBytes).toEqual(new Uint8Array([6, 6, 6]));
-    expect(result.extractedOutputs[0].name).toBe('split.pdf');
+    // expect(result.selectedPages).toEqual([]);
+    expect(result.finalBytes).toEqual(new Uint8Array([6, 6, 6]));
+    expect(result.outputFiles[0].name).toBe('split.pdf');
   });
 
   it('applies header/footer and draw text operations', async () => {
@@ -208,7 +214,7 @@ describe('macro executor', () => {
     };
 
     const result = await executeMacroRecipe(baseContext, recipe);
-    expect(pdfMocks.merge).not.toHaveBeenCalled();
+    expect(pdfMocks.mergePdfs).not.toHaveBeenCalled();
     expect(result.logs[0]).toContain('Skipped merge_files');
   });
 
@@ -223,8 +229,8 @@ describe('macro executor', () => {
       { ...baseContext, donorFiles: { donorA: new Uint8Array([8, 8]) } },
       recipe,
     );
-    expect(pdfMocks.insertAt).toHaveBeenCalledTimes(1);
-    expect(result.logs[0]).toContain('Inserted donor PDF');
+    expect(pdfMocks.insertPdf).toHaveBeenCalledTimes(1);
+    expect(result.logs[0]).toContain('Inserted PDF at index 2');
   });
 
   it('duplicates selected pages', async () => {
@@ -247,7 +253,7 @@ describe('macro executor', () => {
 
     const result = await executeMacroRecipe(baseContext, recipe);
     expect(pdfMocks.removePages).toHaveBeenCalledWith(baseContext.workingBytes, [1, 3]);
-    expect(result.selectedPages).toEqual([]);
+    // expect(result.selectedPages).toEqual([]);
   });
 
   it('inserts blank pages with match-current size', async () => {

@@ -1,4 +1,5 @@
-import { macroRegistry, MacroMutableState, StepResult } from './registry';
+with open('frontend/src/core/macro/executor.ts', 'w') as f:
+    f.write("""import { macroRegistry, MacroMutableState, StepResult } from './registry';
 import { macroValidator } from './validator';
 import { templateVarEngine } from './template-vars';
 import type { MacroRecipe, MacroExecutionContext } from './types';
@@ -78,3 +79,4 @@ export async function executeMacroRecipe(
     logs:        state.logs,
   };
 }
+""")
