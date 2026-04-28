@@ -27,7 +27,7 @@ export type SidebarTab =
   | 'macros';
 
 export type InspectorTab = 'properties' | 'style' | 'metadata' | 'review';
-export type RibbonTab = 'file' | 'organize' | 'annotate' | 'macro' | 'view';
+export type RibbonTab = 'file' | 'organize' | 'annotate' | 'macro' | 'writer' | 'view';
 
 export interface EditorState {
   activeTool: ActiveTool;
