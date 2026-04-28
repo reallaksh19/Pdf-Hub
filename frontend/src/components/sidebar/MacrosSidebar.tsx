@@ -85,7 +85,8 @@ function triggerDownload(bytes: Uint8Array, filename: string): void {
 }
 
 export const MacrosSidebar: React.FC = () => {
-  const { workingBytes, pageCount, viewState, fileName, replaceWorkingCopy } = useSessionStore();
+  const { workingBytes, pageCount, viewState, fileName,
+    selectedPages,replaceWorkingCopy, selectedPages } = useSessionStore();
   const { savedPresets, savePreset, deletePreset } = usePresetsStore();
 
   const allRecipes = React.useMemo(() => [...BUILTIN_RECIPES, ...savedPresets], [savedPresets]);
@@ -169,7 +170,7 @@ export const MacrosSidebar: React.FC = () => {
 
       const report = await validateRecipeBeforeRun(finalRecipe, {
         pageCount: Math.max(1, pageCount),
-        selectedPages: useSessionStore.getState().selectedPages,
+        selectedPages,
         currentPage: viewState.currentPage,
         fileName,
         donorFiles: {}, // We would bind donors here in real life
@@ -216,7 +217,8 @@ export const MacrosSidebar: React.FC = () => {
       const ctx = {
         workingBytes,
         pageCount,
-            fileName:  fileName ?? 'document.pdf',
+        selectedPages,
+        fileName:  fileName ?? 'document.pdf',
         fileId: '',
         donorFiles: {}, // need to pass donorFiles
         now: new Date(),
@@ -267,6 +269,7 @@ export const MacrosSidebar: React.FC = () => {
     workingBytes,
     pageCount,
     fileName,
+    selectedPages,
     replaceWorkingCopy,
   ]);
 
