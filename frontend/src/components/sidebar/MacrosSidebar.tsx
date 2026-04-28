@@ -214,10 +214,10 @@ export const MacrosSidebar: React.FC = () => {
       });
 
       setRunLogs(result.logs);
-      if (result.extractedOutputs.length > 0) {
+      if (result.outputFiles.length > 0) {
         setOutputQueue((current) => [
           ...current,
-          ...result.extractedOutputs.map((output) => ({
+          ...result.outputFiles.map((output) => ({
             id: uuidv4(),
             ...output,
           })),

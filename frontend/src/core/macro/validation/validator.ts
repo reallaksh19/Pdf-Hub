@@ -21,12 +21,12 @@ export async function validateRecipeBeforeRun(
 
     switch (step.op) {
       case 'insert_pdf':
-        if (!ctx.donorFiles[step.donorFileId]) {
+        if (!(ctx.donorFiles && ctx.donorFiles[step.donorFileId])) {
           errors.push(`${prefix} Missing donor file ID '${step.donorFileId}'`);
         }
         break;
       case 'replace_page':
-        if (!ctx.donorFiles[step.donorFileId]) {
+        if (!(ctx.donorFiles && ctx.donorFiles[step.donorFileId])) {
           errors.push(`${prefix} Missing donor file ID '${step.donorFileId}'`);
         }
         break;
@@ -35,7 +35,7 @@ export async function validateRecipeBeforeRun(
           warnings.push(`${prefix} No donor files provided to merge`);
         }
         step.donorFileIds.forEach(id => {
-          if (!ctx.donorFiles[id]) {
+          if (!(ctx.donorFiles && ctx.donorFiles[id])) {
             errors.push(`${prefix} Missing donor file ID '${id}'`);
           }
         });
