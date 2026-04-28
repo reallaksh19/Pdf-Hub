@@ -2,11 +2,6 @@ import { executeMacroRecipe } from './executor';
 import type { MacroRecipe } from './types';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
 
-/**
- * Executes a macro directly from a raw JSON payload representing the DSL,
- * entirely bypassing the UI and Session stores. This enables other apps
- * to pass code-based page creation instructions.
- */
 export async function executeHeadlessMacro(
   basePdfBytes: Uint8Array,
   recipeDsl: string | MacroRecipe,
@@ -15,32 +10,28 @@ export async function executeHeadlessMacro(
 ): Promise<Uint8Array> {
   const recipe: MacroRecipe = typeof recipeDsl === 'string' ? JSON.parse(recipeDsl) : recipeDsl;
 
-  // Validate essential DSL fields
   if (!recipe.id || !recipe.steps || !Array.isArray(recipe.steps)) {
     throw new Error('Invalid Headless Macro DSL: Missing id or steps array.');
   }
 
-  // Determine starting context. If creating a page from scratch, the caller
-  // might pass a minimal 1-page blank PDF, or we use the passed document.
   const pageCount = await PdfEditAdapter.countPages(basePdfBytes);
 
   const result = await executeMacroRecipe(
+    recipe,
     {
       workingBytes: basePdfBytes,
       pageCount,
-      selectedPages: [], // Headless runs apply purely sequentially or explicitly via selectors
+      selectedPages: [],
       currentPage: 1,
       fileName,
       donorFiles,
       now: new Date(),
-    },
-    recipe
+    }
   );
 
-  return result.workingBytes;
+  return result.finalBytes;
 }
 
-// Global registration so external apps can invoke via `window.PDFHubHeadless.execute(...)`
 declare global {
   interface Window {
     PDFHubHeadless?: {

@@ -3,7 +3,6 @@ import type {
   ActiveTool,
   EditorState,
   InspectorTab,
-  RibbonTab,
   SidebarTab,
 } from './types';
 
