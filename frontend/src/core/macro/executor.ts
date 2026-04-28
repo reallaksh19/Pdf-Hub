@@ -437,7 +437,7 @@ export async function executeMacroRecipe(
       }
 
       default:
-        // assertNever(step as any);
+        throw new Error(`Unhandled macro step: ${JSON.stringify(step as unknown)}`);
     }
   }
 
@@ -539,6 +539,3 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-export function _assertNever(value: never): never {
-  throw new Error(`Unhandled macro step: ${JSON.stringify(value)}`);
-}

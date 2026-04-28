@@ -120,7 +120,7 @@ export class PdfRendererAdapter {
       canvas,
       canvasContext: ctx,
       viewport,
-      optionalContentConfigPromise: 'getOptionalContentConfig' in page ? (page as unknown as { getOptionalContentConfig: () => Promise<any> }).getOptionalContentConfig() : undefined,
+      optionalContentConfigPromise: 'getOptionalContentConfig' in page ? (page as unknown as { getOptionalContentConfig: () => Promise<unknown> }).getOptionalContentConfig() : undefined,
       annotationMode: options.annotationMode,
     });
 
