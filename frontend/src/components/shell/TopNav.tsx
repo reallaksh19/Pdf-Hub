@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
+
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';

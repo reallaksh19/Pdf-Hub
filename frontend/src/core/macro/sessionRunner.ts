@@ -19,6 +19,7 @@ export async function runMacroRecipeAgainstSession(
 
   const donorFiles = options?.donorFiles ?? {};
   const result = await executeMacroRecipe(
+    recipe,
     {
       workingBytes: session.workingBytes,
       pageCount: session.pageCount,
@@ -27,8 +28,7 @@ export async function runMacroRecipeAgainstSession(
       fileName: session.fileName,
       donorFiles,
       now: new Date(),
-    },
-    recipe,
+    }
   );
 
   if (!options?.dryRun) {
@@ -37,16 +37,16 @@ export async function runMacroRecipeAgainstSession(
       source: 'macro-runner',
       command: {
         type: 'REPLACE_WORKING_COPY',
-        nextBytes: result.workingBytes,
-        nextPageCount: result.pageCount,
+        nextBytes: result.finalBytes,
+        nextPageCount: await (await import('@/adapters/pdf-edit/PdfEditAdapter')).PdfEditAdapter.countPages(result.finalBytes),
         reason: `Ran macro recipe ${recipe.name}`,
       },
     });
-    useSessionStore.getState().setSelectedPages(result.selectedPages);
+    useSessionStore.getState().setSelectedPages([]);
   }
 
   if (options?.saveOutputs) {
-    for (const output of result.extractedOutputs) {
+    for (const output of result.outputFiles) {
       await FileAdapter.savePdfBytes(output.bytes, output.name, null);
     }
   }

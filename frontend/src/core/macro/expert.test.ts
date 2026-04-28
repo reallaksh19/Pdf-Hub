@@ -1,5 +1,12 @@
+
+
+
+
+
+
 import { describe, it, expect, vi } from 'vitest';
 import { executeMacroRecipe } from './executor';
+
 
 vi.mock('@/adapters/pdf-edit/PdfEditAdapter', () => {
   return {
@@ -24,7 +31,7 @@ describe('Quantitative pass test - macros to expert level', () => {
     let firstOutputBytes: Uint8Array | null = null;
 
     for (let i = 0; i < 5; i++) {
-      const res = await executeMacroRecipe({
+      const res = await executeMacroRecipe(recipe, {
         workingBytes: dummyBytes,
         pageCount: 1,
         selectedPages: [],
@@ -32,12 +39,12 @@ describe('Quantitative pass test - macros to expert level', () => {
         fileName: 'test.pdf',
         donorFiles: {},
         now: new Date('2024-01-01T00:00:00.000Z')
-      }, recipe);
+      });
 
       if (i === 0) {
-        firstOutputBytes = res.workingBytes;
+        firstOutputBytes = res.finalBytes;
       } else {
-        expect(res.workingBytes).toEqual(firstOutputBytes);
+        expect(res.finalBytes).toEqual(firstOutputBytes);
       }
     }
   });

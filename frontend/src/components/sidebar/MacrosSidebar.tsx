@@ -1,5 +1,5 @@
 import React from 'react';
-import { v4 as uuidv4 } from 'uuid';
+
 import {
   Play,
   RotateCw,
@@ -21,6 +21,12 @@ import { GENERATION_MACROS } from '@/core/macro/generationBuiltins';
 import { validateRecipeBeforeRun, type PreflightReport } from '@/core/macro/validation/validator';
 import { usePresetsStore } from '@/core/macro/store/presets';
 import { ImageIcon } from 'lucide-react';
+import type {
+  ExecutionProgress,
+  } from '../../core/macro/executor';
+import type { StepResult } from '../../core/macro/registry';
+import type { ValidationError } from '../../core/macro/validator';
+import { executeMacroRecipe } from '../../core/macro/executor';
 import type {
   MacroOutputFile,
   MacroRecipe,
@@ -67,8 +73,19 @@ const PLACEHOLDER_STEPS: Array<MacroStep['op']> = [
   'extract_pages',
 ];
 
+
+function triggerDownload(bytes: Uint8Array, filename: string): void {
+  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export const MacrosSidebar: React.FC = () => {
-  const { workingBytes, pageCount, viewState, fileName } = useSessionStore();
+  const { workingBytes, pageCount, viewState, fileName, replaceWorkingCopy } = useSessionStore();
   const { savedPresets, savePreset, deletePreset } = usePresetsStore();
 
   const allRecipes = React.useMemo(() => [...BUILTIN_RECIPES, ...savedPresets], [savedPresets]);
@@ -90,10 +107,18 @@ export const MacrosSidebar: React.FC = () => {
   const [overridesByRecipe, setOverridesByRecipe] = React.useState<
     Record<string, RecipeOverrides>
   >({});
-  const [isRunning, setIsRunning] = React.useState(false);
-  const [runLogs, setRunLogs] = React.useState<string[]>([]);
-  const [runError, setRunError] = React.useState<string | null>(null);
+  const [isRunning, setIsRunning]         = React.useState(false);
+  const [macroLogs, setMacroLogs]         = React.useState<string[]>([]);
+  const [execProgress, setExecProgress]   = React.useState<ExecutionProgress | null>(null);
+  const [stepResults, setStepResults]     = React.useState<StepResult[]>([]);
+  const [validationErrors, setValidationErrors] = React.useState<ValidationError[]>([]);
   const [outputQueue, setOutputQueue] = React.useState<OutputQueueItem[]>([]);
+  // ── Backward-compatibility aliases ────────────────────────────────────────
+  const setRunLogs = setMacroLogs;
+  const setRunError = (msg: string | null) => {
+    if (msg) setMacroLogs(prev => [...prev, `[error] ${msg}`]);
+  };
+
   const [preflightReport, setPreflightReport] = React.useState<PreflightReport | null>(null);
   const [isDryRunning, setIsDryRunning] = React.useState(false);
   const overrides = React.useMemo(
@@ -176,64 +201,75 @@ export const MacrosSidebar: React.FC = () => {
     });
   };
 
-  const runSelectedMacro = async () => {
-    if (!workingBytes || !selectedRecipe || !fileName) {
-      return;
-    }
+  const runSelectedMacro = React.useCallback(async () => {
+    if (!selectedRecipe || !workingBytes) return;
 
-    // Always validate before run
-    const runtimeRecipe = applyOverridesToRecipe(
-      selectedRecipe,
-      overrides,
-      viewState.currentPage,
-      Math.max(1, pageCount),
-    );
-
-    const report = await validateRecipeBeforeRun(runtimeRecipe, {
-        pageCount: Math.max(1, pageCount),
-        selectedPages: useSessionStore.getState().selectedPages,
-        currentPage: viewState.currentPage,
-        fileName,
-        donorFiles: {},
-        now: new Date(),
-      });
-
-    if (!report.isValid) {
-      setPreflightReport(report);
-      return;
-    }
-
-    setPreflightReport(null);
+    // Reset all output state before starting
     setIsRunning(true);
-    setRunError(null);
+    setMacroLogs([]);
+    setStepResults([]);
+    setValidationErrors([]);
+    setExecProgress(null);
 
     try {
 
-      const result = await runMacroRecipeAgainstSession(runtimeRecipe, {
-        saveOutputs: false,
-      });
+      const ctx = {
+        workingBytes,
+        pageCount,
+            fileName:  fileName ?? 'document.pdf',
+        fileId: '',
+        donorFiles: {}, // need to pass donorFiles
+        now: new Date(),
+        options: {
+          abortOnError: true,   // default: stop on first error
+        },
+      };
 
-      setRunLogs(result.logs);
-      if (result.extractedOutputs.length > 0) {
-        setOutputQueue((current) => [
-          ...current,
-          ...result.extractedOutputs.map((output) => ({
-            id: uuidv4(),
-            ...output,
-          })),
-        ]);
+      const result = await executeMacroRecipe(
+        selectedRecipe,
+        ctx, // bypassing some types if any
+        (progress: ExecutionProgress) => {
+          // Update progress on every step — React batches these fine
+          setExecProgress(progress);
+        },
+      );
+
+      // Populate all output state from result
+      setStepResults(result.stepResults);
+      setMacroLogs(result.logs);
+
+      if (!result.success && result.validationErrors?.length) {
+        setValidationErrors(result.validationErrors);
+        // Do not apply bytes — recipe was invalid, nothing ran
+        return;
+      }
+
+      if (result.success) {
+        // Apply the modified PDF bytes back to the session
+        const newPageCount = await (await import('@/adapters/pdf-edit/PdfEditAdapter')).PdfEditAdapter.countPages(result.finalBytes);
+        replaceWorkingCopy(result.finalBytes, newPageCount);
+
+        // Download any output files (split results, extracts, etc.)
+        for (const file of result.outputFiles) {
+          triggerDownload(file.bytes, file.name);
+        }
       }
     } catch (err) {
-      const message = String(err);
-      setRunError(message);
-      logError('macro', 'Macro execution failed in sidebar', {
-        recipeId: selectedRecipe.id,
-        error: message,
-      });
+      // Registry throws for unregistered ops — surface this clearly
+      const message = err instanceof Error ? err.message : String(err);
+      setMacroLogs(prev => [...prev, `[fatal] ${message}`]);
     } finally {
       setIsRunning(false);
+      setExecProgress(null);
     }
-  };
+  }, [
+    selectedRecipe,
+    workingBytes,
+    pageCount,
+    fileName,
+    replaceWorkingCopy,
+  ]);
+
 
   const resetPanel = () => {
     if (!selectedRecipe) {
@@ -802,22 +838,157 @@ export const MacrosSidebar: React.FC = () => {
           </div>
         </div>
 
-        {runError && (
-          <div className="rounded-md border border-red-300 bg-red-50 text-red-700 px-2 py-1 text-xs">
-            {runError}
+{/* ── Validation errors (shown before run if recipe is invalid) ────────── */}
+        {validationErrors.length > 0 && (
+          <div
+            style={{
+              background:   'var(--color-background-danger)',
+              border:       '0.5px solid var(--color-border-danger)',
+              borderRadius: 6,
+              padding:      '8px 10px',
+              marginBottom: 8,
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-danger)', marginBottom: 4 }}>
+              Recipe validation failed — fix before running:
+            </div>
+            {validationErrors.map((err, i) => (
+              <div key={i} style={{ fontSize: 11, color: 'var(--color-text-danger)', lineHeight: 1.5 }}>
+                Step {err.stepIndex + 1} ({err.op}) — {err.field}: {err.message}
+              </div>
+            ))}
           </div>
         )}
 
-        <div className="space-y-1 max-h-32 overflow-auto rounded-md border border-slate-200 dark:border-slate-800 p-2">
-          {runLogs.length === 0 && (
-            <div className="text-xs text-slate-500">No run logs yet.</div>
-          )}
-          {runLogs.map((line) => (
-            <div key={`${selectedRecipe?.id}-${line}`} className="text-xs text-slate-600 dark:text-slate-300">
-              {line}
+        {/* ── In-progress bar (shown while running) ────────────────────────────── */}
+        {isRunning && execProgress && (
+          <div style={{ marginBottom: 8 }}>
+            <div
+              style={{
+                display:        'flex',
+                justifyContent: 'space-between',
+                fontSize:       11,
+                color:          'var(--color-text-secondary)',
+                marginBottom:   3,
+              }}
+            >
+              <span>
+                Running: <code style={{ fontSize: 11 }}>{execProgress.currentOp}</code>
+              </span>
+              <span>
+                {execProgress.current} / {execProgress.total}
+              </span>
             </div>
-          ))}
-        </div>
+            <div
+              style={{
+                height:       4,
+                borderRadius: 2,
+                background:   'var(--color-background-secondary)',
+                overflow:     'hidden',
+              }}
+            >
+              <div
+                style={{
+                  height:      '100%',
+                  borderRadius: 2,
+                  background:  'var(--color-text-info)',
+                  width:       `${(execProgress.current / execProgress.total) * 100}%`,
+                  transition:  'width 0.15s ease',
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── Per-step results (shown after run completes) ─────────────────────── */}
+        {!isRunning && stepResults.length > 0 && (
+          <div
+            style={{
+              border:       '0.5px solid var(--color-border-tertiary)',
+              borderRadius: 6,
+              overflow:     'hidden',
+              marginBottom: 8,
+            }}
+          >
+            {stepResults.map((result, i) => {
+              const icon    = result.status === 'success' ? '✓'
+                            : result.status === 'warning' ? '⚠'
+                            : '✗';
+              const color   = result.status === 'success' ? 'var(--color-text-success)'
+                            : result.status === 'warning' ? 'var(--color-text-warning)'
+                            : 'var(--color-text-danger)';
+              const bg      = result.status === 'success' ? 'transparent'
+                            : result.status === 'warning' ? 'var(--color-background-warning)'
+                            : 'var(--color-background-danger)';
+
+              return (
+                <div
+                  key={i}
+                  style={{
+                    display:    'flex',
+                    alignItems: 'flex-start',
+                    gap:        6,
+                    padding:    '4px 8px',
+                    background: bg,
+                    borderBottom: i < stepResults.length - 1
+                      ? '0.5px solid var(--color-border-tertiary)'
+                      : 'none',
+                    fontSize: 11,
+                  }}
+                >
+                  <span style={{ color, fontWeight: 600, flexShrink: 0, marginTop: 1 }}>
+                    {icon}
+                  </span>
+                  <div style={{ color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                    {result.message ?? result.status}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Raw logs (collapsible, always available) ─────────────────────────── */}
+        {macroLogs.length > 0 && (
+          <details style={{ marginBottom: 4 }}>
+            <summary
+              style={{
+                fontSize:   11,
+                color:      'var(--color-text-tertiary)',
+                cursor:     'pointer',
+                userSelect: 'none',
+                marginBottom: 4,
+              }}
+            >
+              Raw logs ({macroLogs.length})
+            </summary>
+            <div
+              style={{
+                background:   'var(--color-background-secondary)',
+                borderRadius: 4,
+                padding:      '6px 8px',
+                maxHeight:    120,
+                overflowY:    'auto',
+              }}
+            >
+              {macroLogs.map((log, i) => (
+                <div
+                  key={i}
+                  style={{
+                    fontSize:    10,
+                    fontFamily:  'var(--font-mono)',
+                    color:       'var(--color-text-secondary)',
+                    lineHeight:  1.5,
+                    whiteSpace:  'pre-wrap',
+                    wordBreak:   'break-word',
+                  }}
+                >
+                  {log}
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
       </section>
 
       <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-3">

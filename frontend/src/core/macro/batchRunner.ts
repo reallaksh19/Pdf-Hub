@@ -25,30 +25,25 @@ export async function runMacroBatch(options: BatchRunOptions): Promise<BatchRunR
 
   for (const file of options.files) {
     try {
-      // In batch context, assume pageCount needs to be calculated.
-      // But for now, just mock a fast pass or try to parse if needed.
-      // We'll rely on the executor's internal page resolution or basic adapter usage.
-
-      // Let's do a quick page count just for context.
       const { PdfEditAdapter } = await import('@/adapters/pdf-edit/PdfEditAdapter');
       const pageCount = await PdfEditAdapter.countPages(file.bytes);
 
       const result = await executeMacroRecipe(
+        options.recipe,
         {
           workingBytes: file.bytes,
           pageCount,
-          selectedPages: [], // In batch mode, no selected pages
+          selectedPages: [],
           currentPage: 1,
           fileName: file.name,
           donorFiles: options.donorFiles ?? {},
           now: new Date(),
-        },
-        options.recipe,
+        }
       );
 
       successes.push({
         fileName: file.name,
-        bytes: result.workingBytes,
+        bytes: result.finalBytes,
         logs: result.logs,
       });
 
@@ -59,7 +54,7 @@ export async function runMacroBatch(options: BatchRunOptions): Promise<BatchRunR
       });
 
       if (!options.continueOnError) {
-        break; // Stop immediately
+        break;
       }
     }
   }

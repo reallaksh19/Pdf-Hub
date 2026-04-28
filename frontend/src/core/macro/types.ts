@@ -139,6 +139,10 @@ export interface MacroExecutionContext {
   fileName: string;
   donorFiles: Record<string, Uint8Array>;
   now: Date;
+  fileId?: string;
+  options?: {
+    abortOnError?: boolean;
+  };
 }
 
 export interface MacroOutputFile {
