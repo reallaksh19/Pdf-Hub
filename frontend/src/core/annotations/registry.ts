@@ -18,7 +18,7 @@ export class AnnotationRendererRegistry {
     component: React.FC<AnnotationNodeProps<T>>,
   ): void {
     if (this.map.has(type)) {
-      // console.warn(`[AnnotationRegistry] Re-registering type "${type}" — check register-all.ts`);
+      console.warn(`[AnnotationRegistry] Re-registering type "${type}" — check register-all.ts`);
     }
     this.map.set(type, component as React.FC<AnnotationNodeProps<AnnotationType>>);
   }

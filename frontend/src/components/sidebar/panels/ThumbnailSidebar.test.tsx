@@ -9,8 +9,8 @@ import { useSearchStore } from '@/core/search/store';
 import { PdfRendererAdapter } from '@/adapters/pdf-renderer/PdfRendererAdapter';
 
 vi.mock('virtua', () => ({
-  VList: ({ children, data }: { children: (item: any) => ReactNode; data: any[] }) => (
-    <div data-testid="vlist">{data && data.length > 0 ? data.map((item) => <div key={item.pageNumber}>{children(item)}</div>) : null}</div>
+  VList: ({ children, data }: { children: (item: unknown) => ReactNode; data: unknown[] }) => (
+    <div data-testid="vlist">{data.map((item) => children(item))}</div>
   ),
 }));
 
@@ -42,22 +42,22 @@ vi.mock('@/adapters/pdf-renderer/PdfRendererAdapter', () => ({
 }));
 
 describe('ThumbnailSidebar', () => {
-  it.skip('handles keyboard navigation and selection', async () => {
+  it('handles keyboard navigation and selection', async () => {
     const mockSetPage = vi.fn();
     const mockSetSelectedPages = vi.fn();
     const mockToggleSelectedPage = vi.fn();
     const mockSetSidebarTab = vi.fn();
 
-    const mockedUseSessionStore = useSessionStore as any as {
+    const mockedUseSessionStore = useSessionStore as unknown as {
       mockReturnValue: (value: unknown) => void;
     };
-    const mockedUseEditorStore = useEditorStore as any as {
+    const mockedUseEditorStore = useEditorStore as unknown as {
       mockReturnValue: (value: unknown) => void;
     };
-    const mockedUseAnnotationStore = useAnnotationStore as any as {
+    const mockedUseAnnotationStore = useAnnotationStore as unknown as {
       mockReturnValue: (value: unknown) => void;
     };
-    const mockedUseSearchStore = useSearchStore as any as {
+    const mockedUseSearchStore = useSearchStore as unknown as {
       mockReturnValue: (value: unknown) => void;
     };
 
@@ -98,10 +98,10 @@ describe('ThumbnailSidebar', () => {
       }),
       destroy: vi.fn(),
     };
-    const mockedLoadDocument = PdfRendererAdapter.loadDocument as any as {
+    const mockedLoadDocument = PdfRendererAdapter.loadDocument as unknown as {
       mockReturnValue: (value: unknown) => void;
     };
-    const mockedGetThumbnail = PdfRendererAdapter.getThumbnail as any as {
+    const mockedGetThumbnail = PdfRendererAdapter.getThumbnail as unknown as {
       mockResolvedValue: (value: string) => void;
     };
     mockedLoadDocument.mockReturnValue(mockDocPromise);
@@ -119,7 +119,7 @@ describe('ThumbnailSidebar', () => {
       expect(screen.queryByText(/Generating thumbnails.../i)).not.toBeInTheDocument();
     });
 
-    const thumbnails = await screen.findAllByRole('button', { name: /Page \d+/ }, { timeout: 2000 });
+    const thumbnails = screen.getAllByRole('button', { name: /Page \d+/ });
     expect(thumbnails).toHaveLength(2);
 
     await act(async () => {

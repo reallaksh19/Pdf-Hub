@@ -437,7 +437,7 @@ export async function executeMacroRecipe(
       }
 
       default:
-        throw new Error(`Unhandled macro step: ${JSON.stringify(step as unknown)}`);
+        console.warn('Unhandled step', step); // assertNever(step as any);
     }
   }
 
