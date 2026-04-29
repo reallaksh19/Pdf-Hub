@@ -1,7 +1,6 @@
 import React from 'react';
 import { ToolbarFile } from '@/components/toolbar/ToolbarFile';
 import { ToolbarOrganize } from '@/components/toolbar/ToolbarOrganize';
-import { ToolbarWriter } from '@/components/toolbar/ToolbarWriter';
 import { ToolbarComment as ToolbarAnnotate } from '@/components/toolbar/ToolbarComment';
 import { ToolbarMacro as ToolbarGenerate } from '@/components/toolbar/ToolbarMacro';
 import { ToolbarView } from '@/components/toolbar/ToolbarView';

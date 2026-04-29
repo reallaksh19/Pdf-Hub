@@ -181,7 +181,7 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
               __html: buildTableHtml(
                 JSON.parse(element.content || '{"headers":[],"rows":[]}'),
                 sw,
-                1 // Scale is 1 here because sw and sh are already screen-scaled dimensions
+                scale // Pass true scale so font sizes zoom correctly
               )
             }}
           />

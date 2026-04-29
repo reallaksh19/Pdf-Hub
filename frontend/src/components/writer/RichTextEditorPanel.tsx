@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useWriterStore } from '../../core/writer/store';
 import type { PlacedElement } from '../../core/writer/types';
+import { Bold, Italic, Underline, List, ListOrdered, Save, X } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Tooltip } from '@/components/ui/Tooltip';
 
 interface Props {
   element: PlacedElement;
@@ -10,16 +13,81 @@ interface Props {
 
 export const RichTextEditorPanel: React.FC<Props> = ({ element, scale, onClose }) => {
   const { updateElement } = useWriterStore();
-  const [content, setContent] = useState(element.content || '');
+  const editorRef = useRef<HTMLDivElement>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
+  // Initialize with content, or empty paragraph
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== element.content) {
+      // Only update innerHTML if it's strictly different to avoid losing caret position
+      editorRef.current.innerHTML = element.content || '<p></p>';
+    }
+  }, [element.content]);
+
+  useEffect(() => {
+    // Focus on mount
+    editorRef.current?.focus();
+  }, []);
+
+  const saveContent = () => {
+    if (editorRef.current) {
+      updateElement(element.id, { content: editorRef.current.innerHTML });
+    }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey && e.key === 'Enter') {
-      updateElement(element.id, { content });
+      saveContent();
       onClose();
+    }
+  };
+
+  const execCmd = (cmd: string, arg?: string) => {
+    document.execCommand(cmd, false, arg);
+    editorRef.current?.focus();
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    // Look for image items in the clipboard
+    const items = e.clipboardData.items;
+    let handledImage = false;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        handledImage = true;
+        const file = items[i].getAsFile();
+        if (!file) continue;
+
+        e.preventDefault(); // Stop default paste
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const base64 = ev.target?.result as string;
+          // Create an image element and insert it at the cursor position
+          document.execCommand('insertImage', false, base64);
+
+          // Wait a tick and then find the newly inserted image to style it
+          setTimeout(() => {
+            if (!editorRef.current) return;
+            const imgs = editorRef.current.getElementsByTagName('img');
+            // Assuming the last image is the one just pasted
+            if (imgs.length > 0) {
+               const img = imgs[imgs.length - 1];
+               // Add default styles so it fits within the editor and exports nicely
+               img.style.maxWidth = '100%';
+               img.style.maxHeight = '300px';
+               img.style.objectFit = 'contain';
+               saveContent();
+            }
+          }, 0);
+        };
+        reader.readAsDataURL(file);
+        break; // Only handle the first image
+      }
+    }
+
+    // If it's not an image, let the browser handle the rich text / table paste natively
+    if (!handledImage) {
+      setTimeout(saveContent, 0); // Save the content after the browser natively pastes it
     }
   };
 
@@ -28,28 +96,78 @@ export const RichTextEditorPanel: React.FC<Props> = ({ element, scale, onClose }
       position: 'absolute',
       left: element.x * scale,
       top: (element.y + element.height) * scale + 10,
-      background: 'white',
-      border: '1px solid #ccc',
-      padding: '10px',
+      background: 'var(--color-background-primary)',
+      border: '0.5px solid var(--color-border-secondary)',
+      borderRadius: 8,
+      padding: '8px',
       zIndex: 9999,
-      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       display: 'flex',
       flexDirection: 'column',
       gap: 8,
+      width: 340,
     }}
     onPointerDown={e => e.stopPropagation()}
     >
-      <textarea
-        value={content}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        style={{ width: 300, height: 100, fontFamily: 'inherit', fontSize: '14px', padding: 8 }}
-        placeholder="Type HTML content here. Press Ctrl+Enter to save."
-      />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-        <button onClick={() => { updateElement(element.id, { content }); onClose(); }}>Save</button>
-        <button onClick={onClose}>Close</button>
+      <div className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 pb-2">
+        <Tooltip content="Bold (Ctrl+B)">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => execCmd('bold')}>
+            <Bold className="w-4 h-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Italic (Ctrl+I)">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => execCmd('italic')}>
+            <Italic className="w-4 h-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Underline (Ctrl+U)">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => execCmd('underline')}>
+            <Underline className="w-4 h-4" />
+          </Button>
+        </Tooltip>
+        <div style={{ width: 1, height: 16, background: 'var(--color-border-tertiary)', margin: '0 4px' }} />
+        <Tooltip content="Bullet List">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => execCmd('insertUnorderedList')}>
+            <List className="w-4 h-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Numbered List">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => execCmd('insertOrderedList')}>
+            <ListOrdered className="w-4 h-4" />
+          </Button>
+        </Tooltip>
+
+        <div className="flex-1" />
+
+        <Tooltip content="Save (Ctrl+Enter)">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 dark:text-blue-400" onClick={() => { saveContent(); onClose(); }}>
+            <Save className="w-4 h-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Discard">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </Tooltip>
       </div>
+
+      <div
+        ref={editorRef}
+        contentEditable
+        onBlur={saveContent}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        style={{
+          minHeight: 120,
+          fontFamily: 'inherit',
+          fontSize: '14px',
+          padding: '4px 8px',
+          outline: 'none',
+          color: 'var(--color-text-primary)',
+          overflowY: 'auto',
+          maxHeight: '400px'
+        }}
+      />
     </div>
   );
 };
