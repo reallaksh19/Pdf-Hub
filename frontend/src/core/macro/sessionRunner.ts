@@ -38,11 +38,15 @@ export async function runMacroRecipeAgainstSession(
       command: {
         type: 'REPLACE_WORKING_COPY',
         nextBytes: result.finalBytes,
-        nextPageCount: useSessionStore.getState().pageCount,
+        nextPageCount: result.stepResults
+          .flatMap(r => r.sideEffects)
+          .filter(e => e.type === 'page_count_changed')
+          .at(-1)?.newCount
+          ?? useSessionStore.getState().pageCount,
         reason: `Ran macro recipe ${recipe.name}`,
       },
     });
-    useSessionStore.getState().setSelectedPages(useSessionStore.getState().selectedPages);
+    useSessionStore.getState().setSelectedPages(result.selectedPages);
   }
 
   if (options?.saveOutputs) {

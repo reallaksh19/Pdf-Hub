@@ -45,6 +45,9 @@ export async function bakeWriterElementsIntoPdf(
         height:      element.height,
         imageBytes:  pngBytes,
         mimeType:    'image/png',
+        // opacity:     element.styles.opacity     ?? 1,
+        // borderWidth: element.styles.borderWidth ?? 0,
+        // borderColor: element.styles.borderColor,
       });
     }
   }
@@ -72,10 +75,6 @@ async function captureElementToPng(element: PlacedElement): Promise<Uint8Array> 
     padding:         `${(element.styles.padding ?? 0) * RENDER_SCALE}px`,
     lineHeight:      element.styles.lineHeight ? String(element.styles.lineHeight) : '1.4',
     boxSizing:       'border-box',
-    opacity:         element.styles.opacity ? String(element.styles.opacity) : '1',
-    border:          element.styles.borderWidth
-                        ? `${element.styles.borderWidth * RENDER_SCALE}px solid ${element.styles.borderColor ?? '#000'}`
-                        : 'none',
   });
 
   if (element.type === 'rich-text') {
@@ -120,7 +119,7 @@ async function captureElementToPng(element: PlacedElement): Promise<Uint8Array> 
   }
 }
 
-function buildTableHtml(
+export function buildTableHtml(
   data: { headers: string[]; rows: string[][]; borderColor?: string; headerBg?: string },
   width: number,
   scale: number,

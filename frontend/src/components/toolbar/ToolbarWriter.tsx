@@ -1,80 +1,73 @@
 import React from 'react';
-import { useWriterStore } from '../../core/writer/store';
-import { bakeWriterElementsIntoPdf } from '../../core/writer/exporter';
-import { useSessionStore } from '../../core/session/store';
-import { Type, Image, Table, MousePointer2, ArrowLeft, ArrowRight, Save } from 'lucide-react';
-import { PdfEditAdapter } from '../../adapters/pdf-edit/PdfEditAdapter';
+import { Button } from '@/components/ui/Button';
+import { Type, Image, Table, Save, Undo, Redo } from 'lucide-react';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { useWriterStore } from '@/core/writer/store';
+import { useSessionStore } from '@/core/session/store';
+import { bakeWriterElementsIntoPdf } from '@/core/writer/exporter';
+import { FileAdapter } from '@/adapters/file/FileAdapter';
+import { useToastStore } from '@/core/toast/store';
+import { error as logError } from '@/core/logger/service';
 
 export const ToolbarWriter: React.FC = () => {
-  const { activeTool, setActiveTool, undo, redo, elements, clearPage } = useWriterStore();
-  const { workingBytes, replaceWorkingCopy } = useSessionStore();
+  const { activeTool, setActiveTool, undo, redo, undoStack, redoStack, elements } = useWriterStore();
+  const { workingBytes, fileName, recordSaveExportAction } = useSessionStore();
+  const addToast = useToastStore((state) => state.addToast);
 
-  const handleBake = async () => {
-    if (!workingBytes || elements.length === 0) return;
+  const handleBakeAndExport = async () => {
+    if (!workingBytes || !fileName) return;
+
     try {
       const bakedBytes = await bakeWriterElementsIntoPdf(workingBytes, elements);
-      const pageCount = await PdfEditAdapter.countPages(bakedBytes);
-      replaceWorkingCopy(bakedBytes, pageCount);
-      // Clear all pages
-      elements.forEach(el => clearPage(el.pageNumber));
-    } catch {
-      // ignore
+      const exportName = fileName.replace(/\.pdf$/i, '') + '-baked.pdf';
+      await FileAdapter.savePdfBytes(bakedBytes, exportName, null);
+      recordSaveExportAction({ type: 'EXPORT_REVIEW_SNAPSHOT' }, 'success', `Exported baked ${exportName}`);
+      addToast({ type: 'success', title: 'Exported Successfully', message: `Baked elements exported to ${exportName}` });
+    } catch (err) {
+      logError('writer', 'Failed to bake and export PDF', { error: String(err), fileName });
+      recordSaveExportAction({ type: 'EXPORT_REVIEW_SNAPSHOT' }, 'failure', String(err));
+      addToast({ type: 'error', title: 'Export Failed', message: 'Failed to export the document. Please try again.' });
     }
   };
 
-  const renderToolButton = (tool: string, Icon: React.ElementType, label: string) => (
-    <button
-      onClick={() => setActiveTool(tool as "select" | "place-text" | "place-image" | "place-table")}
-      style={{
-        background: activeTool === tool ? '#e2e8f0' : 'transparent',
-        border: 'none',
-        padding: '6px 12px',
-        borderRadius: 4,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        cursor: 'pointer',
-      }}
-      title={label}
-    >
-      <Icon size={16} />
-      <span style={{ fontSize: 13 }}>{label}</span>
-    </button>
-  );
-
   return (
-    <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '0 12px' }}>
-      <div style={{ display: 'flex', gap: 4, borderRight: '1px solid #e2e8f0', paddingRight: 12 }}>
-        <button onClick={undo} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}><ArrowLeft size={16} /></button>
-        <button onClick={redo} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}><ArrowRight size={16} /></button>
-      </div>
+    <div className="flex items-center space-x-1">
+      <Tooltip content="Undo">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undo} disabled={undoStack.length === 0}>
+          <Undo className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Redo">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redo} disabled={redoStack.length === 0}>
+          <Redo className="w-4 h-4" />
+        </Button>
+      </Tooltip>
 
-      {renderToolButton("select", MousePointer2, "Select")}
-      {renderToolButton("place-text", Type, "Text")}
-      {renderToolButton("place-image", Image, "Image")}
-      {renderToolButton("place-table", Table, "Table")}
+      <div style={{ width: 1, height: 20, background: 'var(--color-border-tertiary)', margin: '0 6px' }} />
 
-      <div style={{ flex: 1 }} />
+      <Tooltip content="Place Rich Text">
+        <Button variant={activeTool === 'place-text' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setActiveTool('place-text')}>
+          <Type className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Place Image">
+        <Button variant={activeTool === 'place-image' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setActiveTool('place-image')}>
+          <Image className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Place Table">
+        <Button variant={activeTool === 'place-table' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setActiveTool('place-table')}>
+          <Table className="w-4 h-4" />
+        </Button>
+      </Tooltip>
 
-      <button
-        onClick={handleBake}
-        disabled={elements.length === 0}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          background: elements.length > 0 ? '#3b82f6' : '#cbd5e1',
-          color: 'white',
-          border: 'none',
-          padding: '6px 16px',
-          borderRadius: 6,
-          cursor: elements.length > 0 ? 'pointer' : 'not-allowed',
-          fontSize: 13,
-          fontWeight: 500,
-        }}
-      >
-        <Save size={16} /> Bake & Export
-      </button>
+      <div style={{ width: 1, height: 20, background: 'var(--color-border-tertiary)', margin: '0 6px' }} />
+
+      <Tooltip content="Bake & Export">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBakeAndExport} disabled={!workingBytes || elements.length === 0}>
+          <Save className="w-4 h-4" />
+        </Button>
+      </Tooltip>
     </div>
   );
 };

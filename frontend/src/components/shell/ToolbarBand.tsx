@@ -5,6 +5,7 @@ import { ToolbarWriter } from '@/components/toolbar/ToolbarWriter';
 import { ToolbarComment as ToolbarAnnotate } from '@/components/toolbar/ToolbarComment';
 import { ToolbarMacro as ToolbarGenerate } from '@/components/toolbar/ToolbarMacro';
 import { ToolbarView } from '@/components/toolbar/ToolbarView';
+import { ToolbarWriter } from '@/components/toolbar/ToolbarWriter';
 
 // ─── ToolbarDivider ────────────────────────────────────────────────────────
 function ToolbarDivider() {
@@ -120,7 +121,6 @@ export function ToolbarBand() {
       </ToolbarGroup>
 
       <ToolbarDivider />
-
       <ToolbarGroup label="Writer">
         <ToolbarWriter />
       </ToolbarGroup>

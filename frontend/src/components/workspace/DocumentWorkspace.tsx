@@ -21,6 +21,7 @@ import { useSearchStore } from '@/core/search/store';
 import { SearchIndexer } from '@/core/search/indexer';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { PdfEditAdapter } from '@/adapters/pdf-edit/PdfEditAdapter';
+import { WriterOverlay } from '@/components/writer/WriterOverlay';
 
 type TransformState =
   | {
@@ -1341,6 +1342,12 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
           />
         )}
       </div>
+
+      <WriterOverlay
+        pageNumber={pageNumber}
+        scale={scale}
+        pageDimensions={renderSize || size}
+      />
 
       <div className="absolute top-2 right-2 bg-slate-900/70 text-white text-xs px-2 py-1 rounded">
         Page {pageNumber}

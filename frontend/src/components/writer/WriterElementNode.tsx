@@ -3,6 +3,8 @@ import { useWriterStore } from '../../core/writer/store';
 import { RichTextEditorPanel } from './RichTextEditorPanel';
 import { TableEditorPanel } from './TableEditorPanel';
 import type { PlacedElement, TransformHandle } from '../../core/writer/types';
+import { buildTableHtml } from '../../core/writer/exporter';
+import './WriterElementNode.css';
 
 interface Props {
   element: PlacedElement;
@@ -38,18 +40,24 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
     origH:    number;
   } | null>(null);
 
+  // Screen → PDF space
   const handlePointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>, handle: TransformHandle) => {
+    (
+      e: React.PointerEvent<HTMLDivElement>,
+      handle: TransformHandle
+    ) => {
       if (element.locked) return;
       e.stopPropagation();
       e.currentTarget.setPointerCapture(e.pointerId);
+      const clientX = e.clientX;
+      const clientY = e.clientY;
 
       setSelectedId(element.id);
 
       dragRef.current = {
         handle,
-        startX: e.clientX,
-        startY: e.clientY,
+        startX: clientX,
+        startY: clientY,
         origX:  element.x,
         origY:  element.y,
         origW:  element.width,
@@ -59,33 +67,15 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
     [element, setSelectedId],
   );
 
-  const handlePointerDownMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    handlePointerDown(e, 'move');
-  };
-
-  const handlePointerDownNW = (e: React.PointerEvent<HTMLDivElement>) => {
-    handlePointerDown(e, 'nw');
-  };
-
-  const handlePointerDownNE = (e: React.PointerEvent<HTMLDivElement>) => {
-    handlePointerDown(e, 'ne');
-  };
-
-  const handlePointerDownSW = (e: React.PointerEvent<HTMLDivElement>) => {
-    handlePointerDown(e, 'sw');
-  };
-
-  const handlePointerDownSE = (e: React.PointerEvent<HTMLDivElement>) => {
-    handlePointerDown(e, 'se');
-  };
+  const toPdf = useCallback((px: number) => px / scale, [scale]);
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (!dragRef.current) return;
       const { handle, startX, startY, origX, origY, origW, origH } = dragRef.current;
 
-      const dx = (e.clientX - startX) / scale;
-      const dy = (e.clientY - startY) / scale;
+      const dx = toPdf(e.clientX - startX);
+      const dy = toPdf(e.clientY - startY);
 
       let patch: Partial<PlacedElement> = {};
 
@@ -105,7 +95,7 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
         elements: s.elements.map(el => el.id === element.id ? { ...el, ...patch } : el),
       }));
     },
-    [element.id, scale],
+    [element.id, scale, toPdf],
   );
 
   const handlePointerUp = useCallback(() => {
@@ -143,13 +133,6 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
 
   const HANDLE_SIZE = 8;
 
-  const handles: { id: TransformHandle; style: React.CSSProperties }[] = [
-    { id: 'nw', style: { top: -HANDLE_SIZE/2, left: -HANDLE_SIZE/2, cursor: 'nw-resize' } },
-    { id: 'ne', style: { top: -HANDLE_SIZE/2, right: -HANDLE_SIZE/2, cursor: 'ne-resize' } },
-    { id: 'se', style: { bottom: -HANDLE_SIZE/2, right: -HANDLE_SIZE/2, cursor: 'se-resize' } },
-    { id: 'sw', style: { bottom: -HANDLE_SIZE/2, left: -HANDLE_SIZE/2, cursor: 'sw-resize' } },
-  ];
-
   return (
     <>
       <div
@@ -176,7 +159,7 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
             ? `${element.styles.borderWidth * scale}px solid ${element.styles.borderColor ?? '#000'}`
             : undefined,
         }}
-        onPointerDown={handlePointerDownMove}
+        onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => handlePointerDown(e, 'move')}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onDoubleClick={handleDoubleClick}
@@ -192,42 +175,64 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
           <img src={element.content} style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} alt="" />
         )}
         {element.type === 'table' && (
-          <div style={{ fontSize: 10, opacity: 0.5, padding: 4, pointerEvents: 'none' }}>Table — double-click to edit</div>
+          <div
+            style={{ width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' }}
+            dangerouslySetInnerHTML={{
+              __html: buildTableHtml(
+                JSON.parse(element.content || '{"headers":[],"rows":[]}'),
+                sw,
+                1 // Scale is 1 here because sw and sh are already screen-scaled dimensions
+              )
+            }}
+          />
         )}
       </div>
 
       {/* Resize handles — only when selected */}
-      {isSelected && handles.map(h => {
-        const hLeft = h.id === 'nw' || h.id === 'sw' ? sx - HANDLE_SIZE/2 : sx + sw - HANDLE_SIZE/2;
-        const hTop = h.id === 'nw' || h.id === 'ne' ? sy - HANDLE_SIZE/2 : sy + sh - HANDLE_SIZE/2;
-        const hid = h.id;
-        let onDown = handlePointerDownNW;
-        if (hid === 'ne') onDown = handlePointerDownNE;
-        if (hid === 'sw') onDown = handlePointerDownSW;
-        if (hid === 'se') onDown = handlePointerDownSE;
-
-        return (
+      {isSelected && (
+        <>
           <div
-            key={hid}
             style={{
-              position:  'absolute',
-              width:     HANDLE_SIZE,
-              height:    HANDLE_SIZE,
-              background: '#3b82f6',
-              border:    '1.5px solid white',
-              borderRadius: 2,
-              zIndex:    element.zIndex + 1,
-              pointerEvents: 'all',
-              ...h.style,
-              left: hLeft,
-              top:  hTop,
+              position: 'absolute', width: HANDLE_SIZE, height: HANDLE_SIZE, background: '#3b82f6', border: '1.5px solid white',
+              borderRadius: 2, zIndex: element.zIndex + 1, pointerEvents: 'all', cursor: 'nw-resize',
+              left: sx - HANDLE_SIZE / 2, top: sy - HANDLE_SIZE / 2,
             }}
-            onPointerDown={onDown}
+            onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => { e.stopPropagation(); handlePointerDown(e, 'nw'); }}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
           />
-        );
-      })}
+          <div
+            style={{
+              position: 'absolute', width: HANDLE_SIZE, height: HANDLE_SIZE, background: '#3b82f6', border: '1.5px solid white',
+              borderRadius: 2, zIndex: element.zIndex + 1, pointerEvents: 'all', cursor: 'ne-resize',
+              left: sx + sw - HANDLE_SIZE / 2, top: sy - HANDLE_SIZE / 2,
+            }}
+            onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => { e.stopPropagation(); handlePointerDown(e, 'ne'); }}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+          />
+          <div
+            style={{
+              position: 'absolute', width: HANDLE_SIZE, height: HANDLE_SIZE, background: '#3b82f6', border: '1.5px solid white',
+              borderRadius: 2, zIndex: element.zIndex + 1, pointerEvents: 'all', cursor: 'se-resize',
+              left: sx + sw - HANDLE_SIZE / 2, top: sy + sh - HANDLE_SIZE / 2,
+            }}
+            onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => { e.stopPropagation(); handlePointerDown(e, 'se'); }}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+          />
+          <div
+            style={{
+              position: 'absolute', width: HANDLE_SIZE, height: HANDLE_SIZE, background: '#3b82f6', border: '1.5px solid white',
+              borderRadius: 2, zIndex: element.zIndex + 1, pointerEvents: 'all', cursor: 'sw-resize',
+              left: sx - HANDLE_SIZE / 2, top: sy + sh - HANDLE_SIZE / 2,
+            }}
+            onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => { e.stopPropagation(); handlePointerDown(e, 'sw'); }}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+          />
+        </>
+      )}
 
       {/* Context menu */}
       {showContextMenu && isSelected && (
