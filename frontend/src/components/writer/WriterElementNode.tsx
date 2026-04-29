@@ -188,8 +188,8 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
             pointerEvents: 'all',
             ...h.style,
             // Recalculate absolute position based on handle corner
-            // left: h.id === 'nw' || h.id === 'sw' ? sx - HANDLE_SIZE/2 : sx + sw - HANDLE_SIZE/2,
-            // top:  h.id === 'nw' || h.id === 'ne' ? sy - HANDLE_SIZE/2 : sy + sh - HANDLE_SIZE/2,
+            left: h.id === 'nw' || h.id === 'sw' ? sx - HANDLE_SIZE/2 : sx + sw - HANDLE_SIZE/2,
+            top:  h.id === 'nw' || h.id === 'ne' ? sy - HANDLE_SIZE/2 : sy + sh - HANDLE_SIZE/2,
           }}
           onPointerDown={(e) => {
             e.stopPropagation();
