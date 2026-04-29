@@ -118,11 +118,11 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
 
   const HANDLE_SIZE = 8;
 
-  const handles: { id: TransformHandle; style: React.CSSProperties }[] = [
-    { id: 'nw', style: { top: -HANDLE_SIZE/2, left: -HANDLE_SIZE/2, cursor: 'nw-resize' } },
-    { id: 'ne', style: { top: -HANDLE_SIZE/2, right: -HANDLE_SIZE/2, cursor: 'ne-resize' } },
-    { id: 'se', style: { bottom: -HANDLE_SIZE/2, right: -HANDLE_SIZE/2, cursor: 'se-resize' } },
-    { id: 'sw', style: { bottom: -HANDLE_SIZE/2, left: -HANDLE_SIZE/2, cursor: 'sw-resize' } },
+  const handles: { id: TransformHandle; cursor: string }[] = [
+    { id: 'nw', cursor: 'nw-resize' },
+    { id: 'ne', cursor: 'ne-resize' },
+    { id: 'se', cursor: 'se-resize' },
+    { id: 'sw', cursor: 'sw-resize' },
   ];
 
   return (
@@ -177,8 +177,6 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
           key={h.id}
           style={{
             position:  'absolute',
-            left:      sx + (h.style.left !== undefined ? 0 : sw),
-            top:       sy + (h.style.top  !== undefined ? 0 : sh),
             width:     HANDLE_SIZE,
             height:    HANDLE_SIZE,
             background: '#3b82f6',
@@ -186,7 +184,7 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
             borderRadius: 2,
             zIndex:    element.zIndex + 1,
             pointerEvents: 'all',
-            ...h.style,
+            cursor:    h.cursor,
             // Recalculate absolute position based on handle corner
             left: h.id === 'nw' || h.id === 'sw' ? sx - HANDLE_SIZE/2 : sx + sw - HANDLE_SIZE/2,
             top:  h.id === 'nw' || h.id === 'ne' ? sy - HANDLE_SIZE/2 : sy + sh - HANDLE_SIZE/2,
