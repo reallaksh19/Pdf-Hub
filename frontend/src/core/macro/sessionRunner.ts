@@ -42,11 +42,12 @@ export async function runMacroRecipeAgainstSession(
         reason: `Ran macro recipe ${recipe.name}`,
       },
     });
-    useSessionStore.getState().setSelectedPages(useSessionStore.getState().selectedPages);
+    useSessionStore.getState().setSelectedPages((result as unknown as { selectedPages: number[] }).selectedPages || []);
+
   }
 
-  if (options?.saveOutputs) {
-    for (const output of result.outputFiles) {
+  if (options?.saveOutputs && (result.outputFiles || []).length > 0) {
+    for (const output of result.outputFiles || []) {
       await FileAdapter.savePdfBytes(output.bytes, output.name, null);
     }
   }

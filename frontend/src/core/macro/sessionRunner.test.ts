@@ -31,11 +31,11 @@ describe('runMacroRecipeAgainstSession', () => {
     });
     useSessionStore.getState().setSelectedPages([1, 2]);
     mockExecuteMacroRecipe.mockResolvedValue({
-      workingBytes: new Uint8Array([4, 5, 6]),
+      finalBytes: new Uint8Array([4, 5, 6]),
       pageCount: 3,
       selectedPages: [2],
       logs: ['ok'],
-      extractedOutputs: [],
+      outputFiles: [],
       outputs: [],
     });
     mockDispatchCommand.mockResolvedValue({ success: true, message: 'ok' });
@@ -56,11 +56,11 @@ describe('runMacroRecipeAgainstSession', () => {
 
   it('saves extracted outputs when saveOutputs is true', async () => {
     mockExecuteMacroRecipe.mockResolvedValue({
-      workingBytes: new Uint8Array([4, 5, 6]),
+      finalBytes: new Uint8Array([4, 5, 6]),
       pageCount: 3,
       selectedPages: [2],
       logs: ['ok'],
-      extractedOutputs: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
+      outputFiles: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
       outputs: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
     });
 

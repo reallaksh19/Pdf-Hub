@@ -122,6 +122,19 @@ function drawArrowHead(
   });
 }
 
+export interface InsertImageOptions {
+  x:            number;
+  y:            number;
+  width:        number;
+  height:       number;
+  imageBytes:   Uint8Array | string;
+  opacity?:     number;
+  borderWidth?: number;
+  borderColor?: string;
+  rotation?:    number;
+  mimeType?:    'image/jpeg' | 'image/png';
+}
+
 export class PdfEditAdapter {
   static async countPages(bytes: Uint8Array): Promise<number> {
     const pdfDoc = await PDFDocument.load(bytes);
@@ -413,21 +426,27 @@ export class PdfEditAdapter {
 
   static async insertImage(
     baseBytes: Uint8Array,
-    options: {
-      pages: number[];
-      imageBytes: Uint8Array;
-      mimeType: 'image/jpeg' | 'image/png';
-      x: number;
-      y: number;
-      width?: number;
-      height?: number;
-      scale?: number;
-    }
+    options: InsertImageOptions & { pages: number[]; scale?: number },
   ): Promise<Uint8Array> {
+    const { PDFDocument, degrees, BlendMode } = await import('pdf-lib');
     const pdfDoc = await PDFDocument.load(baseBytes);
-    const image = options.mimeType === 'image/jpeg'
-      ? await pdfDoc.embedJpg(options.imageBytes)
-      : await pdfDoc.embedPng(options.imageBytes);
+
+    // Decode imageBytes
+    let rawBytes: Uint8Array;
+    if (typeof options.imageBytes === 'string') {
+      const base64 = options.imageBytes.includes(',')
+        ? options.imageBytes.split(',')[1]
+        : options.imageBytes;
+      rawBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    } else {
+      rawBytes = options.imageBytes;
+    }
+
+    // Embed — detect PNG vs JPEG by magic bytes
+    const isPng = options.mimeType === 'image/png' || (rawBytes[0] === 0x89 && rawBytes[1] === 0x50);
+    const image  = isPng
+      ? await pdfDoc.embedPng(rawBytes)
+      : await pdfDoc.embedJpg(rawBytes);
 
     let drawWidth = image.width;
     let drawHeight = image.height;
@@ -444,7 +463,30 @@ export class PdfEditAdapter {
       const page = pdfDoc.getPage(pageIndex);
       const pageHeight = page.getHeight();
       const drawY = pageHeight - options.y - drawHeight;
-      page.drawImage(image, { x: options.x, y: drawY, width: drawWidth, height: drawHeight });
+
+      // Border rect (drawn behind image)
+      const borderWidth = options.borderWidth ?? 0;
+      if (borderWidth > 0) {
+        const c = hexToRgb(options.borderColor ?? '#000000');
+        page.drawRectangle({
+          x: options.x, y: drawY,
+          width: drawWidth, height: drawHeight,
+          borderColor: c as unknown as ReturnType<typeof rgb>,
+          borderWidth,
+          color: undefined,
+        });
+      }
+
+      // Image
+      page.drawImage(image, {
+        x:       options.x,
+        y:       drawY,
+        width:   drawWidth,
+        height:  drawHeight,
+        opacity: options.opacity ?? 1,
+        rotate:  degrees(options.rotation ?? 0),
+        blendMode: BlendMode.Normal,
+      });
     }
 
     return await pdfDoc.save();

@@ -119,9 +119,38 @@ export type MacroStep =
       fileNameToken?: boolean;
       dateToken?: boolean;
     }
-  | { op: 'place_rich_textbox'; selector?: PageSelector; x: number; y: number; width: number }
-  | { op: 'place_table'; selector?: PageSelector; x: number; y: number; width: number }
-  | { op: 'adjust_image'; selector?: PageSelector; x: number; y: number; width: number }
+    | {
+      op: 'place_rich_textbox';
+      selector: PageSelector;
+      x: number;
+      y: number;
+      width: number;
+      height?: number;
+      content: string;
+      styles: import('../writer/types').PlacedElementStyles;
+    }
+  | {
+      op: 'place_table';
+      selector: PageSelector;
+      x: number;
+      y: number;
+      width: number;
+      headers: string[];
+      rows: string[][];
+      styles?: {
+        headerBg?: string;
+        borderColor?: string;
+        fontSize?: number;
+        rowHeight?: number;
+      };
+    }
+  | {
+      op: 'adjust_image';
+      selector?: PageSelector;
+      x: number;
+      y: number;
+      width: number;
+    }
   | { op: 'conditional'; condition: MacroCondition; then: MacroStep[]; else?: MacroStep[] }
   | { op: 'apply_template_vars'; vars: Record<string, string> };
 
