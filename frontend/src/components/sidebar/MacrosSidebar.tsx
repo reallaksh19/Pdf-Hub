@@ -60,12 +60,7 @@ interface OutputQueueItem extends MacroOutputFile {
 const BUILTIN_RECIPES: MacroRecipe[] = Object.values(BUILTIN_MACROS);
 const GENERATION_RECIPES: MacroRecipe[] = Object.values(GENERATION_MACROS);
 
-const PLACEHOLDER_STEPS: Array<MacroStep['op']> = [
-  'select_pages',
-  'rotate_pages',
-  'header_footer_text',
-  'extract_pages',
-];
+
 
 export const MacrosSidebar: React.FC = () => {
   const { workingBytes, pageCount, viewState, fileName } = useSessionStore();
@@ -864,50 +859,16 @@ export const MacrosSidebar: React.FC = () => {
         </div>
       </section>
 
-      <section className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/40 p-3 space-y-3">
+
+      <section className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3 space-y-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
           <Wrench className="w-4 h-4" />
-          Custom Recipe Builder (Coming Soon)
+          Custom Recipe Builder
         </div>
 
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Custom step-by-step builder ships in next phase; use Built-ins now.
-        </p>
-
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" disabled>
-            New Recipe
-          </Button>
-          <Button variant="ghost" size="sm" disabled>
-            Add Step
-          </Button>
-          <Button variant="ghost" size="sm" disabled>
-            Remove Step
-          </Button>
-          <Button variant="secondary" size="sm" disabled>
-            Run Custom
-          </Button>
-        </div>
-
-        <div className="rounded-md border border-slate-200 dark:border-slate-800 overflow-hidden">
-          <table className="w-full text-xs">
-            <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-500">
-              <tr>
-                <th className="text-left px-2 py-1.5">Step</th>
-                <th className="text-left px-2 py-1.5">Operation</th>
-              </tr>
-            </thead>
-            <tbody>
-              {PLACEHOLDER_STEPS.map((operation, index) => (
-                <tr key={operation} className="border-t border-slate-200 dark:border-slate-800">
-                  <td className="px-2 py-1.5">{index + 1}</td>
-                  <td className="px-2 py-1.5 font-mono">{operation}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <RecipeBuilderPanel />
       </section>
+
     </div>
   );
 };
@@ -1128,4 +1089,148 @@ function toPageSelector(overrides: RecipeOverrides, pageCount: number): PageSele
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+
+
+import { macroRegistry } from '@/core/macro/registry';
+
+interface BuilderState {
+  steps: MacroStep[];
+  name:  string;
+}
+
+function RecipeBuilderPanel() {
+  const [state, setState] = React.useState<BuilderState>({ steps: [], name: 'My recipe' });
+  const [showPicker, setShowPicker] = React.useState(false);
+  const [dragIndex, setDragIndex] = React.useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
+
+
+  const registeredOps = React.useMemo(() => macroRegistry.getRegisteredOps(), []);
+
+  const addStep = (op: string) => {
+    // Basic defaults
+    let step: MacroStep;
+    switch (op) {
+      case 'select_pages':
+        step = { op, selector: { mode: 'selected' } };
+        break;
+      case 'rotate_pages':
+        step = { op, selector: { mode: 'selected' }, degrees: 90 };
+        break;
+      case 'extract_pages':
+        step = { op, selector: { mode: 'selected' }, outputName: 'extracted.pdf' };
+        break;
+      case 'insert_blank_page':
+        step = { op, position: { mode: 'after', page: 1 }, size: 'match-current', count: 1 };
+        break;
+      case 'header_footer_text':
+        step = { op, selector: { mode: 'all' }, zone: 'header', text: 'Page {page}', align: 'center', marginX: 20, marginY: 20, fontSize: 10 };
+        break;
+      case 'place_rich_textbox':
+        step = { op, selector: { mode: 'selected' }, x: 50, y: 50, width: 200, height: 100, content: '<b>Hello</b>', styles: {} } as unknown as MacroStep;
+        break;
+      case 'place_table':
+        step = { op, selector: { mode: 'selected' }, x: 50, y: 50, width: 300, headers: ['A', 'B'], rows: [['1', '2']] } as unknown as MacroStep;
+        break;
+      case 'adjust_image':
+        step = { op, selector: { mode: 'selected' }, x: 50, y: 50, width: 100, height: 100, base64Image: '' } as unknown as MacroStep;
+        break;
+      case 'conditional':
+        step = { op, condition: { type: 'page_count_gt', value: 5 }, then: [], else: [] };
+        break;
+      default:
+        step = { op } as unknown as MacroStep;
+    }
+    setState(s => ({ ...s, steps: [...s.steps, step] }));
+    setShowPicker(false);
+  };
+
+  const handleDragStart = (e: React.PointerEvent, index: number) => {
+    setDragIndex(index);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handleDragOver = (index: number) => {
+    if (dragIndex !== null && dragIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = () => {
+    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+      setState(s => {
+        const steps = [...s.steps];
+        const moved = steps.splice(dragIndex, 1)[0];
+        steps.splice(dragOverIndex, 0, moved);
+        return { ...s, steps };
+      });
+    }
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleRun = async () => {
+    const recipe: MacroRecipe = { id: 'custom', name: state.name, steps: state.steps };
+    await runMacroRecipeAgainstSession(recipe, { saveOutputs: true });
+    // Assuming handling logs/outputs elsewhere or similar to built-ins
+  };
+
+  const handleSave = () => {
+    usePresetsStore.getState().savePreset({
+      id: `preset-${Date.now()}`,
+      name: state.name,
+      steps: state.steps
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-3 text-sm">
+      <input
+        className="px-2 py-1 border rounded"
+        value={state.name}
+        onChange={e => setState(s => ({ ...s, name: e.target.value }))}
+        placeholder="Recipe name..."
+      />
+
+      <div className="space-y-1">
+        {state.steps.length === 0 && <div className="text-xs text-slate-500 italic">No steps added yet.</div>}
+        {state.steps.map((step, i) => (
+          <div
+            key={i}
+            className={`p-2 border rounded bg-white flex justify-between items-center cursor-move ${dragIndex === i ? 'opacity-50' : ''} ${dragOverIndex === i ? 'border-blue-500' : 'border-slate-200'}`}
+            onPointerDown={e => handleDragStart(e, i)}
+            onPointerOver={() => handleDragOver(i)}
+            onPointerUp={handleDrop}
+          >
+            <div className="font-mono text-xs">{i+1}. {step.op}</div>
+            <Button variant="ghost" size="sm" className="h-6 px-2" onClick={() => setState(s => ({ ...s, steps: s.steps.filter((_, idx) => idx !== i) }))}>
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      {showPicker && (
+        <div className="border rounded p-2 bg-slate-50">
+          <div className="text-xs font-semibold mb-2">Select Operation:</div>
+          <div className="flex flex-wrap gap-1">
+            {registeredOps.map(op => (
+              <button key={op} className="text-xs px-2 py-1 bg-white border rounded hover:bg-slate-100" onClick={() => addStep(op)}>
+                {op}
+              </button>
+            ))}
+          </div>
+          <Button variant="ghost" size="sm" className="mt-2 w-full" onClick={() => setShowPicker(false)}>Cancel</Button>
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <Button variant="secondary" size="sm" onClick={() => setShowPicker(true)}>+ Add step</Button>
+        <Button variant="primary" size="sm" onClick={handleRun} disabled={state.steps.length === 0}><Play className="w-3 h-3 mr-1" /> Run</Button>
+        <Button variant="ghost" size="sm" onClick={handleSave} disabled={state.steps.length === 0}><Save className="w-3 h-3 mr-1" /> Save</Button>
+      </div>
+    </div>
+  );
 }
