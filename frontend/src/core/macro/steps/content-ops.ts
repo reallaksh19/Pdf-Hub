@@ -1,6 +1,9 @@
+import html2canvas from 'html2canvas';
 import { macroRegistry } from '../registry';
 import type { StepResult, MacroMutableState } from '../registry';
 import type { MacroExecutionContext, MacroStep } from '../types';
+import type { PlacedElementStyles } from '../../writer/types';
+
 import { PdfEditAdapter } from '../../../adapters/pdf-edit/PdfEditAdapter';
 import { resolveSelector } from './page-ops';
 
@@ -122,17 +125,103 @@ async function executeHeaderFooterText(
 }
 macroRegistry.register('header_footer_text', executeHeaderFooterText);
 
-type PlaceRichTextboxStep = Extract<MacroStep, { op: 'place_rich_textbox' }>;
+type PlaceRichTextboxStep = {
+  op:       'place_rich_textbox';
+  selector?: import('../types').PageSelector;
+  x:        number;
+  y:        number;
+  width:    number;
+  height?:  number;
+  content:  string;
+  styles:   PlacedElementStyles;
+};
+
 async function executePlaceRichTextbox(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _step: PlaceRichTextboxStep,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  step: PlaceRichTextboxStep,
   _ctx: MacroExecutionContext,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _state: MacroMutableState,
+  state: MacroMutableState,
 ): Promise<StepResult> {
-  // Stub for Agent E
-  return { status: 'success', message: 'Place rich textbox stub', sideEffects: [] };
+  try {
+    const pages = resolveSelector(step.selector ?? { mode: 'selected' }, state);
+    if (pages.length === 0) {
+      return { status: 'warning', message: 'No pages matched selector', sideEffects: [] };
+    }
+
+    const pngBytes = await renderHtmlToPng(
+      step.content,
+      step.width,
+      step.height ?? 80,
+      step.styles,
+    );
+
+    let currentBytes = state.workingBytes;
+    for (const pageNumber of pages) {
+      currentBytes = await PdfEditAdapter.insertImage(currentBytes, pageNumber, {
+        x:           step.x,
+        y:           step.y,
+        width:       step.width,
+        height:      step.height ?? 80,
+        imageBytes:  pngBytes,
+        opacity:     step.styles.opacity ?? 1,
+        borderWidth: step.styles.borderWidth,
+        borderColor: step.styles.borderColor,
+      });
+    }
+
+    return {
+      status:     'success',
+      message:    `Placed rich text on ${pages.length} page(s)`,
+      sideEffects: [{ type: 'bytes_updated', bytes: currentBytes }],
+    };
+  } catch (err) {
+    return { status: 'error', message: err instanceof Error ? err.message : String(err), sideEffects: [] };
+  }
+}
+
+async function renderHtmlToPng(
+  htmlContent: string,
+  width: number,
+  height: number,
+  styles: PlacedElementStyles,
+): Promise<Uint8Array> {
+  const container = document.createElement('div');
+  Object.assign(container.style, {
+    position:        'absolute',
+    left:            '-9999px',
+    top:             '-9999px',
+    width:           `${width}px`,
+    height:          `${height}px`,
+    overflow:        'hidden',
+    backgroundColor: styles.backgroundColor ?? 'transparent',
+    fontSize:        styles.fontSize ? `${styles.fontSize}px` : '12px',
+    fontFamily:      styles.fontFamily ?? 'sans-serif',
+    color:           styles.color ?? '#000000',
+    padding:         styles.padding ? `${styles.padding}px` : '4px',
+    lineHeight:      styles.lineHeight ? String(styles.lineHeight) : '1.4',
+    boxSizing:       'border-box',
+  });
+  container.innerHTML = htmlContent;
+  document.body.appendChild(container);
+
+  try {
+    const canvas = await html2canvas(container, {
+      width,
+      height,
+      scale:           2,
+      backgroundColor: null,
+      useCORS:         true,
+      logging:         false,
+    });
+
+    return await new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error('html2canvas returned no blob')); return; }
+        blob.arrayBuffer().then(buf => resolve(new Uint8Array(buf))).catch(reject);
+      }, 'image/png');
+    });
+  } finally {
+    document.body.removeChild(container);  // ALWAYS — even on error
+  }
 }
 macroRegistry.register('place_rich_textbox', executePlaceRichTextbox);
 

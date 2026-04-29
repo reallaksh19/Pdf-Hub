@@ -428,7 +428,7 @@ export class PdfEditAdapter {
     pageNumber: number,
     options: InsertImageOptions,
   ): Promise<Uint8Array> {
-    const { PDFDocument, rgb, degrees } = await import('pdf-lib');
+    const { PDFDocument, degrees } = await import('pdf-lib');
     const pdfDoc = await PDFDocument.load(pdfBytes);
     const page   = pdfDoc.getPage(pageNumber - 1);
 
@@ -452,11 +452,10 @@ export class PdfEditAdapter {
     // Draw border rect behind the image
     const borderWidth = options.borderWidth ?? 0;
     if (borderWidth > 0) {
-      const c = hexToRgb(options.borderColor ?? '#000000');
       page.drawRectangle({
         x: options.x, y: options.y,
         width: options.width, height: options.height,
-        borderColor: rgb(c.r, c.g, c.b),
+        borderColor: hexToRgb(options.borderColor ?? '#000000'),
         borderWidth,
         color: undefined,
       });
