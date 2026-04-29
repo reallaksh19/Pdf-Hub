@@ -149,3 +149,84 @@ async function executePlaceTable(
   return { status: 'success', message: 'Place table stub', sideEffects: [] };
 }
 macroRegistry.register('place_table', executePlaceTable);
+
+type AdjustImageStep = {
+  op:           'adjust_image';
+  selector?: PageSelector;
+  x:            number;
+  y:            number;
+  width:        number;
+  height:       number;
+  opacity?:     number;
+  borderWidth?: number;
+  borderColor?: string;
+  rotation?:    number;
+  base64Image?: string;
+  donorFileId?: string;   // resolved via ctx.fileRegistry
+};
+
+async function executeAdjustImage(
+  step: AdjustImageStep,
+  ctx: MacroExecutionContext,
+  state: MacroMutableState,
+): Promise<StepResult> {
+  try {
+    // Resolve image source — base64 inline takes priority
+    let imageBytes: string | Uint8Array;
+
+    if (step.base64Image) {
+      imageBytes = step.base64Image;
+    } else if (step.donorFileId) {
+      const donor = ctx.fileRegistry?.get(step.donorFileId);
+      if (!donor) {
+        return {
+          status:     'error',
+          message:    `donorFileId "${step.donorFileId}" not found in ctx.fileRegistry`,
+          sideEffects: [],
+        };
+      }
+      imageBytes = donor;
+    } else {
+      return {
+        status:     'error',
+        message:    'adjust_image requires either base64Image or donorFileId',
+        sideEffects: [],
+      };
+    }
+
+    const pages = resolveSelector(step.selector, state);
+    if (pages.length === 0) {
+      return { status: 'warning', message: 'No pages matched selector', sideEffects: [] };
+    }
+
+    let currentBytes = state.workingBytes;
+    for (const pageNumber of pages) {
+      currentBytes = await PdfEditAdapter.insertImage(currentBytes, pageNumber, {
+        x:           step.x,
+        y:           step.y,
+        width:       step.width,
+        height:      step.height,
+        imageBytes,
+        opacity:     step.opacity,
+        borderWidth: step.borderWidth,
+        borderColor: step.borderColor,
+        rotation:    step.rotation,
+      });
+    }
+
+    return {
+      status:     'success',
+      message:    `Placed image on ${pages.length} page(s)`,
+      sideEffects: [{ type: 'bytes_updated', bytes: currentBytes }],
+    };
+  } catch (err) {
+    return {
+      status:     'error',
+      message:    err instanceof Error ? err.message : String(err),
+      sideEffects: [],
+    };
+  }
+}
+
+// Registration — alongside place_rich_textbox and place_table
+macroRegistry.register('adjust_image', executeAdjustImage);

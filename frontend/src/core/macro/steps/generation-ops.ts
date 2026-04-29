@@ -158,19 +158,6 @@ async function executeInsertImage(
 }
 macroRegistry.register('insert_image', executeInsertImage);
 
-type AdjustImageStep = Extract<MacroStep, { op: 'adjust_image' }>;
-async function executeAdjustImage(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _step: AdjustImageStep,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _ctx: MacroExecutionContext,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _state: MacroMutableState,
-): Promise<StepResult> {
-  // Stub for Agent E
-  return { status: 'success', message: 'Adjust image stub', sideEffects: [] };
-}
-macroRegistry.register('adjust_image', executeAdjustImage);
 
 
 function resolveInsertIndex(
