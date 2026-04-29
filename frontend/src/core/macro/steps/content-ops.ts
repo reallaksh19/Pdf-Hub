@@ -307,7 +307,7 @@ async function executeAdjustImage(
     if (step.base64Image) {
       imageBytes = step.base64Image;
     } else if (step.donorFileId) {
-      const donorBytes = ctx.fileRegistry?.get(step.donorFileId) || ctx.donorFiles?.[step.donorFileId];
+      const donorBytes = ctx.fileRegistry?.get(step.donorFileId);
       if (!donorBytes) {
         return {
           status:     'error',

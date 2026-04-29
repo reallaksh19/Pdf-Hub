@@ -1,4 +1,8 @@
 import React from 'react';
+import { usePresetsStore } from '@/core/macro/store/presets';
+import { macroRegistry } from '@/core/macro/registry';
+import { runMacroRecipeAgainstSession } from '@/core/macro/sessionRunner';
+
 import { v4 as uuidv4 } from 'uuid';
 import {
   Play,
@@ -16,11 +20,8 @@ import { FileAdapter } from '@/adapters/file/FileAdapter';
 import { useSessionStore } from '@/core/session/store';
 import { error as logError } from '@/core/logger/service';
 import { BUILTIN_MACROS } from '@/core/macro/builtins';
-import { runMacroRecipeAgainstSession } from '@/core/macro/sessionRunner';
 import { GENERATION_MACROS } from '@/core/macro/generationBuiltins';
 import { validateRecipeBeforeRun, type PreflightReport } from '@/core/macro/validation/validator';
-import { usePresetsStore } from '@/core/macro/store/presets';
-import { macroRegistry } from '@/core/macro/registry';
 import { ImageIcon } from 'lucide-react';
 import type {
   MacroOutputFile,
