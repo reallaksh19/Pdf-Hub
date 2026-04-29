@@ -1,3 +1,4 @@
+import './steps/register-all';
 import './steps/page-ops';
 import './steps/merge-ops';
 import './steps/content-ops';
@@ -49,6 +50,7 @@ const baseContext: MacroExecutionContext = {
   currentPage: 3,
   fileName: 'sample.pdf',
   donorFiles: {},
+  fileRegistry: new Map(),
   now: new Date('2026-04-22T00:00:00.000Z'),
 };
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import {
   Play,
   RotateCw,
@@ -68,7 +67,7 @@ const PLACEHOLDER_STEPS: Array<MacroStep['op']> = [
 ];
 
 export const MacrosSidebar: React.FC = () => {
-  const { workingBytes, pageCount, viewState, fileName } = useSessionStore();
+  const { workingBytes, pageCount, viewState, fileName, selectedPages, replaceWorkingCopy } = useSessionStore();
   const { savedPresets, savePreset, deletePreset } = usePresetsStore();
 
   const allRecipes = React.useMemo(() => [...BUILTIN_RECIPES, ...savedPresets], [savedPresets]);
@@ -90,9 +89,24 @@ export const MacrosSidebar: React.FC = () => {
   const [overridesByRecipe, setOverridesByRecipe] = React.useState<
     Record<string, RecipeOverrides>
   >({});
-  const [isRunning, setIsRunning] = React.useState(false);
-  const [runLogs, setRunLogs] = React.useState<string[]>([]);
-  const [runError, setRunError] = React.useState<string | null>(null);
+  const [isRunning, setIsRunning]               = React.useState(false);
+  const [macroLogs, setMacroLogs]               = React.useState<string[]>([]);
+  const [execProgress, setExecProgress]         = React.useState<import('@/core/macro/executor').ExecutionProgress | null>(null);
+  const [stepResults, setStepResults]           = React.useState<import('@/core/macro/registry').StepResult[]>([]);
+  const [validationErrors, setValidationErrors] = React.useState<import('@/core/macro/validator').ValidationError[]>([]);
+
+  // ── Backward-compatibility aliases ────────────────────────────────────────
+  const setRunLogs = setMacroLogs;
+
+  // To satisfy the unused variable linter for now (UI will use these later)
+  void macroLogs;
+  void execProgress;
+  void stepResults;
+  void validationErrors;
+
+  const setRunError = (msg: string | null) => {
+    if (msg) setMacroLogs(prev => [...prev, `[error] ${msg}`]);
+  };
   const [outputQueue, setOutputQueue] = React.useState<OutputQueueItem[]>([]);
   const [preflightReport, setPreflightReport] = React.useState<PreflightReport | null>(null);
   const [isDryRunning, setIsDryRunning] = React.useState(false);
@@ -176,64 +190,66 @@ export const MacrosSidebar: React.FC = () => {
     });
   };
 
-  const runSelectedMacro = async () => {
-    if (!workingBytes || !selectedRecipe || !fileName) {
-      return;
-    }
+  const runSelectedMacro = React.useCallback(async () => {
+  if (!selectedRecipe || !workingBytes) return;
 
-    // Always validate before run
-    const runtimeRecipe = applyOverridesToRecipe(
+  setIsRunning(true);
+  setMacroLogs([]);
+  setStepResults([]);
+  setValidationErrors([]);
+  setExecProgress(null);
+
+  try {
+    const appliedRecipe = applyOverridesToRecipe(
       selectedRecipe,
-      overrides,
+      overridesByRecipe[selectedRecipe.id] || createDefaultOverrides(selectedRecipe, pageCount),
       viewState.currentPage,
-      Math.max(1, pageCount),
+      pageCount,
     );
 
-    const report = await validateRecipeBeforeRun(runtimeRecipe, {
-        pageCount: Math.max(1, pageCount),
-        selectedPages: useSessionStore.getState().selectedPages,
-        currentPage: viewState.currentPage,
-        fileName,
-        donorFiles: {},
-        now: new Date(),
-      });
+    const ctx: import('@/core/macro/types').MacroExecutionContext = {
+      workingBytes,
+      pageCount,
+      selectedPages,
+      fileName: fileName ?? 'document.pdf',
+      fileId:   '',
+      options:  { abortOnError: true },
+    };
 
-    if (!report.isValid) {
-      setPreflightReport(report);
+    const { executeMacroRecipe } = await import('@/core/macro/executor');
+    const result = await executeMacroRecipe(
+      appliedRecipe,
+      ctx,
+      (progress) => setExecProgress(progress),
+    );
+
+    setStepResults(result.stepResults);
+    setMacroLogs(result.logs);
+
+    if (!result.success && result.validationErrors?.length) {
+      setValidationErrors(result.validationErrors);
       return;
     }
 
-    setPreflightReport(null);
-    setIsRunning(true);
-    setRunError(null);
+    if (result.success) {
+      replaceWorkingCopy(result.finalBytes, result.stepResults
+        .flatMap((r) => r.sideEffects)
+        .filter((e) => e.type === 'page_count_changed')
+        .at(-1)?.newCount
+        ?? pageCount);
 
-    try {
-
-      const result = await runMacroRecipeAgainstSession(runtimeRecipe, {
-        saveOutputs: false,
-      });
-
-      setRunLogs(result.logs);
-      if (result.outputFiles.length > 0) {
-        setOutputQueue((current) => [
-          ...current,
-          ...result.outputFiles.map((output) => ({
-            id: uuidv4(),
-            ...output,
-          })),
-        ]);
+      for (const file of result.outputFiles) {
+        triggerDownload(file.bytes, file.name);
       }
-    } catch (err) {
-      const message = String(err);
-      setRunError(message);
-      logError('macro', 'Macro execution failed in sidebar', {
-        recipeId: selectedRecipe.id,
-        error: message,
-      });
-    } finally {
-      setIsRunning(false);
     }
-  };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    setMacroLogs(prev => [...prev, `[fatal] ${message}`]);
+  } finally {
+    setIsRunning(false);
+    setExecProgress(null);
+  }
+}, [selectedRecipe, workingBytes, pageCount, selectedPages, fileName, replaceWorkingCopy, overridesByRecipe, viewState.currentPage]);
 
   const resetPanel = () => {
     if (!selectedRecipe) {
@@ -1128,4 +1144,14 @@ function toPageSelector(overrides: RecipeOverrides, pageCount: number): PageSele
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+function triggerDownload(bytes: Uint8Array, filename: string): void {
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }

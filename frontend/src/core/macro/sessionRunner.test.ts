@@ -1,3 +1,4 @@
+import './steps/register-all';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runMacroRecipeAgainstSession } from './sessionRunner';
 import { useSessionStore } from '@/core/session/store';
@@ -37,6 +38,9 @@ describe('runMacroRecipeAgainstSession', () => {
       logs: ['ok'],
       extractedOutputs: [],
       outputs: [],
+      stepResults: [],
+      success: true,
+      outputFiles: [],
     });
     mockDispatchCommand.mockResolvedValue({ success: true, message: 'ok' });
   });
@@ -65,6 +69,8 @@ describe('runMacroRecipeAgainstSession', () => {
       outputFiles: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
       extractedOutputs: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
       outputs: [{ name: 'out.pdf', bytes: new Uint8Array([9]) }],
+      stepResults: [],
+      success: true,
     });
 
     await runMacroRecipeAgainstSession({ id: 'r4', name: 'R4', steps: [] }, { saveOutputs: true });
