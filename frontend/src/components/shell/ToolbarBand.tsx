@@ -4,6 +4,7 @@ import { ToolbarOrganize } from '@/components/toolbar/ToolbarOrganize';
 import { ToolbarComment as ToolbarAnnotate } from '@/components/toolbar/ToolbarComment';
 import { ToolbarMacro as ToolbarGenerate } from '@/components/toolbar/ToolbarMacro';
 import { ToolbarView } from '@/components/toolbar/ToolbarView';
+import { ToolbarWriter } from '@/components/toolbar/ToolbarWriter';
 
 // ─── ToolbarDivider ────────────────────────────────────────────────────────
 function ToolbarDivider() {
@@ -118,18 +119,10 @@ export function ToolbarBand() {
         <ToolbarView />
       </ToolbarGroup>
 
-      {/*
-        ── Agent F inserts the writer tab here ──────────────────────────────
-        After Agent F delivers, this comment is replaced with:
-
-          <ToolbarDivider />
-          <ToolbarGroup label="Writer">
-            <ToolbarWriter />
-          </ToolbarGroup>
-
-        Do NOT add this yourself.
-        ─────────────────────────────────────────────────────────────────────
-      */}
+      <ToolbarDivider />
+      <ToolbarGroup label="Writer">
+        <ToolbarWriter />
+      </ToolbarGroup>
     </div>
   );
 }
