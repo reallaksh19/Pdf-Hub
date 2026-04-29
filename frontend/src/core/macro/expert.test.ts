@@ -34,6 +34,7 @@ describe('Quantitative pass test - macros to expert level', () => {
         currentPage: 1,
         fileName: 'test.pdf',
         donorFiles: {},
+        fileRegistry: new Map(),
         now: new Date('2024-01-01T00:00:00.000Z')
       });
 

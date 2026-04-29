@@ -1,3 +1,4 @@
+import './steps/register-all';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runMacroRecipeAgainstSession } from './sessionRunner';
 import { useSessionStore } from '@/core/session/store';

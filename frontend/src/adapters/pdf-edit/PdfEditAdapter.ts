@@ -40,7 +40,7 @@ function normalizePageIndices(pageIndices: number[]): number[] {
   return Array.from(new Set(pageIndices)).sort((a, b) => a - b);
 }
 
-function hexToRgb(hex: string): ReturnType<typeof rgb> {
+function hexToRgbPdfLib(hex: string): ReturnType<typeof rgb> {
   const normalized = hex.replace('#', '').trim();
   const safe =
     normalized.length === 3
@@ -372,7 +372,7 @@ export class PdfEditAdapter {
         y,
         font,
         size: options.fontSize,
-        color: hexToRgb(options.color),
+        color: hexToRgbPdfLib(options.color),
         opacity: options.opacity,
       });
     }
@@ -415,7 +415,7 @@ export class PdfEditAdapter {
         y: options.y,
         font,
         size: options.fontSize,
-        color: hexToRgb(options.color),
+        color: hexToRgbPdfLib(options.color),
         opacity: options.opacity,
       });
     }
@@ -455,7 +455,7 @@ export class PdfEditAdapter {
       page.drawRectangle({
         x: options.x, y: options.y,
         width: options.width, height: options.height,
-        borderColor: hexToRgb(options.borderColor ?? '#000000'),
+        borderColor: (() => { const c = hexToRgb(options.borderColor ?? '#000000'); return rgb(c.r, c.g, c.b); })(),
         borderWidth,
         color: undefined,
       });
@@ -503,8 +503,8 @@ export class PdfEditAdapter {
       const borderColorHex = readStrokeColor(annotation);
       const fillColorHex = readFillColor(annotation);
       const strokeWidth = readStrokeWidth(annotation);
-      const borderColor = borderColorHex === 'transparent' ? undefined : hexToRgb(borderColorHex);
-      const fillColor = fillColorHex === 'transparent' ? undefined : hexToRgb(fillColorHex);
+      const borderColor = borderColorHex === 'transparent' ? undefined : hexToRgbPdfLib(borderColorHex);
+      const fillColor = fillColorHex === 'transparent' ? undefined : hexToRgbPdfLib(fillColorHex);
 
       if (annotation.type === 'highlight') {
         page.drawRectangle({
@@ -685,7 +685,7 @@ export class PdfEditAdapter {
             size: typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12,
             color:
               typeof annotation.data.textColor === 'string'
-                ? hexToRgb(annotation.data.textColor)
+                ? hexToRgbPdfLib(annotation.data.textColor)
                 : rgb(0.12, 0.12, 0.12),
             maxWidth: Math.max(20, annotation.rect.width - 30),
             rotate:
@@ -725,7 +725,7 @@ export class PdfEditAdapter {
               y: y + Math.max(8, annotation.rect.height - 24),
               font: helvetica,
               size: typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 10,
-              color: typeof annotation.data.textColor === 'string' ? hexToRgb(annotation.data.textColor) : rgb(0.12, 0.12, 0.12),
+              color: typeof annotation.data.textColor === 'string' ? hexToRgbPdfLib(annotation.data.textColor) : rgb(0.12, 0.12, 0.12),
               maxWidth: Math.max(20, annotation.rect.width - 12),
             });
           }
@@ -752,7 +752,7 @@ export class PdfEditAdapter {
           size: typeof annotation.data.fontSize === 'number' ? annotation.data.fontSize : 12,
           color:
             typeof annotation.data.textColor === 'string'
-              ? hexToRgb(annotation.data.textColor)
+              ? hexToRgbPdfLib(annotation.data.textColor)
               : annotation.type === 'stamp'
               ? rgb(0.75, 0.1, 0.1)
               : rgb(0.12, 0.12, 0.12),
@@ -770,4 +770,18 @@ export class PdfEditAdapter {
 }
 
 
+
+
 // Add to bottom of PdfEditAdapter.ts — outside the class
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const clean    = hex.replace('#', '');
+  // Handle 3-char shorthand (#fff → #ffffff)
+  const expanded = clean.length === 3
+    ? clean.split('').map(c => c + c).join('')
+    : clean;
+  return {
+    r: parseInt(expanded.slice(0, 2), 16) / 255,
+    g: parseInt(expanded.slice(2, 4), 16) / 255,
+    b: parseInt(expanded.slice(4, 6), 16) / 255,
+  };
+}
