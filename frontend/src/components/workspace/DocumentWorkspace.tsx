@@ -1,3 +1,4 @@
+import { WriterOverlay } from '../writer/WriterOverlay';
 import React from 'react';
 import { UploadCloud } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -1252,15 +1253,23 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
         style={{ pointerEvents: isPlacementOnlyTool ? 'auto' : 'none' }}
         onClick={handleOverlayClick}
       >
+
+            {/* WRITER OVERLAY */}
+            <WriterOverlay
+              pageNumber={pageNumber}
+              scale={scale}
+              pageDimensions={{ width: 612, height: 792 }} /* TODO: compute properly */
+            />
         {pageAnnotations
         .slice()
         .sort((a, b) => (a.data?.zIndex ?? 0) - (b.data?.zIndex ?? 0))
         .map((annotation) => {
-          let NodeComponent: React.FC<any>;
+          let NodeComponent: React.FC<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
           try {
             NodeComponent = annotationRegistry.get(annotation.type);
           } catch (err) {
+            // eslint-disable-next-line no-console
             console.error(err);
             return (
               <div
@@ -1318,7 +1327,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
               onCommitEdit={(v: string) => commitTextEdit(annotation, v)}
               {...(annotation.type === 'callout' ? {
                 anchorPoint: anchor,
-                onAnchorDragStart: (event: any) => startAnchorDrag(event, annotation),
+                onAnchorDragStart: (event: any) => startAnchorDrag(event, annotation), // eslint-disable-line @typescript-eslint/no-explicit-any
               } : {})}
             />
           );
