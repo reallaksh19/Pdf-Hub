@@ -11,6 +11,7 @@ export interface MacroExecutionResult {
   validationErrors?: import('./validator').ValidationError[];
   finalBytes:        Uint8Array;
   logs:              string[];
+  selectedPages:     number[];
 }
 
 export interface ExecutionProgress {
@@ -77,5 +78,6 @@ export async function executeMacroRecipe(
     stepResults,
     finalBytes:  state.workingBytes,
     logs:        state.logs,
+    selectedPages: state.selectedPages,
   };
 }
