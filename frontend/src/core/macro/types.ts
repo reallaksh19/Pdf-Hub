@@ -175,6 +175,7 @@ export interface MacroExecutionContext {
   fileName: string;
   fileId?: string;
   donorFiles?: Record<string, Uint8Array>;
+  fileRegistry?: Map<string, Uint8Array>;
   now?: Date;
   options?: {
     abortOnError?: boolean;

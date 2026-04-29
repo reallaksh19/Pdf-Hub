@@ -20,6 +20,7 @@ import { runMacroRecipeAgainstSession } from '@/core/macro/sessionRunner';
 import { GENERATION_MACROS } from '@/core/macro/generationBuiltins';
 import { validateRecipeBeforeRun, type PreflightReport } from '@/core/macro/validation/validator';
 import { usePresetsStore } from '@/core/macro/store/presets';
+import { macroRegistry } from '@/core/macro/registry';
 import { ImageIcon } from 'lucide-react';
 import type {
   MacroOutputFile,
@@ -1093,7 +1094,7 @@ function clamp(value: number, min: number, max: number): number {
 
 
 
-import { macroRegistry } from '@/core/macro/registry';
+
 
 interface BuilderState {
   steps: MacroStep[];
