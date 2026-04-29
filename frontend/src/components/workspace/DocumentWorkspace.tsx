@@ -16,6 +16,7 @@ import { annotationRegistry } from '../../core/annotations/registry';
 
 import { usePageRenderer } from '@/core/renderer/usePageRenderer';
 
+import { WriterOverlay } from '@/components/writer/WriterOverlay';
 import { useSearchStore } from '@/core/search/store';
 import { SearchIndexer } from '@/core/search/indexer';
 import { FileAdapter } from '@/adapters/file/FileAdapter';
@@ -1246,6 +1247,11 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
         </>
       )}
 
+      <WriterOverlay
+        pageNumber={pageNumber}
+        scale={scale}
+        pageDimensions={renderSize || { width: size.width, height: size.height }}
+      />
       <div
         className={`absolute inset-0 ${
           activeTool !== 'select' ? 'cursor-crosshair' : ''
