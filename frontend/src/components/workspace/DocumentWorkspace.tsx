@@ -1258,7 +1258,7 @@ const PageSurface: React.FC<PageSurfaceProps> = ({
             <WriterOverlay
               pageNumber={pageNumber}
               scale={scale}
-              pageDimensions={{ width: 612, height: 792 }} /* TODO: compute properly */
+              pageDimensions={renderSize ? { width: renderSize.width / scale, height: renderSize.height / scale } : { width: 612, height: 792 }}
             />
         {pageAnnotations
         .slice()
