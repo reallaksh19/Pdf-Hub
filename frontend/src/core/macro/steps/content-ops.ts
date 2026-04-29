@@ -1,3 +1,4 @@
+import html2canvas from 'html2canvas';
 import { macroRegistry } from '../registry';
 import type { StepResult, MacroMutableState } from '../registry';
 import type { MacroExecutionContext, MacroStep } from '../types';
@@ -121,8 +122,6 @@ async function executeHeaderFooterText(
   }
 }
 macroRegistry.register('header_footer_text', executeHeaderFooterText);
-
-import html2canvas from 'html2canvas';
 
 type PlaceRichTextboxStep = Extract<MacroStep, { op: 'place_rich_textbox' }>;
 async function executePlaceRichTextbox(
@@ -359,4 +358,4 @@ async function executeAdjustImage(
     };
   }
 }
-macroRegistry.register('adjust_image', executeAdjustImage as unknown as import('../registry').StepExecutor<Extract<MacroStep, { op: 'adjust_image' }>>);
+macroRegistry.register('adjust_image', executeAdjustImage);

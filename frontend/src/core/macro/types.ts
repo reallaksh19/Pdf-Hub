@@ -150,6 +150,13 @@ export type MacroStep =
       x: number;
       y: number;
       width: number;
+      height: number;
+      opacity?: number;
+      borderWidth?: number;
+      borderColor?: string;
+      rotation?: number;
+      base64Image?: string;
+      donorFileId?: string;
     }
   | { op: 'conditional'; condition: MacroCondition; then: MacroStep[]; else?: MacroStep[] }
   | { op: 'apply_template_vars'; vars: Record<string, string> };
