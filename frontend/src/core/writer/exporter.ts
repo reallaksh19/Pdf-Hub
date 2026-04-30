@@ -101,7 +101,7 @@ async function captureElementToPng(element: PlacedElement): Promise<Uint8Array> 
     let parsedData = tableData;
     if (tableData.headers) {
       parsedData = {
-         columns: tableData.headers.map((h: string, i: number) => ({ id: `col-${i}` })),
+         columns: tableData.headers.map((_h: string, i: number) => ({ id: `col-${i}` })),
          rows: [
            { id: 'header-row', cells: tableData.headers.map((h: string, i: number) => ({ id: `h-${i}`, text: h })) },
            ...tableData.rows.map((r: string[], rIdx: number) => ({

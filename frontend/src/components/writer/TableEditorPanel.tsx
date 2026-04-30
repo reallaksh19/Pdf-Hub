@@ -22,7 +22,7 @@ export const TableEditorPanel: React.FC<Props> = ({ element, scale, onClose }) =
       // Migration logic from old structure if necessary
       if (parsed.headers) {
          return {
-            columns: parsed.headers.map((h: string, i: number) => ({ id: `col-${i}` })),
+            columns: parsed.headers.map((_h: string, i: number) => ({ id: `col-${i}` })),
             rows: [
               { id: 'header-row', cells: parsed.headers.map((h: string, i: number) => ({ id: `h-${i}`, text: h })) },
               ...parsed.rows.map((r: string[], rIdx: number) => ({
