@@ -21,10 +21,20 @@ interface Props {
  * All drag operations use setPointerCapture for reliable tracking outside the element bounds.
  */
 export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
-  const { updateElement, commitElementTransform, removeElement, setSelectedId, selectedId, bringForward, sendBackward } =
-    useWriterStore();
+  const {
+    updateElement,
+    commitElementTransform,
+    removeElement,
+    setSelectedId,
+    toggleSelection,
+    selectedIds,
+    activeId,
+    bringForward,
+    sendBackward
+  } = useWriterStore();
 
-  const isSelected = selectedId === element.id;
+  const isSelected = selectedIds.includes(element.id);
+  const isActive = activeId === element.id;
 
   const [editMode, setEditMode] = useState<'rich-text' | 'table' | null>(null);
   const [showContextMenu, setShowContextMenu] = useState(false);
@@ -38,6 +48,8 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
     origY:    number;
     origW:    number;
     origH:    number;
+    preDragElements: PlacedElement[]; // Captured elements snapshot before drag
+    groupOffsets?: Record<string, { x: number, y: number }>; // Captured relative offsets for group drag
   } | null>(null);
 
   // Screen → PDF space
@@ -52,7 +64,24 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
       const clientX = e.clientX;
       const clientY = e.clientY;
 
-      setSelectedId(element.id);
+      if (e.metaKey || e.ctrlKey) {
+        toggleSelection(element.id);
+      } else if (!isSelected) {
+        setSelectedId(element.id);
+      }
+
+      // Capture the exact layout before any dragging occurs
+      const currentElements = useWriterStore.getState().elements;
+      const isGroupMove = isSelected;
+
+      const groupOffsets: Record<string, { x: number, y: number }> = {};
+      if (isGroupMove && handle === 'move') {
+         currentElements.forEach(el => {
+           if (selectedIds.includes(el.id)) {
+             groupOffsets[el.id] = { x: el.x, y: el.y };
+           }
+         });
+      }
 
       dragRef.current = {
         handle,
@@ -62,9 +91,11 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
         origY:  element.y,
         origW:  element.width,
         origH:  element.height,
+        preDragElements: currentElements,
+        groupOffsets
       };
     },
-    [element, setSelectedId],
+    [element, isSelected, selectedIds, setSelectedId, toggleSelection],
   );
 
   const toPdf = useCallback((px: number) => px / scale, [scale]);
@@ -77,32 +108,48 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
       const dx = toPdf(e.clientX - startX);
       const dy = toPdf(e.clientY - startY);
 
-      let patch: Partial<PlacedElement> = {};
-
       if (handle === 'move') {
-        patch = { x: Math.max(0, origX + dx), y: Math.max(0, origY + dy) };
+        useWriterStore.setState(s => {
+          const isGroupMove = s.selectedIds.includes(element.id);
+          const elementsToMove = isGroupMove ? s.selectedIds : [element.id];
+
+          return {
+            elements: s.elements.map(el => {
+              if (elementsToMove.includes(el.id)) {
+                if (isGroupMove && dragRef.current?.groupOffsets?.[el.id]) {
+                  const origEl = dragRef.current.groupOffsets[el.id];
+                  return { ...el, x: Math.max(0, origEl.x + dx), y: Math.max(0, origEl.y + dy) };
+                } else if (el.id === element.id) {
+                  return { ...el, x: Math.max(0, origX + dx), y: Math.max(0, origY + dy) };
+                }
+              }
+              return el;
+            })
+          };
+        });
       } else {
-        // Resize — corner handles
+        // Resize — corner handles (resizing only applies to the actively dragged element, not group)
+        let patch: Partial<PlacedElement> = {};
         const minSize = 20 / scale;
         if (handle === 'se') patch = { width: Math.max(minSize, origW + dx), height: Math.max(minSize, origH + dy) };
         if (handle === 'sw') patch = { x: origX + dx, width: Math.max(minSize, origW - dx), height: Math.max(minSize, origH + dy) };
         if (handle === 'ne') patch = { y: origY + dy, width: Math.max(minSize, origW + dx), height: Math.max(minSize, origH - dy) };
         if (handle === 'nw') patch = { x: origX + dx, y: origY + dy, width: Math.max(minSize, origW - dx), height: Math.max(minSize, origH - dy) };
-      }
 
-      // Live preview — update directly (no undo snapshot during drag)
-      useWriterStore.setState(s => ({
-        elements: s.elements.map(el => el.id === element.id ? { ...el, ...patch } : el),
-      }));
+        useWriterStore.setState(s => ({
+          elements: s.elements.map(el => el.id === element.id ? { ...el, ...patch } : el),
+        }));
+      }
     },
     [element.id, scale, toPdf],
   );
 
   const handlePointerUp = useCallback(() => {
+    if (!dragRef.current) return;
+    const preDragSnapshot = dragRef.current.preDragElements;
     dragRef.current = null;
-    // Snapshot to undo stack on release using the new proper explicit action
-    commitElementTransform(element.id, { x: element.x, y: element.y, width: element.width, height: element.height });
-  }, [element.id, element.x, element.y, element.width, element.height, commitElementTransform]);
+    commitElementTransform(preDragSnapshot);
+  }, [commitElementTransform]);
 
   const handleDoubleClick = useCallback(() => {
     if (element.type === 'rich-text') setEditMode('rich-text');
@@ -136,7 +183,7 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
   return (
     <>
       <div
-        className={`writer-element-node ${isSelected ? 'writer-element-node-selected' : 'writer-element-node-unselected'} ${element.locked ? 'writer-element-node-locked' : 'writer-element-node-unlocked'}`}
+        className={`writer-element-node ${isSelected ? 'writer-element-node-selected' : 'writer-element-node-unselected'} ${isActive ? 'writer-element-node-active' : ''} ${element.locked ? 'writer-element-node-locked' : 'writer-element-node-unlocked'}`}
         style={{
           left:         sx,
           top:          sy,

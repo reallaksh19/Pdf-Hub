@@ -4,21 +4,28 @@ import type { PlacedElement, WriterTool } from './types';
 const MAX_UNDO_DEPTH = 50;
 
 interface WriterState {
-  elements:   PlacedElement[];
-  activeTool: WriterTool;
-  selectedId: string | null;
-  undoStack:  PlacedElement[][];
-  redoStack:  PlacedElement[][];
+  elements:    PlacedElement[];
+  activeTool:  WriterTool;
+  selectedIds: string[];
+  activeId:    string | null;
+  undoStack:   PlacedElement[][];
+  redoStack:   PlacedElement[][];
 }
 
 interface WriterActions {
   addElement:              (element: PlacedElement) => void;
   updateElement:           (id: string, patch: Partial<PlacedElement>) => void;
-  commitElementTransform:  (id: string, patch: Partial<PlacedElement>) => void;
+  updateSelectedElements:  (patch: Partial<PlacedElement>) => void;
+  commitElementTransform:  (preDragElements: PlacedElement[]) => void;
   removeElement:           (id: string) => void;
-  setActiveTool: (tool: WriterTool) => void;
-  setSelectedId: (id: string | null) => void;
-  clearPage:     (pageNumber: number) => void;
+  removeSelection:         () => void;
+  duplicateSelection:      () => void;
+  setActiveTool:           (tool: WriterTool) => void;
+  setSelectedId:           (id: string | null) => void;
+  toggleSelection:         (id: string) => void;
+  setSelection:            (ids: string[]) => void;
+  clearSelection:          () => void;
+  clearPage:               (pageNumber: number) => void;
   exportPage:    (pageNumber: number) => PlacedElement[];
   undo:          () => void;
   redo:          () => void;
@@ -35,54 +42,114 @@ function snapshot(elements: PlacedElement[], undoStack: PlacedElement[][]): Plac
 }
 
 export const useWriterStore = create<WriterState & WriterActions>((set, get) => ({
-  elements:   [],
-  activeTool: 'select',
-  selectedId: null,
-  undoStack:  [],
-  redoStack:  [],
+  elements:    [],
+  activeTool:  'select',
+  selectedIds: [],
+  activeId:    null,
+  undoStack:   [],
+  redoStack:   [],
 
   addElement: (element) => set(s => ({
-    elements:  [...s.elements, element],
-    undoStack: snapshot(s.elements, s.undoStack),
-    redoStack: [],  // new action clears redo history
+    elements:    [...s.elements, element],
+    selectedIds: [element.id],
+    activeId:    element.id,
+    undoStack:   snapshot(s.elements, s.undoStack),
+    redoStack:   [],
   })),
 
   updateElement: (id, patch) => set(s => ({
-    elements:  s.elements.map(e => e.id === id ? { ...e, ...patch } : e),
-    // Only snapshots on explicit commit actions now, not on every live preview frame
+    elements: s.elements.map(e => e.id === id ? { ...e, ...patch } : e),
   })),
 
-  commitElementTransform: (_id, _patch) => set(s => {
-    // Snapshot state based on the element BEFORE the live-preview changes were made
-    // We achieve this by looking for the current state in elements, applying the inverse patch,
-    // and taking a snapshot of THAT state to avoid the double-undo bug.
-    // However, a much simpler fix is just to snapshot what we have *before* applying the final commit,
-    // assuming the final commit *is* the actual update we want to push onto the stack.
-
-    // Actually, since live-preview updates `s.elements` directly WITHOUT snapshotting,
-    // `s.elements` currently holds the final dragged state. `s.undoStack[0]` holds the pre-drag state.
-    // We just need to push the current `s.elements` onto the undoStack, and we don't even need to apply the patch!
-    // Wait, if we push it, undo will revert to it.
-
-    // Correct logic: we just need to push the current state to the undo stack, meaning the NEXT action
-    // will be able to undo to this state. The drag itself already mutated the state.
-    const currentSnapshot = snapshot(s.elements, s.undoStack);
+  updateSelectedElements: (patch) => set(s => {
+    if (s.selectedIds.length === 0) return {};
     return {
-      elements: s.elements, // Elements already updated by live preview
-      undoStack: currentSnapshot,
+      elements: s.elements.map(e => s.selectedIds.includes(e.id) ? { ...e, ...patch } : e),
+    };
+  }),
+
+  commitElementTransform: (preDragElements) => set(s => {
+    // We snapshot the explicitly provided PRE-drag elements.
+    // The current s.elements is already the POST-drag elements.
+    const newUndoStack = snapshot(preDragElements, s.undoStack);
+    return {
+      undoStack: newUndoStack,
       redoStack: [],
     };
   }),
 
   removeElement: (id) => set(s => ({
-    elements:  s.elements.filter(e => e.id !== id),
-    selectedId: s.selectedId === id ? null : s.selectedId,
-    undoStack: snapshot(s.elements, s.undoStack),
-    redoStack: [],
+    elements:    s.elements.filter(e => e.id !== id),
+    selectedIds: s.selectedIds.filter(selected => selected !== id),
+    activeId:    s.activeId === id ? null : s.activeId,
+    undoStack:   snapshot(s.elements, s.undoStack),
+    redoStack:   [],
   })),
 
+  removeSelection: () => set(s => ({
+    elements:    s.elements.filter(e => !s.selectedIds.includes(e.id)),
+    selectedIds: [],
+    activeId:    null,
+    undoStack:   snapshot(s.elements, s.undoStack),
+    redoStack:   [],
+  })),
+
+  duplicateSelection: () => set(s => {
+    if (s.selectedIds.length === 0) return {};
+
+    const newElements: PlacedElement[] = [];
+    const newIds: string[] = [];
+
+    for (const id of s.selectedIds) {
+      const el = s.elements.find(e => e.id === id);
+      if (el) {
+        const newId = `wel-${crypto.randomUUID()}`;
+        newElements.push({
+          ...el,
+          id: newId,
+          x: el.x + 20, // Offset duplicate slightly
+          y: el.y + 20,
+        });
+        newIds.push(newId);
+      }
+    }
+
+    return {
+      elements:    [...s.elements, ...newElements],
+      selectedIds: newIds,
+      activeId:    newIds[0] || null,
+      undoStack:   snapshot(s.elements, s.undoStack),
+      redoStack:   [],
+    };
+  }),
+
   setActiveTool: (tool) => set({ activeTool: tool }),
-  setSelectedId: (id)   => set({ selectedId: id }),
+
+  setSelectedId: (id) => set({
+    selectedIds: id ? [id] : [],
+    activeId:    id
+  }),
+
+  toggleSelection: (id) => set(s => {
+    const isSelected = s.selectedIds.includes(id);
+    const newIds = isSelected
+      ? s.selectedIds.filter(x => x !== id)
+      : [...s.selectedIds, id];
+    return {
+      selectedIds: newIds,
+      activeId: newIds.length > 0 ? newIds[newIds.length - 1] : null,
+    };
+  }),
+
+  setSelection: (ids) => set({
+    selectedIds: ids,
+    activeId: ids.length > 0 ? ids[ids.length - 1] : null
+  }),
+
+  clearSelection: () => set({
+    selectedIds: [],
+    activeId: null
+  }),
 
   clearPage: (pageNumber) => set(s => ({
     elements:  s.elements.filter(e => e.pageNumber !== pageNumber),

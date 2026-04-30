@@ -3,6 +3,8 @@ import { useEditorStore } from '@/core/editor/store';
 import { useAnnotationStore } from '@/core/annotations/store';
 import type { AnnotationType, PdfAnnotation } from '@/core/annotations/types';
 import { Settings, Palette, Info, ChevronRight, ChevronLeft, ChevronDown, MessageSquare, Send, Minus, X } from 'lucide-react';
+import { WriterInspectorPanel } from '@/components/writer/WriterInspectorPanel';
+import { useWriterStore } from '@/core/writer/store';
 import { v4 as uuidv4 } from 'uuid';
 import type { ReviewReply, ReviewStatus } from '@/core/review/types';
 import { Button } from '@/components/ui/Button';
@@ -40,6 +42,8 @@ export const InspectorPanel: React.FC = () => {
     toggleLockSelection,
   } = useAnnotationStore();
 
+  const writerSelectedIds = useWriterStore(s => s.selectedIds);
+
   const [previousWidth, setPreviousWidth] = useState(18);
   const isCollapsed = rightPanelWidth <= 0.1;
 
@@ -59,6 +63,12 @@ export const InspectorPanel: React.FC = () => {
       setRightPanelWidth(0);
     }
   };
+
+  // If we are actively using Writer Mode (any of the writer tools) and have a selection, hijack the inspector panel
+  const isWriterActive = ['select', 'place-text', 'place-image', 'place-table'].includes(useWriterStore(s => s.activeTool));
+  if (isWriterActive && writerSelectedIds.length > 0) {
+    return <WriterInspectorPanel />;
+  }
 
   if (isCollapsed) {
     return (
