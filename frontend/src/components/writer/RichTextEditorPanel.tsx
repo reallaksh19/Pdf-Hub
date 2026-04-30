@@ -5,6 +5,7 @@ import { Bold, Italic, Underline, List, ListOrdered, Save, X, ZoomIn, ZoomOut } 
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useState } from 'react';
+import { sanitizeHtml } from '../../core/writer/htmlSanitizer';
 
 interface Props {
   element: PlacedElement;
@@ -87,9 +88,15 @@ export const RichTextEditorPanel: React.FC<Props> = ({ element, scale, onClose }
       }
     }
 
-    // If it's not an image, let the browser handle the rich text / table paste natively
+    // If it's not an image, try to grab text/html to sanitize it before pasting.
     if (!handledImage) {
-      setTimeout(saveContent, 0); // Save the content after the browser natively pastes it
+      const htmlContent = e.clipboardData.getData('text/html');
+      if (htmlContent) {
+        e.preventDefault(); // Stop native unsafe paste
+        const sanitized = sanitizeHtml(htmlContent);
+        document.execCommand('insertHTML', false, sanitized);
+      }
+      setTimeout(saveContent, 0); // Save the content after paste completes
     }
   };
 
@@ -187,11 +194,17 @@ export const RichTextEditorPanel: React.FC<Props> = ({ element, scale, onClose }
                 size="icon"
                 className="h-6 w-6"
                 onClick={() => {
+                  if (!editorRef.current) return;
                   const currentWidth = selectedImage.style.width ? parseInt(selectedImage.style.width) : 100;
                   const newWidth = Math.max(10, currentWidth - 10);
-                  selectedImage.style.width = `${newWidth}%`;
-                  // Remove maxWidth restriction so our manual % controls it directly
-                  selectedImage.style.maxWidth = 'none';
+
+                  // Clone the image node to modify it safely without violating React state immutability
+                  const newImg = selectedImage.cloneNode() as HTMLImageElement;
+                  newImg.style.width = `${newWidth}%`;
+                  newImg.style.maxWidth = 'none';
+
+                  selectedImage.replaceWith(newImg);
+                  setSelectedImage(newImg);
                   saveContent();
                 }}
               >
@@ -204,10 +217,17 @@ export const RichTextEditorPanel: React.FC<Props> = ({ element, scale, onClose }
                 size="icon"
                 className="h-6 w-6"
                 onClick={() => {
+                  if (!editorRef.current) return;
                   const currentWidth = selectedImage.style.width ? parseInt(selectedImage.style.width) : 100;
                   const newWidth = Math.min(100, currentWidth + 10);
-                  selectedImage.style.width = `${newWidth}%`;
-                  selectedImage.style.maxWidth = 'none';
+
+                  // Clone the image node to modify it safely without violating React state immutability
+                  const newImg = selectedImage.cloneNode() as HTMLImageElement;
+                  newImg.style.width = `${newWidth}%`;
+                  newImg.style.maxWidth = 'none';
+
+                  selectedImage.replaceWith(newImg);
+                  setSelectedImage(newImg);
                   saveContent();
                 }}
               >

@@ -96,8 +96,24 @@ async function captureElementToPng(element: PlacedElement): Promise<Uint8Array> 
       img.onerror = () => rej(new Error('Image failed to load for bake'));
     });
   } else if (element.type === 'table') {
-    const tableData = JSON.parse(element.content || '{"headers":[],"rows":[]}');
-    container.innerHTML = buildTableHtml(tableData, w, RENDER_SCALE);
+    const tableData = JSON.parse(element.content || '{"rows":[],"columns":[],"style":{}}');
+    // Ensure we handle migration transparently on render if it's an old schema
+    let parsedData = tableData;
+    if (tableData.headers) {
+      parsedData = {
+         columns: tableData.headers.map((h: string, i: number) => ({ id: `col-${i}` })),
+         rows: [
+           { id: 'header-row', cells: tableData.headers.map((h: string, i: number) => ({ id: `h-${i}`, text: h })) },
+           ...tableData.rows.map((r: string[], rIdx: number) => ({
+              id: `r-${rIdx}`,
+              cells: r.map((c, cIdx) => ({ id: `c-${rIdx}-${cIdx}`, text: c }))
+           }))
+         ],
+         style: { borderColor: tableData.borderColor || '#d1d5db', headerBg: tableData.headerBg || '#f1f5f9' }
+      };
+    }
+
+    container.innerHTML = buildTableHtml(parsedData, w, RENDER_SCALE);
   }
 
   document.body.appendChild(container);
@@ -123,27 +139,32 @@ async function captureElementToPng(element: PlacedElement): Promise<Uint8Array> 
   }
 }
 
+import type { WriterTableData } from './types';
+
 export function buildTableHtml(
-  data: { headers: string[]; rows: string[][]; borderColor?: string; headerBg?: string },
+  data: WriterTableData,
   width: number,
   scale: number,
 ): string {
-  const { headers = [], rows = [], borderColor = '#d1d5db', headerBg = '#f1f5f9' } = data;
-  const colWidth = headers.length > 0 ? Math.floor(width / headers.length) : width;
+  const columns = data.columns || [];
+  const rows = data.rows || [];
+  const borderColor = data.style?.borderColor || '#d1d5db';
+  const headerBg = data.style?.headerBg || '#f1f5f9';
+
+  const colWidth = columns.length > 0 ? Math.floor(width / columns.length) : width;
   const fontSize = 11 * scale;
 
-  const headerRow = headers.map(h =>
-    `<td style="padding:${4*scale}px ${6*scale}px;font-weight:500;background:${headerBg};border:1px solid ${borderColor};width:${colWidth}px;font-size:${fontSize}px">${h}</td>`
-  ).join('');
+  const dataRows = rows.map((row, rIdx) => {
+    const isHeader = rIdx === 0;
+    const bg = isHeader ? headerBg : 'transparent';
+    const fw = isHeader ? 500 : 'normal';
 
-  const dataRows = rows.map(row =>
-    `<tr>${row.map(cell =>
-      `<td style="padding:${4*scale}px ${6*scale}px;border:1px solid ${borderColor};font-size:${fontSize}px">${cell}</td>`
-    ).join('')}</tr>`
-  ).join('');
+    return `<tr>${row.cells.map(cell =>
+      `<td style="padding:${4*scale}px ${6*scale}px;background:${bg};font-weight:${fw};border:1px solid ${borderColor};width:${colWidth}px;font-size:${fontSize}px">${cell.text}</td>`
+    ).join('')}</tr>`;
+  }).join('');
 
   return `<table style="border-collapse:collapse;width:100%;font-family:sans-serif">
-    <thead><tr>${headerRow}</tr></thead>
     <tbody>${dataRows}</tbody>
   </table>`;
 }

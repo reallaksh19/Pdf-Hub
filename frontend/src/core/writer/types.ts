@@ -13,6 +13,44 @@ export interface WriterStyles {
   lineHeight?: number;
 }
 
+export interface WriterCellStyle {
+  backgroundColor?: string;
+  textAlign?: 'left' | 'center' | 'right';
+  fontWeight?: 'normal' | 'bold';
+  fontStyle?: 'normal' | 'italic';
+  color?: string;
+}
+
+export interface WriterTableCell {
+  id: string;
+  text: string;
+  colspan?: number;
+  rowspan?: number;
+  style?: WriterCellStyle;
+}
+
+export interface WriterTableRow {
+  id: string;
+  cells: WriterTableCell[];
+}
+
+export interface WriterTableColumn {
+  id: string;
+  width?: number; // Optional exact width, otherwise flex
+}
+
+export interface WriterTableStyle {
+  borderColor?: string;
+  headerBg?: string;
+  fontSize?: number;
+}
+
+export interface WriterTableData {
+  rows: WriterTableRow[];
+  columns: WriterTableColumn[];
+  style: WriterTableStyle;
+}
+
 export interface PlacedElement {
   id: string;
   type: 'rich-text' | 'image' | 'table';

@@ -9,9 +9,8 @@ interface Props {
   pageDimensions: { width: number; height: number } | null;
 }
 
-let elementIdCounter = 0;
 function nextId(): string {
-  return `wel-${Date.now()}-${elementIdCounter++}`;
+  return `wel-${crypto.randomUUID()}`;
 }
 
 /**
@@ -66,7 +65,14 @@ export const WriterOverlay: React.FC<Props> = ({ pageNumber, scale, pageDimensio
         width:      200 / scale,   // default 200px screen → PDF space
         height:     80  / scale,
         content:    elementType === 'table'
-                      ? JSON.stringify({ headers: ['Col 1', 'Col 2'], rows: [], columnWidths: [], borderColor: '#d1d5db', headerBg: '#f1f5f9' })
+                      ? JSON.stringify({
+                          columns: [{ id: 'col-1' }, { id: 'col-2' }],
+                          rows: [
+                            { id: 'r-head', cells: [{ id: 'c-h1', text: 'Col 1' }, { id: 'c-h2', text: 'Col 2' }] },
+                            { id: 'r-1', cells: [{ id: 'c-1-1', text: '' }, { id: 'c-1-2', text: '' }] }
+                          ],
+                          style: { borderColor: '#d1d5db', headerBg: '#f1f5f9' }
+                        })
                       : '',
         styles:     {},
         zIndex:     elements.length,
