@@ -2,6 +2,8 @@ import React, { useCallback, useState } from 'react';
 import { useWriterStore } from '../../core/writer/store';
 import { WriterElementNode } from './WriterElementNode';
 import type { PlacedElement } from '../../core/writer/types';
+import { WriterSnapGuides } from './WriterSnapGuides';
+import type { SnapGuide } from '../../core/writer/geometry';
 
 interface Props {
   pageNumber:     number;
@@ -36,6 +38,26 @@ export const WriterOverlay: React.FC<Props> = ({ pageNumber, scale, pageDimensio
   // Marquee selection state
   const [marqueeStart, setMarqueeStart] = useState<{ x: number, y: number } | null>(null);
   const [marqueeCurrent, setMarqueeCurrent] = useState<{ x: number, y: number } | null>(null);
+
+  // Snap guides state (passed down from store or managed locally during drag)
+  // To keep it simple, WriterElementNode will push active guides up via a custom event or callback,
+  // but an easier React way is lifting state up, or we can just render the guides inside the overlay
+  // by observing a small local state since drag updates happen very fast.
+  const [activeGuides, setActiveGuides] = useState<SnapGuide[]>([]);
+
+  // Track shift key for enabling marquee selection
+  const [isShiftDown, setIsShiftDown] = useState(false);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Shift') setIsShiftDown(true); };
+    const handleKeyUp = (e: KeyboardEvent) => { if (e.key === 'Shift') setIsShiftDown(false); };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     // If not select tool, allow click handling to process
@@ -176,8 +198,8 @@ export const WriterOverlay: React.FC<Props> = ({ pageNumber, scale, pageDimensio
         width:         pageDimensions.width * scale,
         height:        pageDimensions.height * scale,
         zIndex:        10,
-        pointerEvents: 'all', // We capture pointer events now even in select mode to allow marquee
-        cursor:        isPlacing ? 'crosshair' : 'default',
+          pointerEvents: isPlacing || isShiftDown ? 'all' : 'none', // Only block PDF when placing or marquee selecting via Shift
+          cursor:        isPlacing ? 'crosshair' : isShiftDown ? 'crosshair' : 'default',
         overflow:      'hidden',
       }}
       onPointerDown={handlePointerDown}
@@ -216,11 +238,17 @@ export const WriterOverlay: React.FC<Props> = ({ pageNumber, scale, pageDimensio
          />
       )}
 
+      {activeGuides.length > 0 && pageDimensions && (
+         <WriterSnapGuides guides={activeGuides} scale={scale} pageDimensions={pageDimensions} />
+      )}
+
       {pageElements.map(element => (
         <WriterElementNode
           key={element.id}
           element={element}
           scale={scale}
+          pageDimensions={pageDimensions}
+          onGuidesChange={setActiveGuides}
         />
       ))}
     </div>

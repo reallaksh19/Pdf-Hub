@@ -59,12 +59,16 @@ export const useWriterStore = create<WriterState & WriterActions>((set, get) => 
 
   updateElement: (id, patch) => set(s => ({
     elements: s.elements.map(e => e.id === id ? { ...e, ...patch } : e),
+    undoStack: snapshot(s.elements, s.undoStack),
+    redoStack: [],
   })),
 
   updateSelectedElements: (patch) => set(s => {
     if (s.selectedIds.length === 0) return {};
     return {
       elements: s.elements.map(e => s.selectedIds.includes(e.id) ? { ...e, ...patch } : e),
+      undoStack: snapshot(s.elements, s.undoStack),
+      redoStack: [],
     };
   }),
 

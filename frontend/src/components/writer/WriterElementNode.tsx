@@ -4,11 +4,14 @@ import { RichTextEditorPanel } from './RichTextEditorPanel';
 import { TableEditorPanel } from './TableEditorPanel';
 import type { PlacedElement, TransformHandle } from '../../core/writer/types';
 import { buildTableHtml } from '../../core/writer/exporter';
+import { calculateSnaps, type SnapGuide } from '../../core/writer/geometry';
 import './WriterElementNode.css';
 
 interface Props {
   element: PlacedElement;
   scale:   number;
+  pageDimensions?: { width: number; height: number };
+  onGuidesChange?: (guides: SnapGuide[]) => void;
 }
 
 /**
@@ -20,7 +23,7 @@ interface Props {
  *
  * All drag operations use setPointerCapture for reliable tracking outside the element bounds.
  */
-export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
+export const WriterElementNode: React.FC<Props> = ({ element, scale, pageDimensions, onGuidesChange }) => {
   const {
     updateElement,
     commitElementTransform,
@@ -113,14 +116,45 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
           const isGroupMove = s.selectedIds.includes(element.id);
           const elementsToMove = isGroupMove ? s.selectedIds : [element.id];
 
+          // Calculate proposed new bounds for the primary dragged element
+          let newX = Math.max(0, origX + dx);
+          let newY = Math.max(0, origY + dy);
+
+          // If moving a single element and snapping is available, calculate snaps
+          if (!isGroupMove && pageDimensions && onGuidesChange) {
+             const otherElements = s.elements
+                 .filter(el => el.id !== element.id && el.pageNumber === element.pageNumber)
+                 .map(el => ({ x: el.x, y: el.y, width: el.width, height: el.height }));
+
+             const snapResult = calculateSnaps(
+                 { x: newX, y: newY, width: origW, height: origH },
+                 otherElements,
+                 pageDimensions
+             );
+             newX = snapResult.x;
+             newY = snapResult.y;
+             onGuidesChange(snapResult.guides);
+          }
+
+          // Apply bounds checking so elements don't easily fly off-page (optional enhancement mentioned in review)
+          if (pageDimensions) {
+            newX = Math.min(newX, pageDimensions.width - origW);
+            newY = Math.min(newY, pageDimensions.height - origH);
+          }
+
+          // In a group move, calculate the delta based on the primary element's final clamped/snapped coords
+          const finalDx = newX - origX;
+          const finalDy = newY - origY;
+
           return {
             elements: s.elements.map(el => {
               if (elementsToMove.includes(el.id)) {
                 if (isGroupMove && dragRef.current?.groupOffsets?.[el.id]) {
                   const origEl = dragRef.current.groupOffsets[el.id];
-                  return { ...el, x: Math.max(0, origEl.x + dx), y: Math.max(0, origEl.y + dy) };
+                  // Move group relative to the constrained translation of the active handle
+                  return { ...el, x: Math.max(0, origEl.x + finalDx), y: Math.max(0, origEl.y + finalDy) };
                 } else if (el.id === element.id) {
-                  return { ...el, x: Math.max(0, origX + dx), y: Math.max(0, origY + dy) };
+                  return { ...el, x: newX, y: newY };
                 }
               }
               return el;
@@ -141,15 +175,16 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
         }));
       }
     },
-    [element.id, scale, toPdf],
+    [element.id, scale, toPdf, element.pageNumber, onGuidesChange, pageDimensions],
   );
 
   const handlePointerUp = useCallback(() => {
     if (!dragRef.current) return;
     const preDragSnapshot = dragRef.current.preDragElements;
     dragRef.current = null;
+    if (onGuidesChange) onGuidesChange([]); // Clear guides
     commitElementTransform(preDragSnapshot);
-  }, [commitElementTransform]);
+  }, [commitElementTransform, onGuidesChange]);
 
   const handleDoubleClick = useCallback(() => {
     if (element.type === 'rich-text') setEditMode('rich-text');
