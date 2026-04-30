@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button';
-import { Type, Image, Table, Save, Undo, Redo } from 'lucide-react';
+import { Type, Image, Table, Save, Undo, Redo, ScanText } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useWriterStore } from '@/core/writer/store';
 import { useSessionStore } from '@/core/session/store';
@@ -58,6 +58,14 @@ export const ToolbarWriter: React.FC = () => {
       <Tooltip content="Place Table">
         <Button variant={activeTool === 'place-table' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setActiveTool('place-table')}>
           <Table className="w-4 h-4" />
+        </Button>
+      </Tooltip>
+
+      <div style={{ width: 1, height: 20, background: 'var(--color-border-tertiary)', margin: '0 6px' }} />
+
+      <Tooltip content="OCR Region (Auto-text)">
+        <Button variant={activeTool === 'ocr-region' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setActiveTool('ocr-region')}>
+          <ScanText className="w-4 h-4" />
         </Button>
       </Tooltip>
 

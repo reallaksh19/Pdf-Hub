@@ -180,10 +180,10 @@ export const WriterInspectorPanel: React.FC = () => {
         <section className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Arrange</h4>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 text-xs" onClick={() => bringToFront(activeElement.id)}>
+            <Button variant="secondary" className="flex-1 text-xs" onClick={() => bringToFront(activeElement.id)}>
               <ArrowUpToLine className="w-3 h-3 mr-1" /> Front
             </Button>
-            <Button variant="outline" className="flex-1 text-xs" onClick={() => sendToBack(activeElement.id)}>
+            <Button variant="secondary" className="flex-1 text-xs" onClick={() => sendToBack(activeElement.id)}>
               <ArrowDownToLine className="w-3 h-3 mr-1" /> Back
             </Button>
           </div>
