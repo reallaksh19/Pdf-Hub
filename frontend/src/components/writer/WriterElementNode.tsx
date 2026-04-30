@@ -136,20 +136,13 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
   return (
     <>
       <div
+        className={`writer-element-node ${isSelected ? 'writer-element-node-selected' : 'writer-element-node-unselected'} ${element.locked ? 'writer-element-node-locked' : 'writer-element-node-unlocked'}`}
         style={{
-          position:     'absolute',
           left:         sx,
           top:          sy,
           width:        sw,
           height:       sh,
           zIndex:       element.zIndex,
-          pointerEvents: 'all',
-          outline:      isSelected ? '1.5px dashed #3b82f6' : '1px solid transparent',
-          boxSizing:    'border-box',
-          cursor:       element.locked ? 'default' : 'move',
-          userSelect:   'none',
-          // Show content preview
-          overflow:     'hidden',
           fontSize:     (element.styles.fontSize ?? 12) * scale,
           color:        element.styles.color ?? 'inherit',
           backgroundColor: element.styles.backgroundColor ?? 'transparent',
@@ -181,7 +174,7 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
               __html: buildTableHtml(
                 JSON.parse(element.content || '{"headers":[],"rows":[]}'),
                 sw,
-                1 // Scale is 1 here because sw and sh are already screen-scaled dimensions
+                scale // Pass true scale so font sizes zoom correctly
               )
             }}
           />
@@ -192,9 +185,9 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
       {isSelected && (
         <>
           <div
+            className="writer-resize-handle"
             style={{
-              position: 'absolute', width: HANDLE_SIZE, height: HANDLE_SIZE, background: '#3b82f6', border: '1.5px solid white',
-              borderRadius: 2, zIndex: element.zIndex + 1, pointerEvents: 'all', cursor: 'nw-resize',
+              width: HANDLE_SIZE, height: HANDLE_SIZE, zIndex: element.zIndex + 1, cursor: 'nw-resize',
               left: sx - HANDLE_SIZE / 2, top: sy - HANDLE_SIZE / 2,
             }}
             onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => { e.stopPropagation(); handlePointerDown(e, 'nw'); }}
@@ -202,9 +195,9 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
             onPointerUp={handlePointerUp}
           />
           <div
+             className="writer-resize-handle"
             style={{
-              position: 'absolute', width: HANDLE_SIZE, height: HANDLE_SIZE, background: '#3b82f6', border: '1.5px solid white',
-              borderRadius: 2, zIndex: element.zIndex + 1, pointerEvents: 'all', cursor: 'ne-resize',
+              width: HANDLE_SIZE, height: HANDLE_SIZE, zIndex: element.zIndex + 1, cursor: 'ne-resize',
               left: sx + sw - HANDLE_SIZE / 2, top: sy - HANDLE_SIZE / 2,
             }}
             onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => { e.stopPropagation(); handlePointerDown(e, 'ne'); }}
@@ -212,9 +205,9 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
             onPointerUp={handlePointerUp}
           />
           <div
+             className="writer-resize-handle"
             style={{
-              position: 'absolute', width: HANDLE_SIZE, height: HANDLE_SIZE, background: '#3b82f6', border: '1.5px solid white',
-              borderRadius: 2, zIndex: element.zIndex + 1, pointerEvents: 'all', cursor: 'se-resize',
+              width: HANDLE_SIZE, height: HANDLE_SIZE, zIndex: element.zIndex + 1, cursor: 'se-resize',
               left: sx + sw - HANDLE_SIZE / 2, top: sy + sh - HANDLE_SIZE / 2,
             }}
             onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => { e.stopPropagation(); handlePointerDown(e, 'se'); }}
@@ -222,9 +215,9 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
             onPointerUp={handlePointerUp}
           />
           <div
+             className="writer-resize-handle"
             style={{
-              position: 'absolute', width: HANDLE_SIZE, height: HANDLE_SIZE, background: '#3b82f6', border: '1.5px solid white',
-              borderRadius: 2, zIndex: element.zIndex + 1, pointerEvents: 'all', cursor: 'sw-resize',
+              width: HANDLE_SIZE, height: HANDLE_SIZE, zIndex: element.zIndex + 1, cursor: 'sw-resize',
               left: sx - HANDLE_SIZE / 2, top: sy + sh - HANDLE_SIZE / 2,
             }}
             onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => { e.stopPropagation(); handlePointerDown(e, 'sw'); }}
@@ -237,13 +230,8 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
       {/* Context menu */}
       {showContextMenu && isSelected && (
         <div
-          style={{
-            position: 'absolute', left: sx, top: sy + sh + 4,
-            background: 'var(--color-background-primary)',
-            border: '0.5px solid var(--color-border-secondary)',
-            borderRadius: 6, padding: '4px 0', zIndex: 999, minWidth: 140,
-            pointerEvents: 'all',
-          }}
+          className="writer-context-menu-container"
+          style={{ left: sx, top: sy + sh + 4 }}
           onPointerDown={e => e.stopPropagation()}
         >
           {[
@@ -253,10 +241,10 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
             { label: 'Delete',         action: () => removeElement(element.id) },
           ].map((item, i) => (
             item.label === '──'
-              ? <div key={i} style={{ height: 1, background: 'var(--color-border-tertiary)', margin: '2px 0' }} />
+              ? <div key={i} className="writer-context-menu-divider" />
               : <div
                   key={i}
-                  style={{ padding: '5px 12px', cursor: 'pointer', fontSize: 13, color: item.label === 'Delete' ? 'var(--color-text-danger)' : 'var(--color-text-primary)' }}
+                  className={`writer-context-menu-item ${item.label === 'Delete' ? 'writer-context-menu-item-danger' : ''}`}
                   onClick={() => { item.action(); setShowContextMenu(false); }}
                 >
                   {item.label}
@@ -268,7 +256,7 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
       {/* Dismiss context menu on outside click */}
       {showContextMenu && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+          className="writer-context-menu-backdrop"
           onClick={() => setShowContextMenu(false)}
         />
       )}

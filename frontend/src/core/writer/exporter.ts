@@ -75,6 +75,10 @@ async function captureElementToPng(element: PlacedElement): Promise<Uint8Array> 
     padding:         `${(element.styles.padding ?? 0) * RENDER_SCALE}px`,
     lineHeight:      element.styles.lineHeight ? String(element.styles.lineHeight) : '1.4',
     boxSizing:       'border-box',
+    opacity:         element.styles.opacity ? String(element.styles.opacity) : '1',
+    border:          element.styles.borderWidth
+                        ? `${element.styles.borderWidth * RENDER_SCALE}px solid ${element.styles.borderColor ?? '#000'}`
+                        : 'none',
   });
 
   if (element.type === 'rich-text') {
