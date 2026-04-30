@@ -422,6 +422,10 @@ export class PdfEditAdapter {
       width?: number;
       height?: number;
       scale?: number;
+      opacity?: number;
+      borderWidth?: number;
+      borderColor?: string;
+      rotation?: number;
     }
   ): Promise<Uint8Array> {
     const pdfDoc = await PDFDocument.load(baseBytes);

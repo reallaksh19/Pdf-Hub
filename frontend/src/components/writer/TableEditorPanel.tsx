@@ -56,16 +56,16 @@ export const TableEditorPanel: React.FC<Props> = ({ element, scale, onClose }) =
   };
 
   const addRow = () => {
-    const newCells = data.columns.map((_, i) => ({ id: `new-c-${Date.now()}-${i}`, text: '' }));
-    updateTable({ ...data, rows: [...data.rows, { id: `new-r-${Date.now()}`, cells: newCells }] });
+    const newCells = data.columns.map((_, i) => ({ id: `new-c-${crypto.randomUUID()}-${i}`, text: '' }));
+    updateTable({ ...data, rows: [...data.rows, { id: `new-r-${crypto.randomUUID()}`, cells: newCells }] });
   };
 
   const addCol = () => {
-    const newColId = `new-col-${Date.now()}`;
+    const newColId = `new-col-${crypto.randomUUID()}`;
     const newColumns = [...data.columns, { id: newColId }];
     const newRows = data.rows.map(r => ({
       ...r,
-      cells: [...r.cells, { id: `new-c-${Date.now()}-${r.id}`, text: '' }]
+      cells: [...r.cells, { id: `new-c-${crypto.randomUUID()}-${r.id}`, text: '' }]
     }));
     updateTable({ ...data, columns: newColumns, rows: newRows });
   };
