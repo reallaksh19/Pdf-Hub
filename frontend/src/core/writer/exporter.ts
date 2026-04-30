@@ -45,9 +45,9 @@ export async function bakeWriterElementsIntoPdf(
         height:      element.height,
         imageBytes:  pngBytes,
         mimeType:    'image/png',
-        // opacity:     element.styles.opacity     ?? 1,
-        // borderWidth: element.styles.borderWidth ?? 0,
-        // borderColor: element.styles.borderColor,
+        opacity:     element.styles.opacity     ?? 1,
+        borderWidth: element.styles.borderWidth ?? 0,
+        borderColor: element.styles.borderColor,
       });
     }
   }

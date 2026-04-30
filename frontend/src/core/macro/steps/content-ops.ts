@@ -123,29 +123,282 @@ async function executeHeaderFooterText(
 macroRegistry.register('header_footer_text', executeHeaderFooterText);
 
 type PlaceRichTextboxStep = Extract<MacroStep, { op: 'place_rich_textbox' }>;
+
 async function executePlaceRichTextbox(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _step: PlaceRichTextboxStep,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _ctx: MacroExecutionContext,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _state: MacroMutableState,
+  step: PlaceRichTextboxStep,
+  ctx: MacroExecutionContext,
+  state: MacroMutableState,
 ): Promise<StepResult> {
-  // Stub for Agent E
-  return { status: 'success', message: 'Place rich textbox stub', sideEffects: [] };
+  try {
+    const pages = resolveSelector(step.selector ?? { mode: 'selected' }, { ...state, currentPage: ctx.currentPage });
+    if (pages.length === 0) {
+      return { status: 'warning', message: 'No pages matched selector', sideEffects: [] };
+    }
+
+    const pngBytes = await renderHtmlToPng(
+      step.content,
+      step.width,
+      step.height ?? 80,
+      step.styles,
+    );
+
+    const currentBytes = await PdfEditAdapter.insertImage(state.workingBytes, {
+      pages:       pages,
+      x:           step.x,
+      y:           step.y,
+      width:       step.width,
+      height:      step.height ?? 80,
+      imageBytes:  pngBytes,
+      mimeType:    'image/png',
+      opacity:     step.styles.opacity ?? 1,
+      borderWidth: step.styles.borderWidth,
+      borderColor: step.styles.borderColor,
+    });
+
+    return {
+      status:     'success',
+      message:    `Placed rich text on ${pages.length} page(s)`,
+      sideEffects: [{ type: 'bytes_updated', bytes: currentBytes }],
+    };
+  } catch (err) {
+    return { status: 'error', message: err instanceof Error ? err.message : String(err), sideEffects: [] };
+  }
+}
+
+async function renderHtmlToPng(
+  htmlContent: string,
+  width: number,
+  height: number,
+  styles: import('../../writer/types').WriterStyles,
+): Promise<Uint8Array> {
+  const container = document.createElement('div');
+  Object.assign(container.style, {
+    position:        'absolute',
+    left:            '-9999px',
+    top:             '-9999px',
+    width:           `${width}px`,
+    height:          `${height}px`,
+    overflow:        'hidden',
+    backgroundColor: styles.backgroundColor ?? 'transparent',
+    fontSize:        styles.fontSize ? `${styles.fontSize}px` : '12px',
+    fontFamily:      styles.fontFamily ?? 'sans-serif',
+    color:           styles.color ?? '#000000',
+    padding:         styles.padding ? `${styles.padding}px` : '4px',
+    lineHeight:      styles.lineHeight ? String(styles.lineHeight) : '1.4',
+    boxSizing:       'border-box',
+  });
+  container.innerHTML = htmlContent;
+  document.body.appendChild(container);
+
+  try {
+    const { default: html2canvas } = await import('html2canvas');
+    const canvas = await html2canvas(container, {
+      width,
+      height,
+      scale:           2,
+      backgroundColor: null,
+      useCORS:         true,
+      logging:         false,
+    });
+
+    return await new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error('html2canvas returned no blob')); return; }
+        blob.arrayBuffer().then(buf => resolve(new Uint8Array(buf))).catch(reject);
+      }, 'image/png');
+    });
+  } finally {
+    document.body.removeChild(container);  // ALWAYS — even on error
+  }
 }
 macroRegistry.register('place_rich_textbox', executePlaceRichTextbox);
 
 type PlaceTableStep = Extract<MacroStep, { op: 'place_table' }>;
+
 async function executePlaceTable(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _step: PlaceTableStep,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _ctx: MacroExecutionContext,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _state: MacroMutableState,
+  step: PlaceTableStep,
+  ctx: MacroExecutionContext,
+  state: MacroMutableState,
 ): Promise<StepResult> {
-  // Stub for Agent E
-  return { status: 'success', message: 'Place table stub', sideEffects: [] };
+  try {
+    const pages = resolveSelector(step.selector ?? { mode: 'selected' }, { ...state, currentPage: ctx.currentPage });
+    if (pages.length === 0) {
+      return { status: 'warning', message: 'No pages matched selector', sideEffects: [] };
+    }
+
+    // Use writer module's table renderer — same output as the interactive editor
+    const RENDER_SCALE = 2;
+    const w = Math.round(step.width * RENDER_SCALE);
+    const tableData = step.tableData;
+
+    // Estimate height: header row + data rows * row height
+    const rowCount  = tableData.rows.length;
+    const rowHeight = (tableData.style?.fontSize ?? 11) * 2.5 * RENDER_SCALE;
+    const h         = Math.round(rowCount * rowHeight);
+
+    const container = document.createElement('div');
+    Object.assign(container.style, {
+      position:   'absolute',
+      left:       '-9999px',
+      top:        '-9999px',
+      width:      `${w}px`,
+      minHeight:  `${h}px`,
+      overflow:   'hidden',
+      fontFamily: 'sans-serif',
+      boxSizing:  'border-box',
+    });
+    container.innerHTML = buildTableHtml(tableData, w, RENDER_SCALE);
+    document.body.appendChild(container);
+
+    let pngBytes: Uint8Array;
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const canvas = await html2canvas(container, {
+        width:           w,
+        height:          container.offsetHeight || h,
+        scale:           1,
+        backgroundColor: null,
+        useCORS:         true,
+        logging:         false,
+      });
+      pngBytes = await new Promise<Uint8Array>((resolve, reject) => {
+        canvas.toBlob(blob => {
+          if (!blob) { reject(new Error('html2canvas returned no blob')); return; }
+          blob.arrayBuffer().then(buf => resolve(new Uint8Array(buf))).catch(reject);
+        }, 'image/png');
+      });
+    } finally {
+      document.body.removeChild(container);
+    }
+
+    const actualHeight = Math.round(container.offsetHeight / RENDER_SCALE) || (rowCount * (rowHeight / RENDER_SCALE));
+
+    const currentBytes = await PdfEditAdapter.insertImage(state.workingBytes, {
+      pages:      pages,
+      x:          step.x,
+      y:          step.y,
+      width:      step.width,
+      height:     actualHeight,
+      imageBytes: pngBytes,
+      mimeType:   'image/png',
+    });
+
+    return {
+      status:      'success',
+      message:     `Placed table (${rowCount} rows) on ${pages.length} page(s)`,
+      sideEffects: [{ type: 'bytes_updated', bytes: currentBytes }],
+    };
+  } catch (err) {
+    return { status: 'error', message: err instanceof Error ? err.message : String(err), sideEffects: [] };
+  }
 }
+
+function buildTableHtml(
+  data: import('../../writer/types').WriterTableData,
+  width: number,
+  scale: number,
+): string {
+  const { columns = [], rows = [], style = {} } = data;
+  const headers = columns.map((c: any) => c.id);
+  const borderColor = style.borderColor || '#d1d5db';
+  const headerBg = style.headerBg || '#f1f5f9';
+  const colWidth = headers.length > 0 ? Math.floor(width / headers.length) : width;
+  const fontSize = (style.fontSize || 11) * scale;
+
+  const headerRow = headers.map((h: any) =>
+    `<td style="padding:${4*scale}px ${6*scale}px;font-weight:500;background:${headerBg};border:1px solid ${borderColor};width:${colWidth}px;font-size:${fontSize}px">${h}</td>`
+  ).join('');
+
+  const dataRows = rows.map((row: any) =>
+    `<tr>${row.cells.map((cell: any) =>
+      `<td style="padding:${4*scale}px ${6*scale}px;border:1px solid ${borderColor};font-size:${fontSize}px">${cell.text}</td>`
+    ).join('')}</tr>`
+  ).join('');
+
+  return `<table style="border-collapse:collapse;width:100%;font-family:sans-serif">
+    <thead><tr>${headerRow}</tr></thead>
+    <tbody>${dataRows}</tbody>
+  </table>`;
+}
+
 macroRegistry.register('place_table', executePlaceTable);
+
+type AdjustImageStep = Extract<MacroStep, { op: 'adjust_image' }>;
+
+async function executeAdjustImage(
+  step: AdjustImageStep,
+  ctx: MacroExecutionContext,
+  state: MacroMutableState,
+): Promise<StepResult> {
+  try {
+    // Resolve image source — base64 inline takes priority
+    let imageBytes: string | Uint8Array;
+
+    if (step.base64Image) {
+      imageBytes = step.base64Image;
+    } else if (step.donorFileId) {
+      const donor = ctx.donorFiles?.[step.donorFileId];
+      if (!donor) {
+        return {
+          status:     'error',
+          message:    `donorFileId "${step.donorFileId}" not found in ctx.donorFiles`,
+          sideEffects: [],
+        };
+      }
+      imageBytes = donor;
+    } else {
+      return {
+        status:     'error',
+        message:    'adjust_image requires either base64Image or donorFileId',
+        sideEffects: [],
+      };
+    }
+
+    const pages = resolveSelector(step.selector ?? { mode: 'selected' }, { ...state, currentPage: ctx.currentPage });
+    if (pages.length === 0) {
+      return { status: 'warning', message: 'No pages matched selector', sideEffects: [] };
+    }
+
+    let rawBytes: Uint8Array;
+    if (typeof imageBytes === 'string') {
+      const base64 = imageBytes.includes(',') ? imageBytes.split(',')[1] : imageBytes;
+      rawBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    } else {
+      rawBytes = imageBytes;
+    }
+
+    // Detect mime type by magic bytes
+    let mimeType: 'image/jpeg' | 'image/png' = 'image/png';
+    if (rawBytes[0] === 0xFF && rawBytes[1] === 0xD8 && rawBytes[2] === 0xFF) {
+      mimeType = 'image/jpeg';
+    }
+
+    const currentBytes = await PdfEditAdapter.insertImage(state.workingBytes, {
+      pages:       pages,
+      x:           step.x,
+      y:           step.y,
+      width:       step.width,
+      height:      step.height,
+      imageBytes:  rawBytes,
+      mimeType:    mimeType,
+      opacity:     step.opacity,
+      borderWidth: step.borderWidth,
+      borderColor: step.borderColor,
+      rotation:    step.rotation,
+    });
+
+    return {
+      status:     'success',
+      message:    `Placed image on ${pages.length} page(s)`,
+      sideEffects: [{ type: 'bytes_updated', bytes: currentBytes }],
+    };
+  } catch (err) {
+    return {
+      status:     'error',
+      message:    err instanceof Error ? err.message : String(err),
+      sideEffects: [],
+    };
+  }
+}
+
+macroRegistry.register('adjust_image', executeAdjustImage);
