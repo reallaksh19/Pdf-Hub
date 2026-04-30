@@ -12,9 +12,10 @@ interface WriterState {
 }
 
 interface WriterActions {
-  addElement:    (element: PlacedElement) => void;
-  updateElement: (id: string, patch: Partial<PlacedElement>) => void;
-  removeElement: (id: string) => void;
+  addElement:              (element: PlacedElement) => void;
+  updateElement:           (id: string, patch: Partial<PlacedElement>) => void;
+  commitElementTransform:  (id: string, patch: Partial<PlacedElement>) => void;
+  removeElement:           (id: string) => void;
   setActiveTool: (tool: WriterTool) => void;
   setSelectedId: (id: string | null) => void;
   clearPage:     (pageNumber: number) => void;
@@ -48,9 +49,30 @@ export const useWriterStore = create<WriterState & WriterActions>((set, get) => 
 
   updateElement: (id, patch) => set(s => ({
     elements:  s.elements.map(e => e.id === id ? { ...e, ...patch } : e),
-    undoStack: snapshot(s.elements, s.undoStack),
-    redoStack: [],
+    // Only snapshots on explicit commit actions now, not on every live preview frame
   })),
+
+  commitElementTransform: (_id, _patch) => set(s => {
+    // Snapshot state based on the element BEFORE the live-preview changes were made
+    // We achieve this by looking for the current state in elements, applying the inverse patch,
+    // and taking a snapshot of THAT state to avoid the double-undo bug.
+    // However, a much simpler fix is just to snapshot what we have *before* applying the final commit,
+    // assuming the final commit *is* the actual update we want to push onto the stack.
+
+    // Actually, since live-preview updates `s.elements` directly WITHOUT snapshotting,
+    // `s.elements` currently holds the final dragged state. `s.undoStack[0]` holds the pre-drag state.
+    // We just need to push the current `s.elements` onto the undoStack, and we don't even need to apply the patch!
+    // Wait, if we push it, undo will revert to it.
+
+    // Correct logic: we just need to push the current state to the undo stack, meaning the NEXT action
+    // will be able to undo to this state. The drag itself already mutated the state.
+    const currentSnapshot = snapshot(s.elements, s.undoStack);
+    return {
+      elements: s.elements, // Elements already updated by live preview
+      undoStack: currentSnapshot,
+      redoStack: [],
+    };
+  }),
 
   removeElement: (id) => set(s => ({
     elements:  s.elements.filter(e => e.id !== id),

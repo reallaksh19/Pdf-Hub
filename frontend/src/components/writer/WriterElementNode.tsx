@@ -21,7 +21,7 @@ interface Props {
  * All drag operations use setPointerCapture for reliable tracking outside the element bounds.
  */
 export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
-  const { updateElement, removeElement, setSelectedId, selectedId, bringForward, sendBackward } =
+  const { updateElement, commitElementTransform, removeElement, setSelectedId, selectedId, bringForward, sendBackward } =
     useWriterStore();
 
   const isSelected = selectedId === element.id;
@@ -80,7 +80,7 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
       let patch: Partial<PlacedElement> = {};
 
       if (handle === 'move') {
-        patch = { x: origX + dx, y: origY + dy };
+        patch = { x: Math.max(0, origX + dx), y: Math.max(0, origY + dy) };
       } else {
         // Resize — corner handles
         const minSize = 20 / scale;
@@ -100,9 +100,9 @@ export const WriterElementNode: React.FC<Props> = ({ element, scale }) => {
 
   const handlePointerUp = useCallback(() => {
     dragRef.current = null;
-    // Snapshot to undo stack on release
-    updateElement(element.id, {});  // empty patch to trigger snapshot
-  }, [element.id, updateElement]);
+    // Snapshot to undo stack on release using the new proper explicit action
+    commitElementTransform(element.id, { x: element.x, y: element.y, width: element.width, height: element.height });
+  }, [element.id, element.x, element.y, element.width, element.height, commitElementTransform]);
 
   const handleDoubleClick = useCallback(() => {
     if (element.type === 'rich-text') setEditMode('rich-text');
