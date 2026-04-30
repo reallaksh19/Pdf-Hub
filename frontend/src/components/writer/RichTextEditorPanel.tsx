@@ -1,9 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { useWriterStore } from '../../core/writer/store';
 import type { PlacedElement } from '../../core/writer/types';
-import { Bold, Italic, Underline, List, ListOrdered, Save, X } from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Save, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { useState } from 'react';
 
 interface Props {
   element: PlacedElement;
@@ -14,6 +15,7 @@ interface Props {
 export const RichTextEditorPanel: React.FC<Props> = ({ element, scale, onClose }) => {
   const { updateElement } = useWriterStore();
   const editorRef = useRef<HTMLDivElement>(null);
+  const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
 
   // Initialize with content, or empty paragraph
   useEffect(() => {
@@ -157,6 +159,13 @@ export const RichTextEditorPanel: React.FC<Props> = ({ element, scale, onClose }
         onBlur={saveContent}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
+        onClick={(e) => {
+          if ((e.target as HTMLElement).tagName === 'IMG') {
+            setSelectedImage(e.target as HTMLImageElement);
+          } else {
+            setSelectedImage(null);
+          }
+        }}
         style={{
           minHeight: 120,
           fontFamily: 'inherit',
@@ -168,6 +177,45 @@ export const RichTextEditorPanel: React.FC<Props> = ({ element, scale, onClose }
           maxHeight: '400px'
         }}
       />
+
+      {selectedImage && (
+        <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-800 justify-center">
+          <span className="text-xs text-slate-500 font-medium mr-2">Image Size:</span>
+          <Tooltip content="Shrink Image">
+             <Button
+                variant="secondary"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => {
+                  const currentWidth = selectedImage.style.width ? parseInt(selectedImage.style.width) : 100;
+                  const newWidth = Math.max(10, currentWidth - 10);
+                  selectedImage.style.width = `${newWidth}%`;
+                  // Remove maxWidth restriction so our manual % controls it directly
+                  selectedImage.style.maxWidth = 'none';
+                  saveContent();
+                }}
+              >
+                <ZoomOut className="w-3 h-3" />
+             </Button>
+          </Tooltip>
+          <Tooltip content="Enlarge Image">
+             <Button
+                variant="secondary"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => {
+                  const currentWidth = selectedImage.style.width ? parseInt(selectedImage.style.width) : 100;
+                  const newWidth = Math.min(100, currentWidth + 10);
+                  selectedImage.style.width = `${newWidth}%`;
+                  selectedImage.style.maxWidth = 'none';
+                  saveContent();
+                }}
+              >
+                <ZoomIn className="w-3 h-3" />
+             </Button>
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 };
