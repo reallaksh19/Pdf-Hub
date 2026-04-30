@@ -4,16 +4,36 @@ import type { MacroExecutionContext, PageSelector, MacroStep } from '../types';
 import { PdfEditAdapter } from '../../../adapters/pdf-edit/PdfEditAdapter';
 
 export function resolveSelector(
-  selector: PageSelector,
-  state: Pick<MacroMutableState, 'pageCount' | 'selectedPages'> & { currentPage?: number }
+  selector: PageSelector | 'all' | 'odd' | 'even' | 'selected' | 'current' | number[],
+  state: Pick<MacroMutableState, 'pageCount' | 'selectedPages'> & { currentPage?: number },
 ): number[] {
-  if (selector.mode === 'all')      return Array.from({ length: state.pageCount }, (_, i) => i + 1);
-  if (selector.mode === 'odd')      return Array.from({ length: state.pageCount }, (_, i) => i + 1).filter(p => p % 2 === 1);
-  if (selector.mode === 'even')     return Array.from({ length: state.pageCount }, (_, i) => i + 1).filter(p => p % 2 === 0);
-  if (selector.mode === 'selected') return state.selectedPages && state.selectedPages.length > 0 ? Array.from(new Set(state.selectedPages)).filter((page) => page >= 1 && page <= state.pageCount).sort((a, b) => a - b) : [Math.max(1, Math.min(state.currentPage ?? 1, state.pageCount))];
-  if (selector.mode === 'list')     return Array.from(new Set(selector.pages)).filter((page) => page >= 1 && page <= state.pageCount).sort((a, b) => a - b);
-  if (selector.mode === 'range')    return Array.from({ length: Math.min(Math.max(selector.from, selector.to), state.pageCount) - Math.max(Math.min(selector.from, selector.to), 1) + 1 }, (_, i) => Math.max(Math.min(selector.from, selector.to), 1) + i);
-  if (selector.mode === 'current')  return [Math.max(1, Math.min(state.currentPage ?? 1, state.pageCount))];
+  if (selector === 'all' || (typeof selector === 'object' && !Array.isArray(selector) && selector?.mode === 'all'))
+    return Array.from({ length: state.pageCount }, (_, i) => i + 1);
+
+  if (selector === 'odd' || (typeof selector === 'object' && !Array.isArray(selector) && selector?.mode === 'odd'))
+    return Array.from({ length: state.pageCount }, (_, i) => i + 1)
+      .filter(p => p % 2 === 1);
+
+  if (selector === 'even' || (typeof selector === 'object' && !Array.isArray(selector) && selector?.mode === 'even'))
+    return Array.from({ length: state.pageCount }, (_, i) => i + 1)
+      .filter(p => p % 2 === 0);
+
+  if (selector === 'selected' || (typeof selector === 'object' && !Array.isArray(selector) && selector?.mode === 'selected'))
+    return state.selectedPages && state.selectedPages.length > 0 ? Array.from(new Set(state.selectedPages)).filter((page: number) => page >= 1 && page <= state.pageCount).sort((a: number, b: number) => a - b) : (state.currentPage != null ? [Math.max(1, Math.min(state.currentPage, state.pageCount))] : []);
+
+  if (selector === 'current' || (typeof selector === 'object' && !Array.isArray(selector) && selector?.mode === 'current'))
+    return state.currentPage != null ? [state.currentPage] : [];
+
+  if (Array.isArray(selector))
+    // Clamp: remove page numbers outside valid range
+    return selector.filter((p: number) => p >= 1 && p <= state.pageCount);
+
+  if (typeof selector === 'object' && !Array.isArray(selector) && selector?.mode === 'list')
+    return Array.from(new Set(selector.pages)).filter((page: number) => page >= 1 && page <= state.pageCount).sort((a: number, b: number) => a - b);
+
+  if (typeof selector === 'object' && !Array.isArray(selector) && selector?.mode === 'range')
+    return Array.from({ length: Math.min(Math.max(selector.from, selector.to), state.pageCount) - Math.max(Math.min(selector.from, selector.to), 1) + 1 }, (_, i) => Math.max(Math.min(selector.from, selector.to), 1) + i);
+
   return [];
 }
 
@@ -90,9 +110,9 @@ async function executeSplitPages(
       status: 'success',
       message: `Split ${pages.length} page(s)`,
       sideEffects: [
-        { type: 'output_file', name: outputName, bytes: extractedBytes },
-        { type: 'bytes_updated', bytes: updatedBytes },
-        { type: 'page_count_changed', newCount: newPageCount },
+        { type: 'output_file',        name: outputName,            bytes: extractedBytes }, // 1
+        { type: 'bytes_updated',      bytes: updatedBytes },                                 // 2
+        { type: 'page_count_changed', newCount: newPageCount },                              // 3
       ],
     };
   } catch (err) {

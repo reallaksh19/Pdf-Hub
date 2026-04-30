@@ -22,10 +22,8 @@ async function executeAddContentPage(
     const size = step.size === 'letter' ? { width: 612, height: 792 } : { width: 595, height: 842 };
 
     let currentBytes = await PdfEditAdapter.insertBlankPage(state.workingBytes, atIndex, size);
-    currentBytes = await PdfEditAdapter.insertImage(currentBytes, {
-      pages: [atIndex],
+    currentBytes = await PdfEditAdapter.insertImage(currentBytes, atIndex + 1, {
       imageBytes,
-      mimeType: 'image/png',
       x: 0,
       y: 0,
       width: size.width,
@@ -70,10 +68,8 @@ async function executeAddImageHeaderPage(
     const size = step.size === 'letter' ? { width: 612, height: 792 } : { width: 595, height: 842 };
 
     let currentBytes = await PdfEditAdapter.insertBlankPage(state.workingBytes, atIndex, size);
-    currentBytes = await PdfEditAdapter.insertImage(currentBytes, {
-      pages: [atIndex],
+    currentBytes = await PdfEditAdapter.insertImage(currentBytes, atIndex + 1, {
       imageBytes,
-      mimeType: 'image/png',
       x: 0,
       y: 0,
       width: size.width,
@@ -108,17 +104,17 @@ async function executeInsertImage(
     }
 
     let imageBytes: Uint8Array | undefined;
-    let mimeType: 'image/jpeg' | 'image/png' = 'image/png';
+    // let mimeType: 'image/jpeg' | 'image/png' = 'image/png';
 
     if (step.donorFileId && ctx.donorFiles?.[step.donorFileId]) {
       imageBytes = ctx.donorFiles[step.donorFileId];
       if (imageBytes[0] === 0xff && imageBytes[1] === 0xd8) {
-        mimeType = 'image/jpeg';
+        // mimeType = 'image/jpeg';
       }
     } else if (step.base64Image) {
       const match = step.base64Image.match(/^data:(image\/[a-zA-Z]+);base64,(.*)$/);
       if (match) {
-        mimeType = match[1] === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+        // mimeType = match[1] === 'image/jpeg' ? 'image/jpeg' : 'image/png';
         // Use a universal cross-platform method if available or stick to standard Buffer if in Node
         if (typeof (globalThis as unknown as { Buffer: unknown }).Buffer !== 'undefined') {
           imageBytes = new Uint8Array((globalThis as unknown as { Buffer: { from: (data: string, encoding: string) => ArrayBuffer } }).Buffer.from(match[2], 'base64'));
@@ -136,16 +132,16 @@ async function executeInsertImage(
       return { status: 'warning', message: 'Skipped insert_image: no valid image data found', sideEffects: [] };
     }
 
-    const updatedBytes = await PdfEditAdapter.insertImage(state.workingBytes, {
-      pages: pages.map((p) => p - 1),
-      imageBytes,
-      mimeType,
-      x: step.x,
-      y: step.y,
-      width: step.width,
-      height: step.height,
-      scale: step.scale,
-    });
+    let updatedBytes = state.workingBytes;
+    for (const pageNumber of pages) {
+      updatedBytes = await PdfEditAdapter.insertImage(updatedBytes, pageNumber, {
+        imageBytes,
+        x: step.x,
+        y: step.y,
+        width: step.width as number,
+        height: step.height as number,
+      });
+    }
 
     return {
       status: 'success',
@@ -158,19 +154,6 @@ async function executeInsertImage(
 }
 macroRegistry.register('insert_image', executeInsertImage);
 
-type AdjustImageStep = Extract<MacroStep, { op: 'adjust_image' }>;
-async function executeAdjustImage(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _step: AdjustImageStep,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _ctx: MacroExecutionContext,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _state: MacroMutableState,
-): Promise<StepResult> {
-  // Stub for Agent E
-  return { status: 'success', message: 'Adjust image stub', sideEffects: [] };
-}
-macroRegistry.register('adjust_image', executeAdjustImage);
 
 
 function resolveInsertIndex(

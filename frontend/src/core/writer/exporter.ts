@@ -37,14 +37,13 @@ export async function bakeWriterElementsIntoPdf(
     for (const element of sorted) {
       const pngBytes = await captureElementToPng(element);
 
-      currentBytes = await PdfEditAdapter.insertImage(currentBytes, {
-        pages:       [pageNumber],
-        x:           element.x,
-        y:           element.y,
-        width:       element.width,
-        height:      element.height,
-        imageBytes:  pngBytes,
-        mimeType:    'image/png',
+      currentBytes = await PdfEditAdapter.insertImage(currentBytes, pageNumber, {
+        x:          element.x,
+        y:          element.y,
+        width:      element.width,
+        height:     element.height,
+        imageBytes: pngBytes,
+        opacity:    element.styles.opacity ?? 1,
       });
     }
   }

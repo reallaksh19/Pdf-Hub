@@ -11,6 +11,7 @@ export interface MacroExecutionResult {
   validationErrors?: import('./validator').ValidationError[];
   finalBytes:        Uint8Array;
   logs:              string[];
+  selectedPages:     number[];
 }
 
 export interface ExecutionProgress {
@@ -32,6 +33,7 @@ export async function executeMacroRecipe(
       outputFiles: [],
       stepResults: [],
       validationErrors: validation.errors,
+      selectedPages: ctx.selectedPages ?? [],
       finalBytes: ctx.workingBytes,
       logs: validation.errors.map(e => `[step ${e.stepIndex}] ${e.op}.${e.field}: ${e.message}`),
     };
@@ -77,5 +79,6 @@ export async function executeMacroRecipe(
     stepResults,
     finalBytes:  state.workingBytes,
     logs:        state.logs,
+    selectedPages: state.selectedPages,
   };
 }

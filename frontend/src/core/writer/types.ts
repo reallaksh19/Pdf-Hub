@@ -2,6 +2,18 @@ export type WriterTool = 'select' | 'place-text' | 'place-image' | 'place-table'
 
 export type TransformHandle = 'nw' | 'ne' | 'se' | 'sw' | 'move';
 
+export interface WriterStyles {
+  fontSize?: number;
+  fontFamily?: string;
+  color?: string;
+  backgroundColor?: string;
+  padding?: number;
+  opacity?: number;
+  borderWidth?: number;
+  borderColor?: string;
+  lineHeight?: number;
+}
+
 export interface PlacedElement {
   id: string;
   type: 'rich-text' | 'image' | 'table';
@@ -11,17 +23,8 @@ export interface PlacedElement {
   width: number;
   height: number;
   content: string;
-  styles: {
-    fontSize?: number;
-    fontFamily?: string;
-    color?: string;
-    backgroundColor?: string;
-    padding?: number;
-    lineHeight?: number;
-    opacity?: number;
-    borderWidth?: number;
-    borderColor?: string;
-  };
+  styles: WriterStyles;
   zIndex: number;
   locked: boolean;
 }
+export type PlacedElementStyles = WriterStyles;

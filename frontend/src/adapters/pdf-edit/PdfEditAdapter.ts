@@ -122,6 +122,18 @@ function drawArrowHead(
   });
 }
 
+export interface InsertImageOptions {
+  x:            number;
+  y:            number;
+  width:        number;
+  height:       number;
+  imageBytes:   Uint8Array | string;
+  opacity?:     number;
+  borderWidth?: number;
+  borderColor?: string;
+  rotation?:    number;
+}
+
 export class PdfEditAdapter {
   static async countPages(bytes: Uint8Array): Promise<number> {
     const pdfDoc = await PDFDocument.load(bytes);
@@ -412,40 +424,52 @@ export class PdfEditAdapter {
   }
 
   static async insertImage(
-    baseBytes: Uint8Array,
-    options: {
-      pages: number[];
-      imageBytes: Uint8Array;
-      mimeType: 'image/jpeg' | 'image/png';
-      x: number;
-      y: number;
-      width?: number;
-      height?: number;
-      scale?: number;
-    }
+    pdfBytes: Uint8Array,
+    pageNumber: number,
+    options: InsertImageOptions,
   ): Promise<Uint8Array> {
-    const pdfDoc = await PDFDocument.load(baseBytes);
-    const image = options.mimeType === 'image/jpeg'
-      ? await pdfDoc.embedJpg(options.imageBytes)
-      : await pdfDoc.embedPng(options.imageBytes);
+    const { PDFDocument, degrees } = await import('pdf-lib');
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    const page   = pdfDoc.getPage(pageNumber - 1);
 
-    let drawWidth = image.width;
-    let drawHeight = image.height;
-
-    if (options.width && options.height) {
-      drawWidth = options.width;
-      drawHeight = options.height;
-    } else if (options.scale) {
-      drawWidth = image.width * options.scale;
-      drawHeight = image.height * options.scale;
+    // Decode imageBytes — handle base64 string or raw Uint8Array
+    let rawBytes: Uint8Array;
+    if (typeof options.imageBytes === 'string') {
+      const base64 = options.imageBytes.includes(',')
+        ? options.imageBytes.split(',')[1]
+        : options.imageBytes;
+      rawBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    } else {
+      rawBytes = options.imageBytes;
     }
 
-    for (const pageIndex of options.pages) {
-      const page = pdfDoc.getPage(pageIndex);
-      const pageHeight = page.getHeight();
-      const drawY = pageHeight - options.y - drawHeight;
-      page.drawImage(image, { x: options.x, y: drawY, width: drawWidth, height: drawHeight });
+    // Detect PNG vs JPEG by magic bytes
+    const isPng = rawBytes[0] === 0x89 && rawBytes[1] === 0x50;
+    const image  = isPng
+      ? await pdfDoc.embedPng(rawBytes)
+      : await pdfDoc.embedJpg(rawBytes);
+
+    // Draw border rect behind the image
+    const borderWidth = options.borderWidth ?? 0;
+    if (borderWidth > 0) {
+      page.drawRectangle({
+        x: options.x, y: options.y,
+        width: options.width, height: options.height,
+        borderColor: hexToRgb(options.borderColor ?? '#000000'),
+        borderWidth,
+        color: undefined,
+      });
     }
+
+    // Draw image with opacity and rotation
+    page.drawImage(image, {
+      x:       options.x,
+      y:       options.y,
+      width:   options.width,
+      height:  options.height,
+      opacity: options.opacity ?? 1,
+      rotate:  degrees(options.rotation ?? 0),
+    });
 
     return await pdfDoc.save();
   }
@@ -745,3 +769,5 @@ export class PdfEditAdapter {
   }
 }
 
+
+// Add to bottom of PdfEditAdapter.ts — outside the class
