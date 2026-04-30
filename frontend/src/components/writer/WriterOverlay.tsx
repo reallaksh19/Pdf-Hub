@@ -4,6 +4,8 @@ import { WriterElementNode } from './WriterElementNode';
 import type { PlacedElement } from '../../core/writer/types';
 import { WriterSnapGuides } from './WriterSnapGuides';
 import type { SnapGuide } from '../../core/writer/geometry';
+import { recognizeImage } from '../../core/ocr/clientOcr';
+import { useToastStore } from '../../core/toast/store';
 
 interface Props {
   pageNumber:     number;
@@ -34,6 +36,9 @@ export const WriterOverlay: React.FC<Props> = ({ pageNumber, scale, pageDimensio
     .sort((a, b) => a.zIndex - b.zIndex);
 
   const isPlacing = activeTool !== 'select';
+  const isOcr = activeTool === 'ocr-region';
+
+  const addToast = useToastStore(s => s.addToast);
 
   // Marquee selection state
   const [marqueeStart, setMarqueeStart] = useState<{ x: number, y: number } | null>(null);
@@ -60,8 +65,8 @@ export const WriterOverlay: React.FC<Props> = ({ pageNumber, scale, pageDimensio
   }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    // If not select tool, allow click handling to process
-    if (isPlacing) return;
+    // If not select tool or OCR tool, allow click handling to process
+    if (isPlacing && !isOcr) return;
 
     // Only capture if clicking directly on the overlay, not on a child WriterElementNode
     if (e.target !== e.currentTarget) return;
@@ -107,36 +112,93 @@ export const WriterOverlay: React.FC<Props> = ({ pageNumber, scale, pageDimensio
        const top = Math.min(marqueeStart.y, marqueeCurrent.y) / scale;
        const bottom = Math.max(marqueeStart.y, marqueeCurrent.y) / scale;
 
-       // Find all elements completely or partially inside the box
-       const hits = pageElements.filter(el => {
-         const elRight = el.x + el.width;
-         const elBottom = el.y + el.height;
-         // standard AABB intersection
-         return !(
-            right < el.x ||
-            left > elRight ||
-            bottom < el.y ||
-            top > elBottom
-         );
-       }).map(el => el.id);
+       if (isOcr) {
+         // Perform OCR
+         const container = e.currentTarget.parentElement;
+         if (container) {
+           const canvas = container.querySelector('canvas');
+           if (canvas) {
+             // Create an offscreen canvas to extract just the selected rect from the main canvas
+             const offscreen = document.createElement('canvas');
+             // The main canvas is rendered at a higher pixel density often, but we assume
+             // it maps roughly to the screen coords.
+             // Best way is to scale the extraction rect up by the canvas's internal scaling.
+             const scaleX = canvas.width / (pageDimensions?.width! * scale);
+             const scaleY = canvas.height / (pageDimensions?.height! * scale);
 
-       if (hits.length > 0) {
-         if (e.metaKey || e.ctrlKey) {
-            hits.forEach(toggleSelection);
-         } else {
-            setSelection(hits);
+             offscreen.width = (right - left) * scale * scaleX;
+             offscreen.height = (bottom - top) * scale * scaleY;
+             const ctx = offscreen.getContext('2d');
+             if (ctx) {
+               ctx.drawImage(
+                 canvas,
+                 left * scale * scaleX, top * scale * scaleY, offscreen.width, offscreen.height,
+                 0, 0, offscreen.width, offscreen.height
+               );
+               const dataUrl = offscreen.toDataURL('image/png');
+
+               addToast({ type: 'info', title: 'Running OCR', message: 'Extracting text from region...' });
+
+               recognizeImage(dataUrl).then(text => {
+                 if (text.trim()) {
+                   addElement({
+                     id: nextId(),
+                     type: 'rich-text',
+                     pageNumber,
+                     x: left,
+                     y: top,
+                     width: Math.max(200/scale, right - left),
+                     height: Math.max(80/scale, bottom - top),
+                     content: `<p>${text.replace(/\n/g, '<br/>')}</p>`,
+                     styles: {},
+                     zIndex: elements.length,
+                     locked: false,
+                   });
+                   addToast({ type: 'success', title: 'OCR Complete', message: 'Text extracted successfully.' });
+                 } else {
+                   addToast({ type: 'info', title: 'OCR Complete', message: 'No text found in region.' });
+                 }
+                 setActiveTool('select');
+               }).catch(err => {
+                 console.error(err);
+                 addToast({ type: 'error', title: 'OCR Failed', message: 'Could not extract text.' });
+                 setActiveTool('select');
+               });
+             }
+           }
+         }
+       } else {
+         // Find all elements completely or partially inside the box
+         const hits = pageElements.filter(el => {
+           const elRight = el.x + el.width;
+           const elBottom = el.y + el.height;
+           // standard AABB intersection
+           return !(
+              right < el.x ||
+              left > elRight ||
+              bottom < el.y ||
+              top > elBottom
+           );
+         }).map(el => el.id);
+
+         if (hits.length > 0) {
+           if (e.metaKey || e.ctrlKey) {
+              hits.forEach(toggleSelection);
+           } else {
+              setSelection(hits);
+           }
          }
        }
     }
 
     setMarqueeStart(null);
     setMarqueeCurrent(null);
-  }, [marqueeStart, marqueeCurrent, pageElements, scale, setSelection, toggleSelection]);
+  }, [marqueeStart, marqueeCurrent, pageElements, scale, setSelection, toggleSelection, isOcr, addElement, elements.length, pageNumber, setActiveTool, addToast, pageDimensions]);
 
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      // If we are selecting, we already handled clicks via pointer down/up
-      if (!isPlacing || !pageDimensions) return;
+      // If we are selecting or using OCR, we already handled clicks via pointer down/up
+      if (!isPlacing || isOcr || !pageDimensions) return;
 
       // Prevent event from reaching annotation layer
       e.stopPropagation();
@@ -198,8 +260,8 @@ export const WriterOverlay: React.FC<Props> = ({ pageNumber, scale, pageDimensio
         width:         pageDimensions.width * scale,
         height:        pageDimensions.height * scale,
         zIndex:        10,
-          pointerEvents: isPlacing || isShiftDown ? 'all' : 'none', // Only block PDF when placing or marquee selecting via Shift
-          cursor:        isPlacing ? 'crosshair' : isShiftDown ? 'crosshair' : 'default',
+          pointerEvents: isPlacing || isShiftDown || isOcr ? 'all' : 'none', // Only block PDF when placing or marquee selecting via Shift
+          cursor:        isPlacing || isOcr ? 'crosshair' : isShiftDown ? 'crosshair' : 'default',
         overflow:      'hidden',
       }}
       onPointerDown={handlePointerDown}

@@ -1,4 +1,4 @@
-export type WriterTool = 'select' | 'place-text' | 'place-image' | 'place-table';
+export type WriterTool = 'select' | 'place-text' | 'place-image' | 'place-table' | 'ocr-region';
 export type TransformHandle = 'nw' | 'ne' | 'se' | 'sw' | 'move';
 
 export interface WriterStyles {
